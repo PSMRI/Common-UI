@@ -1,0 +1,53 @@
+<div>
+    <form [formGroup]="otherInfoFormGroup" autocomplete="off">
+    <div *ngFor="let item of formData">
+        <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'text'">
+          <mat-label> {{ item.placeholder }}</mat-label>
+            <input matInput type="input"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
+          </mat-form-field>
+
+          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'date'">
+            <mat-label> {{ item.placeholder }}</mat-label>
+            <input matInput type="date"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
+          </mat-form-field>
+
+          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
+            <mat-label> {{ item.placeholder }}</mat-label>
+            <input matInput type="time"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
+          </mat-form-field>
+
+          <mat-form-field  class="backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
+            <mat-label> {{ item.placeholder }}</mat-label>
+            <mat-select matInput multiple  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
+              <mat-option *ngFor="let option of item.options" [value]="option">
+                {{ option }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
+            <mat-label> {{ item.placeholder }}</mat-label>
+            <input matInput type="datetime-local"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
+          </mat-form-field>
+
+          <div *ngIf="item?.fieldType?.toLowerCase() === 'radio'">
+            <mat-label>{{ item.placeholder }}</mat-label>
+          <mat-radio-group  formControlName="{{item.fieldName}}" required="{{item.isRequired}}">
+            <mat-radio-button class="radioButtonFontStyle" style="margin-left: 5px; margin-right: 5px;" *ngFor="let option of item.options" [value]="option">
+              {{option}}
+            </mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+          <mat-form-field  class="backgroundWhite fieldForHRP dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
+            <mat-label> {{ item.placeholder }}</mat-label>
+            <mat-select matInput type="select"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
+              <mat-option *ngFor="let option of item.options" [value]="option">
+                {{ option }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+    </div>
+    </form>
+</div>

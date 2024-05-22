@@ -1,0 +1,42 @@
+<!-- <p>registration works!</p> -->
+<div>
+<mat-stepper #stepper [formGroup]="mainForm">
+    <mat-step *ngIf="enablePersonalInfo">
+        <ng-template matStepLabel [stepControl]="personalInfoFormGroup">Personal Information</ng-template>
+        <app-personal-information [personalInfoFormGroup]="personalInfoFormGroup" [formData]="personalInfoData"></app-personal-information>
+        <div>
+            <button mat-button matStepperNext>Next</button>
+          </div>
+    </mat-step>
+    <mat-step *ngIf="enableLocationInfo">
+        <ng-template matStepLabel [stepControl]="locationInfoFormGroup">Location Information</ng-template>
+        <app-location-information [locationInfoFormGroup]="locationInfoFormGroup" [formData]="locationInfoData"></app-location-information>
+        <div>
+            <button mat-button matStepperPrevious *ngIf="enablePersonalInfo">Back</button>
+            <button mat-button matStepperNext *ngIf="enableOtherInfo">Next</button>
+          </div>
+    </mat-step>
+    <mat-step *ngIf="enableOtherInfo">
+        <ng-template matStepLabel [stepControl]="otherInfoFormGroup">Other Information</ng-template>
+        <app-other-information [otherInfoFormGroup]="otherInfoFormGroup" [formData]="otherInfoData"></app-other-information>
+        <div>
+            <button mat-button matStepperPrevious *ngIf="enableLocationInfo">Back</button>
+            <button mat-button matStepperNext *ngIf="enableAbhaInfo">Next</button>
+          </div>
+    </mat-step>
+    <mat-step *ngIf="enableAbhaInfo">
+        <ng-template matStepLabel>Abha Information</ng-template>
+        <app-abha-information></app-abha-information>
+        <div>
+            <button mat-button matStepperPrevious *ngIf="enablePersonalInfo">Back</button>
+          </div>
+    </mat-step>
+      
+    </mat-stepper>
+    <button mat-raised-button color="primary" (click)="onFormSubmit()" [disabled]="!mainForm.valid" >Submit</button>
+
+</div>
+<!-- <app-abha-information></app-abha-information>
+<app-location-information></app-location-information>
+<app-other-information></app-other-information>
+<app-personal-information></app-personal-information> -->
