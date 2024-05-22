@@ -67,15 +67,18 @@ export class RegistrationComponent {
   getRegistrationData(){
     let location: any = localStorage.getItem('locationData');
     let locationData = JSON.parse(location);
-    console.log('locationData',locationData );
+    let services: any = localStorage.getItem('services');
+    let servicesData = JSON.parse(services);
+    console.log('servicesData', servicesData);
     let reqObj = {
       serviceLine: localStorage.getItem('serviceName'),
       serviceLineId: localStorage.getItem('serviceID'),
       stateId: locationData.stateID,
       districtId: locationData.districtID,
-      blockId: locationData.subDistrictID,
-      serviceProviderId: localStorage.getItem('providerServiceID')
+      blockId: locationData.blockID,
+      serviceProviderId: servicesData[0].serviceProviderID
     }
+    console.log('reqObj', reqObj);
     this.registrationService.fetchAllRegistrationData(reqObj).subscribe((res: any) => {
       if(res && res.data && res.statusCode === 200){
         this.filterData(res.data);
