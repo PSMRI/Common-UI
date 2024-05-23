@@ -29,16 +29,14 @@ import {
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SearchDialogComponent } from '../search-dialog/search-dialog.component';
-import { ConfirmationService } from '../../../src/app/app-modules/core/services/confirmation.service';
-import { CameraService } from '../../../src/app/app-modules/core/services/camera.service';
-import { BeneficiaryDetailsService } from '../../../src/app/app-modules/core/services/beneficiary-details.service';
-import { RegistrarService } from '../../../src/app/app-modules/registrar/shared/services/registrar.service';
 import moment from 'moment';
-import { SetLanguageComponent } from '../../../src/app/app-modules/core/components/set-language.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { HttpServiceService } from '../../../src/app/app-modules/core/services/http-service.service';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
+import { ConfirmationService, CameraService, BeneficiaryDetailsService } from 'src/app/app-modules/core/services';
+import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { RegistrarService } from 'Common-UI/srcs/registrar/services/registrar.service';
 
 @Component({
   selector: 'app-search',

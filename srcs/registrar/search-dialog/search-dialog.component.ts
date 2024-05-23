@@ -28,14 +28,14 @@ import {
   AfterViewChecked,
   DoCheck,
 } from '@angular/core';
-import { CommonService } from '../../../src/app/app-modules/core/services/common-services.service';
-import { RegistrarService } from '../../../src/app/app-modules/registrar/shared/services/registrar.service';
-import { ConfirmationService } from '../../../src/app/app-modules/core/services/confirmation.service';
-import { environment } from 'src/environments/environment';
-import { SetLanguageComponent } from '../../../src/app/app-modules/core/components/set-language.component';
-import { MatDialogRef } from '@angular/material/dialog';
-import { HttpServiceService } from '../../../src/app/app-modules/core/services/http-service.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
+import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
+import { ConfirmationService } from 'src/app/app-modules/core/services';
+import { CommonService } from 'src/app/app-modules/core/services/common-services.service';
+import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { RegistrarService } from 'Common-UI/srcs/registrar/services/registrar.service';
+import { environment } from 'src/environments/environment';
 
 interface Beneficary {
   firstName: string;

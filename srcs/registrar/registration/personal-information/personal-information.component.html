@@ -34,7 +34,8 @@
     <div class="row" *ngFor="let item of formData">
         <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.placeholder }}</mat-label>
-            <input matInput type="input"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
+            <input matInput type="input"  required="{{item.isRequired}}" 
+             formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
           <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'date'">
@@ -70,7 +71,8 @@
           </mat-radio-group>
         </div>
 
-          <mat-form-field  class="backgroundWhite fieldForHRP dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
+        <div *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
+          <mat-form-field  class="backgroundWhite fieldForHRP dropdownfontStyle">
             <mat-label> {{ item.placeholder }}</mat-label>
             <mat-select matInput type="select"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
@@ -78,6 +80,7 @@
               </mat-option>
             </mat-select>
           </mat-form-field>
+        </div>
 
     </div>
     </form>
