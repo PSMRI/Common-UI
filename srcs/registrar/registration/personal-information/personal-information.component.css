@@ -1,0 +1,54 @@
+.mat-form-field {
+    line-height: unset;
+}
+.input-full-width {
+  width: 100%;
+}
+.box {
+    height: 60px;
+}
+.order-md-last {
+  float: right;
+}
+.mat_captureButton{
+    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+    transform: translate3d(0,0,0);
+    border-color: unset;
+    border-style: none;
+  }
+  .img-circle{
+    border-radius: 50% !important;
+  }
+
+  ::ng-deep.bs-datepicker.bs-datepicker-head {
+    background-color: #337ab7 !important;
+  }
+  
+  ::ng-deep.bs-datepicker.selected {
+    background-color: #337ab7 !important;
+  }
+  
+  ::ng-deep.bs-datepicker.bs-datepicker-body{
+      padding: 10px;
+      border-radius: 0 0 3px 3px;
+      min-height: 232px;
+      min-width: 278px;
+      border: 1px solid #e9edf0;
+  }
+  
+  ::ng-deep.bs-datepicker {
+    display: flex;
+    -webkit-box-align: stretch;
+    align-items: stretch;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    flex-flow: row wrap;
+    background: #fff;
+    box-shadow: 0 0 10px 0 #aaa;
+    position: relative;
+    z-index: 1;
+  }
+  
+  ::ng-deep.bs-datepicker.bs-datepicker-container {
+    padding: 0 !important;
+  }

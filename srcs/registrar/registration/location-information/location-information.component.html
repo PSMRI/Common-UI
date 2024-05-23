@@ -1,22 +1,23 @@
 <div>
     <form [formGroup]="locationInfoFormGroup" autocomplete="off">
-    <div *ngFor="let item of formData">
-        <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'text'">
+    <div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-3 col-lg-3 box" *ngFor="let item of formData">
+        <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="input"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
-          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'date'">
+          <mat-form-field  class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="date"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
-          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
+          <mat-form-field  class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'time'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="time"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
-          <mat-form-field  class="backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
+          <mat-form-field  class=" input-full-width backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <mat-select matInput multiple  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
@@ -25,7 +26,7 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
+          <mat-form-field  class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="datetime-local"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}" />
           </mat-form-field>
@@ -39,7 +40,7 @@
           </mat-radio-group>
         </div>
 
-          <mat-form-field  class="backgroundWhite fieldForHRP dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
+          <mat-form-field  class="input-full-width backgroundWhite fieldForHRP dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <mat-select matInput type="select"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
@@ -48,6 +49,7 @@
             </mat-select>
           </mat-form-field>
 
+    </div>
     </div>
     </form>
 </div>

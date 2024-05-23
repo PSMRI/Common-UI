@@ -1,4 +1,4 @@
-<div>
+<div class="m-t-10">
     <form [formGroup]="personalInfoFormGroup" autocomplete="off">
       <div id="image_row" class="col-md-2 order-md-last text-center">
         <div class="row">
@@ -6,7 +6,7 @@
             <div *ngIf="personalInfoFormGroup.value?.image === null">
               <a>
                 <img
-                  src="srcs/assets/images/default-avatar.gif"
+                  src="assets/images/default-avatar.gif"
                   class="img-circle thumbnail-120"
                   alt="Upload Beneficiary Image" />
               </a>
@@ -31,33 +31,35 @@
           </div>
         </div>
       </div>
-    <div class="row" *ngFor="let item of formData">
-        <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'text'">
+      <div id="data_row" class="col-md-10 order-md-first">
+      <div class="row">
+        <div  class="col-xs-12 col-sm-6 col-md-3 col-lg-3 box" *ngFor="let item of formData">
+        <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="input"  required="{{item.isRequired}}" 
              formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
-          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'date'">
+          <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="date"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
-          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
+          <mat-form-field class="input-full-width"  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="time"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
-          <mat-form-field  class="backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
+          <mat-form-field class="input-full-width backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.placeholder }}</mat-label>
-            <mat-select matInput multiple  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
+            <mat-select class="input-full-width" matInput multiple  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
                 {{ option }}
               </mat-option>
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field  *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
+          <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="datetime-local"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
@@ -82,6 +84,8 @@
           </mat-form-field>
         </div>
 
-    </div>
+        </div>
+      </div>
+      </div>
     </form>
 </div>

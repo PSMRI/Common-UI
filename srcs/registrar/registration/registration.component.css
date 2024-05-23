@@ -1,0 +1,56 @@
+.headings {
+    margin-left: 10px;
+    margin-top: 2px;
+    font-weight: 500;
+    font-weight: bold;
+}
+#submitButton {
+    margin-top: 10px;
+    float: right;
+  }
+
+  .mat-expansion-panel-header {
+    background: rgba(37, 55, 70, 0.2);
+}
+
+.textarea-full-width {
+    width: 100%;
+}
+
+.input-full-width {
+    width: 100%;
+}
+
+.select-full-width {
+    width: 100%;
+}
+
+.radio-button {
+    margin-right: 25px;
+}
+
+.control-label {
+    font-weight: normal;
+}
+
+mat-expansion-panel {
+    margin: 0.5%;
+}
+  .mat_blue {
+    background-color: #0277bd !important;
+    border-color: unset !important;
+    color: white;
+    border: unset;
+    border-radius: 3px;
+    line-height: 36px;
+    min-width: 88px;
+  }
+  .mat_blue:disabled {
+    background-color: #e0e0e0 !important;
+    border-color: unset !important;
+    color: rgba(0, 0, 0, 0.38);
+    border: unset;
+    border-radius: 3px;
+    line-height: 36px;
+    min-width: 88px;
+  }
