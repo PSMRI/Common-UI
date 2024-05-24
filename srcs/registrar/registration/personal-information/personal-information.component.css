@@ -4,6 +4,9 @@
 .input-full-width {
   width: 100%;
 }
+.mat-mdc-form-field {
+  width: 109% !important;
+}
 .box {
     height: 60px;
 }

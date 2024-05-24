@@ -52,7 +52,7 @@
 
           <mat-form-field class="input-full-width backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.placeholder }}</mat-label>
-            <mat-select class="input-full-width" matInput multiple  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
+            <mat-select matInput multiple  required="{{item.isRequired}}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
                 {{ option }}
               </mat-option>
