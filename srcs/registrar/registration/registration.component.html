@@ -1,42 +1,50 @@
 <div>
-    <form [formGroup]="mainForm">
-        <mat-accordion>
-          <mat-expansion-panel *ngIf="enablePersonalInfo" [expanded]="step === 0" (opened)="setStep(0)">
-            <mat-expansion-panel-header>
-              <mat-icon>account_circle</mat-icon>
-              <span class="headings">Personal Information</span>
-            </mat-expansion-panel-header>
-            <app-personal-information [personalInfoFormGroup]="personalInfoFormGroup" [formData]="personalInfoData"></app-personal-information>
-          </mat-expansion-panel>
-          <mat-expansion-panel *ngIf="enableLocationInfo" [expanded]="step === 1" (opened)="setStep(1)">
-            <mat-expansion-panel-header>
-              <mat-icon>room</mat-icon>
-              <span class="headings">
-                Location Information
-              </span>
-            </mat-expansion-panel-header>
-            <app-location-information [locationInfoFormGroup]="locationInfoFormGroup" [formData]="locationInfoData"></app-location-information>
-          </mat-expansion-panel>
-          <mat-expansion-panel *ngIf="enableOtherInfo" [expanded]="step === 2" (opened)="setStep(2)">
-            <mat-expansion-panel-header>
-              <mat-icon>description</mat-icon>
-              <span class="headings">
-                Other Information
-              </span>
-            </mat-expansion-panel-header>
-            <app-other-information [otherInfoFormGroup]="otherInfoFormGroup" [formData]="otherInfoData"></app-other-information>
-          </mat-expansion-panel>
-          <mat-expansion-panel *ngIf="enableAbhaInfo" [expanded]="step === 3" (opened)="setStep(3)">
-            <mat-expansion-panel-header>
-              <mat-icon>description</mat-icon>
-              <span class="headings">
-                Abha Information
-              </span>
-            </mat-expansion-panel-header>
-            <app-abha-information></app-abha-information>
-          </mat-expansion-panel>
-        </mat-accordion>
-      </form>
+  <mat-stepper #stepper [formGroup]="mainForm">
+      <mat-step *ngIf="enablePersonalInfo">
+        <ng-template matStepLabel>
+          Personal Information
+        </ng-template>
+        <app-personal-information [personalInfoFormGroup]="personalInfoFormGroup" [formData]="personalInfoData"></app-personal-information>
+        <div>
+          <button class="mat_blue"
+          mat-raised-button matStepperNext>Next</button>
+        </div>
+      </mat-step>
+      <mat-step *ngIf="enableLocationInfo">
+        <ng-template matStepLabel>
+          Location Information
+        </ng-template>
+        <app-location-information [locationInfoFormGroup]="locationInfoFormGroup" [formData]="locationInfoData"></app-location-information>
+        <div>
+          <button id="backButton" class="mat_blue"
+          mat-raised-button matStepperPrevious *ngIf="enablePersonalInfo">Back</button>
+          <button class="mat_blue"
+          mat-raised-button  matStepperNext *ngIf="enableOtherInfo">Next</button>
+        </div>
+      </mat-step>
+      <mat-step *ngIf="enableOtherInfo">
+        <ng-template matStepLabel>
+          Other Information
+        </ng-template>
+        <app-other-information [otherInfoFormGroup]="otherInfoFormGroup" [formData]="otherInfoData"></app-other-information>
+        <div>
+          <button id="backButton" class="mat_blue"
+          mat-raised-button  matStepperPrevious *ngIf="enableLocationInfo">Back</button>
+          <button class="mat_blue"
+          mat-raised-button  matStepperNext *ngIf="enableAbhaInfo">Next</button>
+        </div>
+      </mat-step>
+      <mat-step *ngIf="enableAbhaInfo">
+        <ng-template matStepLabel>
+          Abha Information
+        </ng-template>
+        <app-abha-information></app-abha-information>
+        <div>
+          <button class="mat_blue"
+          mat-raised-button  matStepperPrevious *ngIf="enablePersonalInfo">Back</button>
+        </div>
+      </mat-step>
+  </mat-stepper>
     <button id="submitButton"
     class="mat_blue"
     mat-raised-button

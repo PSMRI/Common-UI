@@ -23,7 +23,6 @@ export class RegistrationComponent {
   personalInfoFormValues: any;
   mainForm!: FormGroup;
   country = { id: 1, Name: 'India' };
-  step = 0;
 
 
   constructor(
@@ -43,12 +42,6 @@ export class RegistrationComponent {
     });
     }
 
-    /**
-   * Accordion Expand
-   */
-  setStep(index: number) {
-    this.step = index;
-  }
     minValidator(min: number): ValidatorFn {
       return (control: AbstractControl): { [key: string]: any } | null => {
         if (control.value === null || control.value === undefined) return null;
@@ -225,7 +218,6 @@ export class RegistrationComponent {
       if (res.statusCode === 200) {
         this.confirmationService.alert(res.data.response, 'success');
         this.mainForm.reset();
-        this.setStep(0);
       } else {
         this.confirmationService.alert(
           'issue in saving the data',

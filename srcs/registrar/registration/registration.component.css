@@ -8,6 +8,9 @@
     margin-top: 10px;
     float: right;
   }
+  #backButton {
+    margin-right: 10px;
+  }
 
   .mat-expansion-panel-header {
     background: rgba(37, 55, 70, 0.2);
