@@ -32,6 +32,9 @@ export class RegistrationComponent {
     private registrarService: RegistrarService
   ){}
 
+  preventSubmitOnEnter(event: Event) {
+    event.preventDefault();
+  }
   ngOnInit(){
     this.getRegistrationData();
     this.mainForm = this.fb.group({
