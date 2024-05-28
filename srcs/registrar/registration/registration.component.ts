@@ -2,9 +2,12 @@ import { Component, ViewChild } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { PersonalInformationComponent } from './personal-information/personal-information.component';
 import { RegistrarService } from '../services/registrar.service';
 import moment from 'moment';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
+import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 
 @Component({
   selector: 'app-registration',
@@ -24,19 +27,30 @@ export class RegistrationComponent {
   personalInfoFormValues: any;
   mainForm!: FormGroup;
   country = { id: 1, Name: 'India' };
+  patientRevisit = false;
+  revisitDataSubscription!: Subscription;
+  currentLanguageSet: any;
+  revisitData: any;
+
 
 
   constructor(
     private registrationService: RegistrationService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
-    private registrarService: RegistrarService
+    private registrarService: RegistrarService,
+    private route: ActivatedRoute,
+    private languageComponent: SetLanguageComponent,
+    private httpServiceService: HttpServiceService,
+    private router: Router,
+
   ){}
 
   preventSubmitOnEnter(event: Event) {
     event.preventDefault();
   }
   ngOnInit(){
+    this.fetchLanguageResponse();
     this.getRegistrationData();
     this.mainForm = this.fb.group({
       personalInfoForm: this.fb.group({}),
@@ -44,6 +58,7 @@ export class RegistrationComponent {
       otherInfoForm: this.fb.group({}),
       abhaInfoForm: this.fb.group({}),
     });
+    this.checkPatientRevisit();
     }
 
     minValidator(min: number): ValidatorFn {
@@ -104,6 +119,7 @@ export class RegistrationComponent {
       }
  
       const control = this.fb.control('', validators);
+      if(item.fieldName)
       formGroup.addControl(item.fieldName, control);
     });
   }
@@ -119,6 +135,44 @@ export class RegistrationComponent {
   get otherInfoFormGroup(): FormGroup{
     return this.mainForm.get('otherInfoForm') as FormGroup;
   }
+
+  checkPatientRevisit() {
+    if (this.route.snapshot.params['beneficiaryID'] !== undefined) {
+      this.patientRevisit = true;
+      this.callBeneficiaryDataObservable(
+        this.route.snapshot.params['beneficiaryID']
+      );
+    } else if (this.route.snapshot.params['beneficiaryID'] === undefined) {
+      this.patientRevisit = false;
+    }
+  }
+
+    /**
+   *
+   * Loading Data of Beneficiary as Observable
+   */
+    callBeneficiaryDataObservable(benID: any) {
+      this.revisitDataSubscription =
+        this.registrarService.beneficiaryEditDetails$.subscribe(res => {
+          if (res !== null && benID === res.beneficiaryID) {
+            this.revisitData = Object.assign({}, res);
+          } else {
+            this.redirectToSearch();
+          }
+        });
+    }
+
+    redirectToSearch() {
+      setTimeout(() =>
+        this.confirmationService.alert(
+          this.currentLanguageSet.alerts.info.issueInFetchDetails,
+          'info'
+        )
+      );
+      this.router.navigate(['/registrar/search/']);
+    }
+  
+  
 
   getRegistrationData(){
     let location: any = localStorage.getItem('locationData');
@@ -235,84 +289,84 @@ export class RegistrationComponent {
   iEMRForm() {
     const personalForm = Object.assign(
       {},
-      this.mainForm.value.personalInfoForm
+      this.mainForm.get('personalInfoForm') as FormGroup
     );
     const demographicsForm = Object.assign(
       {},
-      this.mainForm.value.locationInfoForm
+      this.mainForm.get('locationInfoForm') as FormGroup
     );
     const othersForm = Object.assign(
       {},
-      this.mainForm.value.otherInfoForm
+      this.mainForm.get('otherInfoForm') as FormGroup
     );
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
-      firstName: personalForm.firstName,
-      lastName: personalForm.lastName,
-      dOB: personalForm.dob,
-      fatherName: othersForm.fatherName,
-      spouseName: personalForm.spouseName,
-      motherName: othersForm.motherName,
+      firstName: personalForm.controls['firstName']?.value,
+      lastName: personalForm.controls['lastName']?.value,
+      dOB: personalForm.controls['dOB']?.value,
+      fatherName: othersForm.controls['fatherName']?.value,
+      spouseName: personalForm.controls['spouseName']?.value,
+      motherName: othersForm.controls['motherName']?.value,
       // govtIdentityNo: null,
       // govtIdentityTypeID: null,
       emergencyRegistration: false,
       titleId: null,
-      benImage: personalForm.image,
-      bankName: othersForm.bankName,
-      branchName: othersForm.branchName,
-      ifscCode: othersForm.ifscCode,
-      accountNo: othersForm.accountNo,
-      // maritalStatusID: personalForm.maritalStatus,
-      maritalStatusName: personalForm.maritalStatus,
-      ageAtMarriage: personalForm.ageAtMarriage,
-      // genderID: personalForm.gender,
-      genderName: personalForm.genderName,
-      literacyStatus: personalForm.literacyStatus,
-      email: othersForm.emailID,
+      benImage: personalForm.controls['image']?.value,
+      bankName: othersForm.controls['bankName']?.value,
+      branchName: othersForm.controls['branchName']?.value,
+      ifscCode: othersForm.controls['ifscCode']?.value,
+      accountNo: othersForm.controls['accountNo']?.value,
+      // maritalStatusID: personalForm.controls['maritalStatus',
+      maritalStatusName: personalForm.controls['maritalStatus']?.value,
+      ageAtMarriage: personalForm.controls['ageAtMarriage']?.value,
+      // genderID: personalForm.controls[gender,
+      genderName: personalForm.controls['genderName']?.value,
+      literacyStatus: personalForm.controls['literacyStatus']?.value,
+      email: othersForm.controls['emailID']?.value,
       providerServiceMapId: localStorage.getItem('providerServiceID'),
       providerServiceMapID: localStorage.getItem('providerServiceID'),
 
       i_bendemographics: {
-        // incomeStatusID: personalForm.income,
-        incomeStatusName: personalForm.incomeName,
-        monthlyFamilyIncome: personalForm.monthlyFamilyIncome,
-        // occupationID: personalForm.occupation,
-        occupationName: personalForm.occupationName,
-        // educationID: personalForm.educationQualification,
-        educationName: personalForm.educationQualificationName,
-        // communityID: othersForm.community,
-        communityName: othersForm.communityName,
-        // religionID: othersForm.religion,
-        religionName: othersForm.religionOther,
+        // incomeStatusID: personalForm.controls[income,
+        incomeStatusName: personalForm.controls['incomeName']?.value,
+        monthlyFamilyIncome: personalForm.controls['monthlyFamilyIncome']?.value,
+        // occupationID: personalForm.controls[occupation,
+        occupationName: personalForm.controls['occupationName']?.value,
+        // educationID: personalForm.controls[educationQualification,
+        educationName: personalForm.controls['educationQualificationName']?.value,
+        // communityID: othersForm.controls[community,
+        communityName: othersForm.controls['communityName']?.value,
+        // religionID: othersForm.controls[religion,
+        religionName: othersForm.controls['religionOther']?.value,
         countryID: this.country.id,
         countryName: this.country.Name,
-        stateID: demographicsForm.stateID,
-        stateName: demographicsForm.stateName,
-        districtID: demographicsForm.districtID,
-        districtName: demographicsForm.districtName,
-        blockID: demographicsForm.blockID,
-        blockName: demographicsForm.blockName,
+        stateID: demographicsForm.controls['stateID']?.value,
+        stateName: demographicsForm.controls['stateName']?.value,
+        districtID: demographicsForm.controls['districtID']?.value,
+        districtName: demographicsForm.controls['districtName']?.value,
+        blockID: demographicsForm.controls['blockID']?.value,
+        blockName: demographicsForm.controls['blockName']?.value,
         districtBranchID:
-          demographicsForm.districtBranchID,
-        districtBranchName: demographicsForm.districtBranchName,
-        zoneID: demographicsForm.zoneID,
-        zoneName: demographicsForm.zoneName,
-        parkingPlaceID: demographicsForm.parkingPlace,
-        parkingPlaceName: demographicsForm.parkingPlaceName,
+          demographicsForm.controls['districtBranchID']?.value,
+        districtBranchName: demographicsForm.controls['districtBranchName']?.value,
+        zoneID: demographicsForm.controls['zoneID']?.value,
+        zoneName: demographicsForm.controls['zoneName']?.value,
+        parkingPlaceID: demographicsForm.controls['parkingPlace']?.value,
+        parkingPlaceName: demographicsForm.controls['parkingPlaceName']?.value,
         servicePointID: localStorage.getItem('servicePointID'),
         servicePointName: localStorage.getItem('servicePointName'),
-        habitation: demographicsForm.habitation,
-        pinCode: demographicsForm.pincode,
-        addressLine1: demographicsForm.addressLine1,
-        addressLine2: demographicsForm.addressLine2,
-        addressLine3: demographicsForm.addressLine3,
+        habitation: demographicsForm.controls['habitation']?.value,
+        pinCode: demographicsForm.controls['pincode']?.value,
+        addressLine1: demographicsForm.controls['addressLine1']?.value,
+        addressLine2: demographicsForm.controls['addressLine2']?.value,
+        addressLine3: demographicsForm.controls['addressLine3']?.value,
       },
       benPhoneMaps: [
         {
-          parentBenRegID: personalForm.parentRegID,
-          phoneNo: personalForm.phoneNo,
-          phoneTypeID: this.makePhoneTypeID(personalForm.phoneNo),
-          benRelationshipID: personalForm.parentRelation,
+          parentBenRegID: personalForm.controls['parentRegID']?.value,
+          phoneNo: personalForm.controls['phoneNo']?.value,
+          phoneTypeID: this.makePhoneTypeID(personalForm.controls['phoneNo']?.value),
+          benRelationshipID: personalForm.controls['parentRelation']?.value,
         },
       ],
       // beneficiaryIdentities: iEMRids,
@@ -526,5 +580,21 @@ export class RegistrationComponent {
     return date;
   }
 
+  ngDoCheck() {
+    this.fetchLanguageResponse();
+  }
+
+  fetchLanguageResponse() {
+    this.languageComponent = new SetLanguageComponent(this.httpServiceService);
+    this.languageComponent.setLanguage();
+    this.currentLanguageSet = this.languageComponent.currentLanguageObject;
+  }
+
+  ngOnDestroy() {
+    if (this.patientRevisit && this.revisitDataSubscription) {
+      this.revisitDataSubscription.unsubscribe();
+      this.registrarService.clearBeneficiaryEditDetails();
+    }
+  }
 
 }

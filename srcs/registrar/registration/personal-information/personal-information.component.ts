@@ -18,11 +18,16 @@ export class PersonalInformationComponent {
 
   @Input('formData')
   formData: any;
-  patientRevisit: any;
+
+  @Input()
+  patientRevisit = false;
+
+  @Input()
+  revisitData: any;
+
   masterDataSubscription!: Subscription;
   masterData: any;
   revisitDataSubscription!: Subscription;
-  revisitData: any;
   _parentBenRegID: any;
   dateForCalendar: any;
   currentLanguageSet: any;
@@ -48,6 +53,8 @@ export class PersonalInformationComponent {
     });
     this.personalInfoFormGroup.addControl('image', new FormControl());
     console.log("personalInfoFormGroup Data", this.personalInfoFormGroup);
+    if(this.patientRevisit)
+    this.personalInfoFormGroup.patchValue(this.revisitData);
   }
 
   captureImage() {

@@ -24,6 +24,10 @@ const routes: Routes = [
     component: RegistrationComponent,
     canDeactivate: [CanDeactivateGuardService],
   },
+  {
+    path: 'search/:beneficiaryID',
+    component: RegistrationComponent,
+  },
 ]
 }
 ];
