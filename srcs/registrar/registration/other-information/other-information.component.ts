@@ -20,6 +20,7 @@ export class OtherInformationComponent {
 
   ngOnInit(){
     this.formData.forEach((item: any) => {
+      if(item.fieldName)
       this.otherInfoFormGroup.addControl(item.fieldName, new FormControl());
     });
     console.log("otherInfoFormGroup Data", this.otherInfoFormGroup);

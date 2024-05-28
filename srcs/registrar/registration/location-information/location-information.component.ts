@@ -34,6 +34,7 @@ export class LocationInformationComponent {
 
   ngOnInit(){
     this.formData.forEach((item: any) => {
+      if(item.fieldName)
       this.locationInfoFormGroup.addControl(item.fieldName, new FormControl());
     });
     this.locationInfoFormGroup.addControl('stateID', new FormControl());

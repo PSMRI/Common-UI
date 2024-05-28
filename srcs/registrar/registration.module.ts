@@ -15,6 +15,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchDialogComponent } from './search-dialog/search-dialog.component';
 import { SearchComponent } from './search/search.component';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 
 @NgModule({
@@ -36,7 +38,9 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
     FormsModule,
     RegistrationRoutingModule,
     SharedModule,
-    MatTableModule
+    MatTableModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   exports: [
     PersonalInformationComponent,

@@ -42,12 +42,19 @@
 
           <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date'">
             <mat-label> {{ item.placeholder }}</mat-label>
-            <input matInput type="date"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
+            <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" required="{{item.isRequired}}" readonly>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
           <mat-form-field class="input-full-width"  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
             <mat-label> {{ item.placeholder }}</mat-label>
             <input matInput type="time"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
+          </mat-form-field>
+
+          <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
+            <mat-label> {{ item.placeholder }}</mat-label>
+            <input matInput type="datetime-local"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
           <mat-form-field class="input-full-width backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
@@ -57,11 +64,6 @@
                 {{ option }}
               </mat-option>
             </mat-select>
-          </mat-form-field>
-
-          <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
-            <mat-label> {{ item.placeholder }}</mat-label>
-            <input matInput type="datetime-local"  required="{{item.isRequired}}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
           <div *ngIf="item?.fieldType?.toLowerCase() === 'radio'">

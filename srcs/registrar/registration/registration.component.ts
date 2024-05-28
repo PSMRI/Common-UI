@@ -4,6 +4,7 @@ import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { PersonalInformationComponent } from './personal-information/personal-information.component';
 import { RegistrarService } from '../services/registrar.service';
+import moment from 'moment';
 
 @Component({
   selector: 'app-registration',
@@ -201,9 +202,10 @@ export class RegistrationComponent {
   }
 
   submitBeneficiaryDetails() {
+    console.log('registration data', this.mainForm);
     const newDate = this.dateFormatChange();
     const valueToSend = this.mainForm.value;
-    valueToSend.personalDetailsForm.dob = newDate;
+    valueToSend.personalInfoForm.dob = newDate;
     const iEMRForm: any = this.iEMRForm();
     const phoneMaps = iEMRForm.benPhoneMaps;
 
@@ -233,15 +235,15 @@ export class RegistrationComponent {
   iEMRForm() {
     const personalForm = Object.assign(
       {},
-      this.mainForm.value.personalDetailsForm
+      this.mainForm.value.personalInfoForm
     );
     const demographicsForm = Object.assign(
       {},
-      this.mainForm.value.demographicDetailsForm
+      this.mainForm.value.locationInfoForm
     );
     const othersForm = Object.assign(
       {},
-      this.mainForm.value.otherDetailsForm
+      this.mainForm.value.otherInfoForm
     );
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
@@ -251,8 +253,8 @@ export class RegistrationComponent {
       fatherName: othersForm.fatherName,
       spouseName: personalForm.spouseName,
       motherName: othersForm.motherName,
-      govtIdentityNo: null,
-      govtIdentityTypeID: null,
+      // govtIdentityNo: null,
+      // govtIdentityTypeID: null,
       emergencyRegistration: false,
       titleId: null,
       benImage: personalForm.image,
@@ -260,10 +262,10 @@ export class RegistrationComponent {
       branchName: othersForm.branchName,
       ifscCode: othersForm.ifscCode,
       accountNo: othersForm.accountNo,
-      maritalStatusID: personalForm.maritalStatus,
-      maritalStatusName: personalForm.maritalStatusName,
+      // maritalStatusID: personalForm.maritalStatus,
+      maritalStatusName: personalForm.maritalStatus,
       ageAtMarriage: personalForm.ageAtMarriage,
-      genderID: personalForm.gender,
+      // genderID: personalForm.gender,
       genderName: personalForm.genderName,
       literacyStatus: personalForm.literacyStatus,
       email: othersForm.emailID,
@@ -271,16 +273,16 @@ export class RegistrationComponent {
       providerServiceMapID: localStorage.getItem('providerServiceID'),
 
       i_bendemographics: {
-        incomeStatusID: personalForm.income,
+        // incomeStatusID: personalForm.income,
         incomeStatusName: personalForm.incomeName,
         monthlyFamilyIncome: personalForm.monthlyFamilyIncome,
-        occupationID: personalForm.occupation,
-        occupationName: personalForm.occupationOther,
-        educationID: personalForm.educationQualification,
+        // occupationID: personalForm.occupation,
+        occupationName: personalForm.occupationName,
+        // educationID: personalForm.educationQualification,
         educationName: personalForm.educationQualificationName,
-        communityID: othersForm.community,
+        // communityID: othersForm.community,
         communityName: othersForm.communityName,
-        religionID: othersForm.religion,
+        // religionID: othersForm.religion,
         religionName: othersForm.religionOther,
         countryID: this.country.id,
         countryName: this.country.Name,
@@ -291,8 +293,8 @@ export class RegistrationComponent {
         blockID: demographicsForm.blockID,
         blockName: demographicsForm.blockName,
         districtBranchID:
-          demographicsForm.villages[0].villageID.districtBranchID,
-        districtBranchName: demographicsForm.villages[0].villageID.villageName,
+          demographicsForm.districtBranchID,
+        districtBranchName: demographicsForm.districtBranchName,
         zoneID: demographicsForm.zoneID,
         zoneName: demographicsForm.zoneName,
         parkingPlaceID: demographicsForm.parkingPlace,
@@ -327,6 +329,7 @@ export class RegistrationComponent {
   }
 
   updateBenDataManipulation() {
+    console.log('registration data', this.mainForm);
     const newDate = this.dateFormatChange();
     const valueToSend = this.mainForm.value;
     valueToSend.personalDetailsForm.dob = newDate;
@@ -348,15 +351,15 @@ export class RegistrationComponent {
   iEMRFormUpdate() {
     const personalForm = Object.assign(
       {},
-      this.mainForm.value.personalDetailsForm
+      this.mainForm.value.personalInfoForm
     );
     const demographicsForm = Object.assign(
       {},
-      this.mainForm.value.demographicDetailsForm
+      this.mainForm.value.locationInfoForm
     );
     const othersForm = Object.assign(
       {},
-      this.mainForm.value.otherDetailsForm
+      this.mainForm.value.otherInfoForm
     );
     // const removedIDs = this.otherDetails.getRemovedIDs();
     // const iEMRids = this.iEMRidsUpdate(
@@ -412,10 +415,10 @@ export class RegistrationComponent {
           stateID: demographicsForm.stateID,
         },
         districtBranchID:
-          demographicsForm.villages[0].villageID.districtBranchID,
-        districtBranchName: demographicsForm.villages[0].villageID.villageName,
+          demographicsForm.districtBranchID,
+        districtBranchName: demographicsForm.districtBranchName,
         m_districtbranchmapping: {
-          districtBranchID: demographicsForm.villageID,
+          districtBranchID: demographicsForm.districtBranchID,
           blockID: demographicsForm.blockID,
           villageName: demographicsForm.villageName,
         },
@@ -517,12 +520,10 @@ export class RegistrationComponent {
   }
 
   dateFormatChange() {
-    const dob = new Date(
-      (<FormGroup>(
-        this.mainForm.controls['personalDetailsForm']
-      )).value.dob
-    );
-    return dob.toISOString();
+    const dob = new Date(this.mainForm.controls['personalInfoForm'].value.dOB);
+    let date =  moment(dob).format('YYYY-MM-DDThh:mm:ssZ');
+
+    return date;
   }
 
 

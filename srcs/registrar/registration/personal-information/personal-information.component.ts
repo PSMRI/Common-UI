@@ -43,6 +43,7 @@ export class PersonalInformationComponent {
 
   ngOnInit(){
     this.formData.forEach((item: any) => {
+      if(item.fieldName)
       this.personalInfoFormGroup.addControl(item.fieldName, new FormControl());
     });
     this.personalInfoFormGroup.addControl('image', new FormControl());
