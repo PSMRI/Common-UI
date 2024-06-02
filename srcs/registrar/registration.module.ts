@@ -10,7 +10,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MaterialModule } from 'src/app/app-modules/core/material.module';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { RegistrationComponent } from './registration/registration.component';
-import { SharedModule } from 'src/app/app-modules/core/shared/shared/shared.module';
+import { SharedModule } from 'src/app/app-modules/core/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchDialogComponent } from './search-dialog/search-dialog.component';
 import { SearchComponent } from './search/search.component';
