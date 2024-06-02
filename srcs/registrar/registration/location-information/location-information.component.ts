@@ -14,6 +14,13 @@ export class LocationInformationComponent {
 
   @Input('formData')
   formData: any;
+
+  @Input()
+  patientRevisit = false;
+
+  @Input()
+  revisitData: any;
+
   locationDetails: any;
   demographicsMaster: any;
   villgeBranch: any;
@@ -50,19 +57,10 @@ export class LocationInformationComponent {
     this.locationDetails = JSON.parse(locationData);
     this.loadLocationFromStorage();
     this.loadLocalMasterForDemographic();
-    // this.patchLocationDetails();
+    if(this.patientRevisit)
+    this.locationInfoFormGroup.patchValue(this.revisitData);
+  console.log('location Form Data', this.formData)
   }
-
-  // patchLocationDetails(){
-  //   this.locationInfoFormGroup.get('stateID')?.patchValue(this.locationDetails.stateID);
-  //   this.locationInfoFormGroup.get('stateNmae')?.patchValue(this.locationDetails.stateID);
-  //   this.locationInfoFormGroup.get('districtID')?.patchValue(this.locationDetails.districtID);
-  //   this.locationInfoFormGroup.get('districtName')?.patchValue(this.locationDetails.districtName);
-  //   this.locationInfoFormGroup.get('blockID')?.patchValue(this.locationDetails.blockID);
-  //   this.locationInfoFormGroup.get('blockName')?.patchValue(this.locationDetails.blockName);
-  //   this.locationInfoFormGroup.get('districtBranchID')?.patchValue(this.locationDetails.subDistrictID);
-  //   this.locationInfoFormGroup.get('districtBranchName')?.patchValue(this.locationDetails.villageName);
-  // }
 
   loadLocationFromStorage() {
     const locationData: any = localStorage.getItem('location');

@@ -13,7 +13,7 @@
             </mat-card-title>
             <mat-card-content>
               <app-personal-information [personalInfoFormGroup]="personalInfoFormGroup"
-                [formData]="personalInfoData" [revisitData]="revisitData"></app-personal-information>
+                [formData]="personalInfoData" [patientRevisit]="patientRevisit" [revisitData]="revisitData"></app-personal-information>
             </mat-card-content>
           </mat-card>
           <div class="row m-t-20">
@@ -31,7 +31,7 @@
               Location Information
             </mat-card-title>
             <mat-card-content>
-              <app-location-information [locationInfoFormGroup]="locationInfoFormGroup"
+              <app-location-information [locationInfoFormGroup]="locationInfoFormGroup" [patientRevisit]="patientRevisit" [revisitData]="revisitData"
                 [formData]="locationInfoData"></app-location-information>
             </mat-card-content>
           </mat-card>
@@ -52,14 +52,16 @@
               Other Information
             </mat-card-title>
             <mat-card-content>
-              <app-other-information [otherInfoFormGroup]="otherInfoFormGroup"
+              <app-other-information [otherInfoFormGroup]="otherInfoFormGroup" [patientRevisit]="patientRevisit" [revisitData]="revisitData"
                 [formData]="otherInfoData"></app-other-information>
             </mat-card-content>
           </mat-card>
           <div class="row m-t-20">
             <div class="col-sm-12 step-btn m-b-40">
-              <button id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
+              <button *ngIf="!patientRevisit" id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
                 [disabled]="!mainForm.valid">Submit</button>
+                <button *ngIf="patientRevisit" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
+                [disabled]="!mainForm.valid">Update</button>
               <button id="backButton" class="mat_blue" mat-raised-button matStepperPrevious
                 *ngIf="enableLocationInfo">Back</button>
               <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableAbhaInfo">Next</button>

@@ -14,6 +14,12 @@ export class OtherInformationComponent {
   @Input('formData')
   formData: any;
 
+  @Input()
+  patientRevisit = false;
+
+  @Input()
+  revisitData: any;
+
   constructor(
     private fb: FormBuilder
   ){}
@@ -24,6 +30,9 @@ export class OtherInformationComponent {
       this.otherInfoFormGroup.addControl(item.fieldName, new FormControl());
     });
     console.log("otherInfoFormGroup Data", this.otherInfoFormGroup);
+    if(this.patientRevisit)
+    this.otherInfoFormGroup.patchValue(this.revisitData);
+  console.log('personal Form Data', this.formData)
   }
   
 }

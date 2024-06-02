@@ -53,8 +53,11 @@ export class PersonalInformationComponent {
     });
     this.personalInfoFormGroup.addControl('image', new FormControl());
     console.log("personalInfoFormGroup Data", this.personalInfoFormGroup);
-    if(this.patientRevisit)
-    this.personalInfoFormGroup.patchValue(this.revisitData);
+    if(this.patientRevisit){
+      this.personalInfoFormGroup.addControl('beneficiaryRegID', new FormControl());
+      this.personalInfoFormGroup.patchValue(this.revisitData);
+    }
+  console.log('personal Form Data', this.formData)
   }
 
   captureImage() {
