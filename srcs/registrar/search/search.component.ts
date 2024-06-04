@@ -29,7 +29,6 @@ import {
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SearchDialogComponent } from '../search-dialog/search-dialog.component';
-import moment from 'moment';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -37,6 +36,7 @@ import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-la
 import { ConfirmationService, CameraService, BeneficiaryDetailsService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from 'Common-UI/srcs/registrar/services/registrar.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-search',

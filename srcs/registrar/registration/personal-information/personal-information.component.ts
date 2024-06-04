@@ -3,8 +3,8 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup } from '@angular/f
 import { BeneficiaryDetailsService, CameraService, ConfirmationService } from 'src/app/app-modules/core/services';
 import { RegistrarService } from '../../services/registrar.service';
 import { Subscription } from 'rxjs';
-import moment from 'moment';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-personal-information',

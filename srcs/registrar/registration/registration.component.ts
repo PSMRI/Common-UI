@@ -3,11 +3,11 @@ import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { RegistrarService } from '../services/registrar.service';
-import moment from 'moment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-registration',

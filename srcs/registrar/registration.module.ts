@@ -10,13 +10,15 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MaterialModule } from 'src/app/app-modules/core/material.module';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { RegistrationComponent } from './registration/registration.component';
-import { SharedModule } from 'src/app/app-modules/core/shared/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchDialogComponent } from './search-dialog/search-dialog.component';
 import { SearchComponent } from './search/search.component';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
+import { RegistrarService } from './services/registrar.service';
+import { RegistrationService } from './services/registration.service';
 
 
 @NgModule({
@@ -50,6 +52,10 @@ import { MatNativeDateModule } from '@angular/material/core';
     RegistrationComponent,
     SearchComponent,
     SearchDialogComponent
+  ],
+  providers: [
+    RegistrarService,
+    RegistrationService
   ]
 })
 export class RegistrationModule { }
