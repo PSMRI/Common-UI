@@ -36,18 +36,18 @@
         <div  class="col-xs-12 col-sm-6 col-md-3 col-lg-3 box" *ngFor="let item of formData">
         <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="input" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}" 
+            <input matInput type="input" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}" (change)="checkFieldValidations(item)"
              formControlName="{{item.fieldName}}"/>
           </mat-form-field>
 
           <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}" readonly>
+            <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" (dateChange)="checkFieldValidations(item)" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}" readonly>
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
-          <mat-form-field class="input-full-width"  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
+          <!-- <mat-form-field class="input-full-width"  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
             <input matInput type="time"  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
           </mat-form-field>
@@ -55,7 +55,7 @@
           <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
             <input matInput type="datetime-local"  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
-          </mat-form-field>
+          </mat-form-field> -->
 
           <mat-form-field class="input-full-width backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.fieldTitle }}</mat-label>

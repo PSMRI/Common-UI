@@ -32,6 +32,7 @@ export class LocationInformationComponent {
   districtList: any = [];
   villageList: any;
   servicePointList: any=[];
+  locationPatchDetails: any;
 
 
   constructor(
@@ -55,11 +56,14 @@ export class LocationInformationComponent {
 
     let locationData: any = localStorage.getItem('locationData');
     this.locationDetails = JSON.parse(locationData);
+    if(this.patientRevisit){
+      this.locationInfoFormGroup.patchValue(this.revisitData);
+      this.locationPatchDetails = this.revisitData.i_bendemographics;
+      this.locationInfoFormGroup.patchValue(this.locationPatchDetails);
+      }
     this.loadLocationFromStorage();
     this.loadLocalMasterForDemographic();
-    if(this.patientRevisit)
-    this.locationInfoFormGroup.patchValue(this.revisitData);
-  console.log('location Form Data', this.formData)
+    console.log('location Form Data', this.formData);
   }
 
   loadLocationFromStorage() {
@@ -109,10 +113,17 @@ export class LocationInformationComponent {
       if(element.fieldName === "stateName")
       element.options = stateList
     });
+    if(this.patientRevisit){
+      this.locationInfoFormGroup.patchValue({
+        stateID: this.locationPatchDetails.stateID,
+        stateName: this.locationPatchDetails.stateName,
+      });
+    } else {
     this.locationInfoFormGroup.patchValue({
       stateID: this.locationDetails.stateID,
       stateName: this.locationDetails.stateName,
     });
+  }
     this.locationInfoFormGroup.get('stateName')?.disable();
     this.loadDistrict();
   }
@@ -131,10 +142,17 @@ export class LocationInformationComponent {
             element.options = districtList;
           });
               
+          if(this.patientRevisit){
+            this.locationInfoFormGroup.patchValue({
+              districtID: this.locationPatchDetails.districtID,
+              districtName: this.locationPatchDetails.districtName,
+            });
+          } else {
           this.locationInfoFormGroup.patchValue({
             districtID: this.locationDetails.districtID,
             districtName: this.locationDetails.districtName,
       });
+    }
       this.locationInfoFormGroup.get('districtName')?.disable();
       this.loadSubDistrict();
         });
@@ -162,10 +180,17 @@ export class LocationInformationComponent {
             blockName: this.locationDetails.blockName,
           },
         ];
+        if(this.patientRevisit){
+          this.locationInfoFormGroup.patchValue({
+            blockID: this.locationPatchDetails.blockID,
+            blockName: this.locationPatchDetails.blockName,
+          });
+        } else {
         this.locationInfoFormGroup.patchValue({
           blockID: this.locationDetails.blockID,
           blockName: this.locationDetails.blockName,
-            })
+            });
+          }
         this.locationInfoFormGroup.get('blockName')?.disable();
         this.loadVillage();
   });
@@ -184,10 +209,17 @@ export class LocationInformationComponent {
         if(element.fieldName === "districtBranchName")
         element.options = villageList;
       });
+      if(this.patientRevisit){
+        this.locationInfoFormGroup.patchValue({
+          districtBranchID: this.locationPatchDetails.subDistrictID,
+          districtBranchName: this.locationPatchDetails.villageName,
+        });
+      } else {
         this.locationInfoFormGroup.patchValue({
           districtBranchID: this.locationDetails.subDistrictID,
           districtBranchName: this.locationDetails.villageName,
       });
+    }
       this.loadZone();
     });
     // this.villageList = this.demographicsMaster.villageMaster;
@@ -210,10 +242,17 @@ export class LocationInformationComponent {
       item.options = zoneList
     });
     console.log(this.demographicsMaster.otherLoc, 'zoneLocs------mm-------');
+    if(this.patientRevisit){
+      this.locationInfoFormGroup.patchValue({
+        zoneID: this.locationPatchDetails.zoneID,
+        zoneName: this.locationPatchDetails.zoneName,
+      });
+    } else {
     this.locationInfoFormGroup.patchValue({
       zoneID: this.demographicsMaster.otherLoc.zoneID,
       zoneName: this.demographicsMaster.otherLoc.zoneName,
     });
+  }
     this.loadParkingPlace();
   }
   /**
@@ -232,10 +271,17 @@ export class LocationInformationComponent {
       if(item.fieldName === 'parkingPlaceName')
       item.options = parkingPlaceList
     });
+    if(this.patientRevisit){
+      this.locationInfoFormGroup.patchValue({
+        parkingPlace: this.locationPatchDetails.parkingPlaceID,
+        parkingPlaceName: this.locationPatchDetails.parkingPlaceName,
+      });
+    } else {
     this.locationInfoFormGroup.patchValue({
       parkingPlace: this.demographicsMaster.otherLoc.parkingPlaceID,
       parkingPlaceName: this.demographicsMaster.otherLoc.parkingPlaceName,
     });
+  }
     this.loadServicePoint();
   }
   /**
@@ -254,10 +300,17 @@ export class LocationInformationComponent {
       if(item.fieldName === 'servicePointName')
       item.options = servicePointList
     });
+    if(this.patientRevisit){
+      this.locationInfoFormGroup.patchValue({
+        servicePoint: this.locationPatchDetails.servicePointID,
+        servicePointName: this.locationPatchDetails.servicePointName,
+      });
+    } else {
     this.locationInfoFormGroup.patchValue({
       servicePoint: this.demographicsMaster.servicePointID,
       servicePointName: this.demographicsMaster.servicePointName,
     });
+  }
   }
 
 }
