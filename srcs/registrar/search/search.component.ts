@@ -287,6 +287,7 @@ export class SearchComponent implements OnInit, DoCheck {
           this.registrarService.saveBeneficiaryEditDataASobservable(
             beneficiary.benObject
           );
+          console.log('beneficiaryyy details', beneficiary)
           this.router.navigate([
             '/registrar/search/' + beneficiary.beneficiaryID,
           ]);

@@ -155,6 +155,7 @@ export class RegistrationComponent {
       this.revisitDataSubscription =
         this.registrarService.beneficiaryEditDetails$.subscribe(res => {
           if (res !== null && benID === res.beneficiaryID) {
+            console.log('beneficiary revisit data', res)
             this.revisitData = Object.assign({}, res);
           } else {
             this.redirectToSearch();
@@ -194,7 +195,7 @@ export class RegistrationComponent {
         if(res.data.length > 0){
         this.filterData(res.data);
         } else {
-      this.confirmationService.alert('No Project is mapped to thi serviceline for choosed block', 'info')
+      this.confirmationService.alert('No Project is mapped to the serviceline for choosed block', 'info')
         }
       }else {
         this.confirmationService.alert(res.errorMessage, 'error');
@@ -323,7 +324,7 @@ export class RegistrationComponent {
       genderName: personalForm.controls['genderName']?.value,
       literacyStatus: personalForm.controls['literacyStatus']?.value,
       email: othersForm.controls['emailID']?.value,
-      providerServiceMapId: localStorage.getItem('providerServiceID'),
+      // providerServiceMapId: localStorage.getItem('providerServiceID'),
       providerServiceMapID: localStorage.getItem('providerServiceID'),
 
       i_bendemographics: {
@@ -369,6 +370,9 @@ export class RegistrationComponent {
           benRelationshipID: personalForm.controls['parentRelation']?.value,
         },
       ],
+      ...this.mainForm.controls['personalInfoForm'].value,
+      ...this.mainForm.controls['locationInfoForm'].value,
+      ...this.mainForm.controls['otherInfoForm'].value
       // beneficiaryIdentities: iEMRids,
     };
     return finalForm;
@@ -435,36 +439,33 @@ export class RegistrationComponent {
       {},
       this.mainForm.get('otherInfoForm') as FormGroup
     );
+    const serviceLineDetails: any = localStorage.getItem('serviceLineDetails');
+    const servicePointDetails = JSON.parse(serviceLineDetails);
     const finalForm = {
       beneficiaryRegID: personalForm.controls['beneficiaryRegID']?.value,
       i_bendemographics: {
         beneficiaryRegID: personalForm.controls['beneficiaryRegID']?.value,
-        educationID: personalForm.controls['educationQualification']?.value || undefined,
-        educationName: personalForm.controls['educationQualificationName']?.value || undefined,
+        // educationID: personalForm.controls['educationQualification']?.value || undefined,
+        // educationName: personalForm.controls['educationQualificationName']?.value || undefined,
         i_beneficiaryeducation: {
           educationID: personalForm.controls['educationQualification']?.value || undefined,
           educationType: personalForm.controls['educationQualificationName']?.value || undefined,
         },
-        occupationID: personalForm.controls['occupation']?.value || undefined,
-        occupationName: personalForm.controls['occupationOther']?.value || undefined,
-        communityID: othersForm.controls['community']?.value || undefined,
-        communityName: othersForm.controls['communityName']?.value || undefined,
+        // occupationID: personalForm.controls['occupation']?.value || undefined,
+        // occupationName: personalForm.controls['occupationOther']?.value || undefined,
+        // communityID: othersForm.controls['community']?.value || undefined,
+        // communityName: othersForm.controls['communityName']?.value || undefined,
         m_community: {
           communityID: othersForm.controls['community']?.value || undefined,
           communityType: othersForm.controls['communityName']?.value || undefined,
         },
-        religionID: othersForm.controls['religion']?.value || undefined,
-        religionName: othersForm.controls['religionOther']?.value || undefined,
-        addressLine1: demographicsForm.controls['addressLine1']?.value || undefined,
-        addressLine2: demographicsForm.controls['addressLine2']?.value || undefined,
-        addressLine3: demographicsForm.controls['addressLine3']?.value || undefined,
         stateID: demographicsForm.controls['stateID']?.value,
         stateName: demographicsForm.controls['stateName']?.value,
         m_state: {
           stateID: demographicsForm.controls['stateID']?.value,
           stateName: demographicsForm.controls['stateName']?.value,
-          stateCode: demographicsForm.controls['stateCode']?.value,
-          countryID: demographicsForm.controls['countryID']?.value,
+          // stateCode: demographicsForm.controls['stateCode']?.value,
+          // countryID: demographicsForm.controls['countryID']?.value,
         },
         districtID: demographicsForm.controls['districtID']?.value,
         districtName: demographicsForm.controls['districtName']?.value,
@@ -489,7 +490,6 @@ export class RegistrationComponent {
           blockID: demographicsForm.controls['blockID']?.value,
           villageName: demographicsForm.controls['villageName']?.value,
         },
-        pinCode: demographicsForm.controls['pincode']?.value || undefined,
         createdBy: localStorage.getItem('userName'),
         zoneID: demographicsForm.controls['zoneID']?.value,
         zoneName: demographicsForm.controls['zoneName']?.value,
@@ -497,11 +497,17 @@ export class RegistrationComponent {
         parkingPlaceName: demographicsForm.controls['parkingPlaceName']?.value,
         servicePointID: localStorage.getItem('servicePointID'),
         servicePointName: localStorage.getItem('servicePointName'),
+        monthlyFamilyIncome: personalForm.controls['monthlyFamilyIncome']?.value || undefined,
+
+        addressLine1: demographicsForm.controls['addressLine1']?.value || undefined,
+        addressLine2: demographicsForm.controls['addressLine2']?.value || undefined,
+        addressLine3: demographicsForm.controls['addressLine3']?.value || undefined,
+
+        pinCode: demographicsForm.controls['pincode']?.value || undefined,
         habitation: demographicsForm.controls['habitation']?.value || undefined,
         incomeStatusID: personalForm.controls['income']?.value || undefined,
         incomeStatus: personalForm.controls['incomeName']?.value || undefined,
         incomeStatusName: personalForm.controls['incomeName']?.value || undefined,
-        monthlyFamilyIncome: personalForm.controls['monthlyFamilyIncome']?.value || undefined,
       },
       benPhoneMaps: [
         {
@@ -517,13 +523,16 @@ export class RegistrationComponent {
             ),
           },
           phoneNo: personalForm.controls['phoneNo']?.value,
+          vanID: servicePointDetails.vanID,
+          parkingPlaceID: servicePointDetails.parkingPlaceID,
+          modifiedBy: localStorage.getItem('userName'), 
         },
       ],
       beneficiaryID: personalForm.controls['beneficiaryID']?.value,
       m_title: {},
       firstName: personalForm.controls['firstName']?.value,
       lastName: personalForm.controls['lastName']?.value || undefined,
-      genderID: personalForm.controls['gender']?.value,
+      // genderID: personalForm.controls['gender']?.value,
       m_gender: {
         genderID: personalForm.controls['gender']?.value,
         genderName: personalForm.controls['genderName']?.value,
@@ -562,8 +571,12 @@ export class RegistrationComponent {
       incomeStatus: personalForm.controls['incomeName']?.value || undefined,
       religionId: othersForm.controls['religion']?.value || undefined,
       religion: othersForm.controls['religionOther']?.value || undefined,
-      providerServiceMapId: localStorage.getItem('providerServiceID'),
+      // providerServiceMapId: localStorage.getItem('providerServiceID'),
       providerServiceMapID: localStorage.getItem('providerServiceID'),
+      ...this.mainForm.controls['personalInfoForm'].value,
+      ...this.mainForm.controls['locationInfoForm'].value,
+      ...this.mainForm.controls['otherInfoForm'].value
+
     };
 
     return finalForm;

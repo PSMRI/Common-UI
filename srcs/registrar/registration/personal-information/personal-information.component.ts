@@ -31,9 +31,8 @@ export class PersonalInformationComponent {
   _parentBenRegID: any;
   dateForCalendar: any;
   currentLanguageSet: any;
-  ageforMarriage: any;
-  today: any;
-  ageLimit: any;
+  ageLimit = 120;
+  ageforMarriage = 12;
   maritalStatusMaster: any;
 
   constructor(
@@ -56,8 +55,22 @@ export class PersonalInformationComponent {
     if(this.patientRevisit){
       this.personalInfoFormGroup.addControl('beneficiaryRegID', new FormControl());
       this.personalInfoFormGroup.patchValue(this.revisitData);
+      this.personalInfoFormGroup.get('phoneNo')?.patchValue(this.revisitData.benPhoneMaps[0].phoneNo);
     }
-  console.log('personal Form Data', this.formData)
+  console.log('personal Form Data', this.formData);
+  console.log('this.revist data - personal info', this.revisitData);
+  }
+
+    /**
+   * set Date Limits for Calendar and Age
+   *
+   */
+    today!: Date;
+    minDate!: Date;
+  setDateLimits() {
+    this.today = new Date();
+    this.minDate = new Date();
+    this.minDate.setFullYear(this.today.getFullYear() - (this.ageLimit + 1));
   }
 
   captureImage() {
@@ -273,11 +286,11 @@ export class PersonalInformationComponent {
      */
     enableMaritalStatus = false;
     onAgeEntered() {
-      const valueEntered = this.personalInfoFormGroup.value.age;
+      const valueEntered = parseInt(this.personalInfoFormGroup.value.age);
       if (valueEntered) {
         if (
           valueEntered > this.ageLimit &&
-          this.personalInfoFormGroup.value.ageUnit === 'Years'
+          this.personalInfoFormGroup.value.ageUnits.toLowerCase() === 'years'
         ) {
           this.confirmationService.alert(
             this.currentLanguageSet.alerts.info.ageRestriction,
@@ -287,18 +300,16 @@ export class PersonalInformationComponent {
         } else {
           console.log(
             moment()
-              .subtract(this.personalInfoFormGroup.value.ageUnit, valueEntered)
+              .subtract(valueEntered, this.personalInfoFormGroup.value.ageUnits)
               .toDate()
           );
           this.personalInfoFormGroup.patchValue({
-            dob: moment()
-              .subtract(this.personalInfoFormGroup.value.ageUnit, valueEntered)
+            dOB: moment()
+              .subtract(valueEntered, this.personalInfoFormGroup.value.ageUnits)
               .toDate(),
           });
         }
       }
-      this.confirmMarriageEligible();
-      this.checkAgeAtMarriage();
     }
   
     onAgeUnitEntered() {
@@ -311,7 +322,9 @@ export class PersonalInformationComponent {
      *
      * Change Age as per changed in Calendar
      */
-    dobChangeByCalender(dobval: any) {
+    dobChangeByCalender() {
+      let dobval = this.personalInfoFormGroup.get('dOB')?.value;
+      this.dateForCalendar == moment(dobval);
       const date = new Date(this.dateForCalendar);
       console.log(' personalInfoFormGroup', this.personalInfoFormGroup.value);
       // console.log(this.dateForCalendar,'fromcalendar');
@@ -319,7 +332,7 @@ export class PersonalInformationComponent {
       if (
         this.dateForCalendar &&
         (!dobval || dobval.length === 10) &&
-        this.personalInfoFormGroup.controls['dob'].valid
+        this.personalInfoFormGroup.controls['dOB'].valid
       ) {
         const dateDiff = Date.now() - date.getTime();
         const age = new Date(dateDiff);
@@ -328,23 +341,22 @@ export class PersonalInformationComponent {
         const dob = Math.abs(age.getDate() - 1);
         if (yob > 0) {
           this.personalInfoFormGroup.patchValue({ age: yob });
-          this.personalInfoFormGroup.patchValue({ ageUnit: 'Years' });
+          this.personalInfoFormGroup.patchValue({ ageUnits: 'years' });
         } else if (mob > 0) {
           this.personalInfoFormGroup.patchValue({ age: mob });
-          this.personalInfoFormGroup.patchValue({ ageUnit: 'Months' });
+          this.personalInfoFormGroup.patchValue({ ageUnits: 'Months' });
         } else if (dob > 0) {
           this.personalInfoFormGroup.patchValue({ age: dob });
-          this.personalInfoFormGroup.patchValue({ ageUnit: 'Days' });
+          this.personalInfoFormGroup.patchValue({ ageUnits: 'Days' });
         }
         if (date.setHours(0, 0, 0, 0) === this.today.setHours(0, 0, 0, 0)) {
           this.personalInfoFormGroup.patchValue({ age: 1 });
-          this.personalInfoFormGroup.patchValue({ ageUnit: 'Days' });
+          this.personalInfoFormGroup.patchValue({ ageUnits: 'Days' });
         }
   
         this.checkAgeAtMarriage();
-        this.confirmMarriageEligible();
       } else if (dobval === 'Invalid date') {
-        this.personalInfoFormGroup.patchValue({ dob: null });
+        this.personalInfoFormGroup.patchValue({ dOB: null });
         this.dateForCalendar = null;
         this.confirmationService.alert(
           this.currentLanguageSet.alerts.info.invalidData,
@@ -354,39 +366,16 @@ export class PersonalInformationComponent {
         this.personalInfoFormGroup.patchValue({ age: null });
       }
     }
-    /**
-     * Check Marriage Eligibility to enable Field
-     *
-     */
-    confirmMarriageEligible() {
-      if (
-        this.personalInfoFormGroup.value.age >= this.ageforMarriage &&
-        this.personalInfoFormGroup.value.ageUnit === 'Years'
-      ) {
-        this.enableMaritalStatus = true;
-      } else {
-        this.enableMaritalStatus = false;
-        this.clearMaritalStatus();
-      }
+
+    checkFieldValidations(field: any){
+      if(field.fieldName === 'age')
+      this.onAgeEntered();
+     else if(field.fieldName === 'ageUnits')
+     this.onAgeUnitEntered();
+    else if(field.fieldName.toLowerCase() === 'dob')
+    this.dobChangeByCalender();
     }
-  
-    /**
-     *
-     * Clear Marital Status if previously entered
-     */
-    clearMaritalStatus() {
-      if (this.personalInfoFormGroup.value.maritalStatus !== null) {
-        this.personalInfoFormGroup.patchValue({
-          maritalStatus: null,
-          maritalStatusName: null,
-        });
-        //  this.personalInfoFormGroup.controls['maritalStatus'].setErrors(null);
-        //  this.personalInfoFormGroup.controls['maritalStatus'].updateValueAndValidity();
-  
-        this.enableMarriageDetails = false;
-        this.clearMarriageDetails();
-      }
-    }
+
   
     /**
      * Income Status Select and get Name
@@ -463,7 +452,7 @@ export class PersonalInformationComponent {
             'info'
           );
           this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
-        } else if (this.personalInfoFormGroup.value.ageUnit !== 'Years') {
+        } else if (this.personalInfoFormGroup.value.ageUnits.toLowerCase() !== 'years') {
           this.confirmationService.alert(
             this.currentLanguageSet.alerts.info.marriageAge +
               ' ' +
@@ -633,7 +622,7 @@ export class PersonalInformationComponent {
         });
       }
     });
-    this.dobChangeByCalender(undefined);
+    this.dobChangeByCalender();
 
     if (
       element.maritalStatus.maritalStatusID === 1 ||

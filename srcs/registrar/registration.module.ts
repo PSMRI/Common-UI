@@ -17,6 +17,8 @@ import { SearchComponent } from './search/search.component';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { RegistrarService } from './services/registrar.service';
+import { RegistrationService } from './services/registration.service';
 
 
 @NgModule({
@@ -50,6 +52,10 @@ import { MatNativeDateModule } from '@angular/material/core';
     RegistrationComponent,
     SearchComponent,
     SearchDialogComponent
+  ],
+  providers: [
+    RegistrarService,
+    RegistrationService
   ]
 })
 export class RegistrationModule { }
