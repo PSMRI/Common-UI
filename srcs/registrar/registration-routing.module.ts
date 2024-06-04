@@ -4,6 +4,7 @@ import { CanDeactivateGuardService } from 'src/app/app-modules/core/services/can
 import { RegistrationComponent } from './registration/registration.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { SearchComponent } from './search/search.component';
+import { FamilyTaggingDetailsComponent } from './family-tagging/family-tagging-details/family-tagging-details.component';
 
 const routes: Routes = [
   {
@@ -27,6 +28,14 @@ const routes: Routes = [
   {
     path: 'search/:beneficiaryID',
     component: RegistrationComponent,
+  },
+  {
+    path: 'familyTagging',
+    component: FamilyTaggingDetailsComponent,
+  },
+  {
+    path: 'familyTagging/:benDetails',
+    component: FamilyTaggingDetailsComponent,
   },
 ]
 }

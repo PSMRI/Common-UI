@@ -27,6 +27,9 @@ import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class RegistrarService {
+
+  stateIdFamily: any = null;
+
   registrationMasterDetails = new BehaviorSubject<any>(null);
   registrationMasterDetails$ = this.registrationMasterDetails.asObservable();
 
@@ -35,6 +38,36 @@ export class RegistrarService {
 
   beneficiaryEditDetails = new BehaviorSubject<any>(null);
   beneficiaryEditDetails$ = this.beneficiaryEditDetails.asObservable();
+
+  healthId: any = null;
+  healthIdOtp = new BehaviorSubject(this.healthId);
+  generateHealthIdOtp$ = this.healthIdOtp.asObservable();
+
+  healthIdMobVerificationValue: any = null;
+  healthIdMobVerification = new BehaviorSubject(
+    this.healthIdMobVerificationValue,
+  );
+  healthIdMobVerificationCheck$ = this.healthIdMobVerification.asObservable();
+
+  benFamilyDet: any = null;
+  benfamilyData = new BehaviorSubject<any>(this.benFamilyDet);
+  benFamilyDetails$ = this.benfamilyData.asObservable();
+
+  enablingDispense = false;
+
+  abhaGenerateData: any;
+  aadharNumberNew: any;
+
+  abhaDetail: any = null;
+  abhaDetailData = new BehaviorSubject<any>(this.abhaDetail);
+  abhaDetailDetails$ = this.abhaDetailData.asObservable();
+
+  enableDispenseDetail = new BehaviorSubject<boolean>(this.enablingDispense);
+  enablingDispense$ = this.enableDispenseDetail.asObservable();
+
+  public dialogData = new BehaviorSubject<any>(null);
+  dialogResult$ = this.dialogData.asObservable();
+
 
   constructor(private http: HttpClient) {}
 
@@ -150,4 +183,128 @@ export class RegistrarService {
   getDistrictTalukList(villageID: any) {
     return this.http.get(`${environment.getDistrictTalukUrl}${villageID}`);
   }
+
+  generateOTP(mobileNo: any, mode: any) {
+    if (mode === 'MOBILE') {
+      return this.http.post(environment.otpGenerationUrl, mobileNo);
+    } else if (mode === 'AADHAR') {
+      return this.http.post(environment.otpGenerationWithUIDUrl, mobileNo);
+    } else {
+      // Default return statement if mode is neither "MOBILE" nor "AADHAR"
+      throw new Error('Invalid mode');
+    }
+  }
+
+  generateHealthId(reqObj: any) {
+    return this.http.post(environment.healthIdGenerationUrl, reqObj);
+  }
+
+  generateHealthIdWithUID(reqObj: any) {
+    return this.http.post(environment.healthIdGenerationWithUIDUrl, reqObj);
+  }
+  verifyOTPForAadharHealthId(reqObj: any) {
+    return this.http.post(environment.verifyOTPUrl, reqObj);
+  }
+
+  checkAndGenerateMobileOTPHealthId(reqObj: any) {
+    return this.http.post(environment.checkAndGenerateMobileOTPUrl, reqObj);
+  }
+
+  verifyMobileOTPForAadhar(reqObj: any) {
+    return this.http.post(environment.verifyMobileOTPUrl, reqObj);
+  }
+
+  mapHealthId(reqObj: any) {
+    return this.http.post(environment.mapHealthIdUrl, reqObj);
+  }
+
+  getHealthIdDetails(reqObj: any) {
+    return this.http.post(environment.gethealthIdDetailsUrl, reqObj);
+  }
+  generateOtpForMappingCareContext(reqObjForMapping: any) {
+    return this.http.post(
+      environment.careContextGenerateOtpUrl,
+      reqObjForMapping,
+    );
+  }
+  verifyOtpForMappingCarecontext(reqObjForVerifyOtp: any) {
+    return this.http.post(
+      environment.verifyOtpForMappingContextUrl,
+      reqObjForVerifyOtp,
+    );
+  }
+  generateOTPValidateHealthID(healthID: any) {
+    return this.http.post(
+      environment.generateOTPForHealthIDValidation,
+      healthID,
+    );
+  }
+  verifyOTPForHealthIDValidation(reqObjForValidateOTP: any) {
+    return this.http.post(
+      environment.verifyOTPForHealthIDValidation,
+      reqObjForValidateOTP,
+    );
+  }
+
+  generateHealthIDCard(healthID: any) {
+    return this.http.post(environment.generateOTPForHealthIDCard, healthID);
+  }
+  verifyOTPForHealthIDCard(reqObjForValidateOTP: any) {
+    return this.http.post(
+      environment.verifyOTPAndGenerateHealthCard,
+      reqObjForValidateOTP,
+    );
+  }
+
+  passIDsToFetchOtp(id: any) {
+    this.healthId = id;
+    this.healthIdOtp.next(id);
+  }
+
+  setHealthIdMobVerification(obj: any) {
+    this.healthIdMobVerificationValue = obj;
+    this.healthIdMobVerification.next(this.healthIdMobVerificationValue);
+  }
+
+  clearHealthIdMobVerification() {
+    this.healthIdMobVerificationValue = null;
+    this.healthIdMobVerification.next(this.healthIdMobVerificationValue);
+  }
+
+  updateBenDetailsInMongo(amritID: any) {
+    return this.http.post(environment.updateAmritIDInMongo, amritID);
+  }
+
+  changePersonalDetailsData(res: any) {
+    this.dialogData.next(res);
+  }
+
+  enableDispenseOnFertility(enablingDispense: any) {
+    this.enableDispenseDetail.next(enablingDispense);
+  }
+
+  getBenFamilyDetails(benFamilyDetails: any) {
+    this.benFamilyDet = benFamilyDetails;
+    this.benfamilyData.next(benFamilyDetails);
+  }
+
+  getabhaDetail(abhaDetailDetails: any) {
+    this.abhaDetail = abhaDetailDetails;
+    this.abhaDetailData.next(this.abhaDetail);
+  }
+
+  districtMainList = new BehaviorSubject<any[]>([]);
+  districtList$ = this.districtMainList.asObservable();
+
+  updateDistrictList(districtList: any[]) {
+    this.districtMainList.next(districtList);
+  }
+
+  subDistrictMainList = new BehaviorSubject<any[]>([]);
+  subDistrictList$ = this.subDistrictMainList.asObservable();
+  updateSubDistrictList(subDistrictList: any) {
+    this.subDistrictMainList.next(subDistrictList);
+  }
+
+
 }

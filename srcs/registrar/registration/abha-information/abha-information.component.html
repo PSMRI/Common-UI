@@ -1,1 +1,32 @@
-<p>abha-information works!</p>
+<button
+mat-raised-button
+style="margin: 5px"
+*ngIf="patientRevisit"
+class="full-width-login background-overall box pull-right m-r-5"
+id="viewHealthID"
+type="accent"
+(click)="viewHealthIdData()"
+>
+ABHA Details
+</button>
+
+<button
+id="moveToPrintHealthIDCard"
+style="margin: 5px"
+mat-raised-button
+color="primary"
+class="full-width-login background-overall box pull-right m-r-5"
+(click)="printHealthIDCard()"
+>
+Download Abha Card 
+</button>
+<button
+id="moveToPrintHealthIDCard"
+style="margin: 5px"
+mat-raised-button
+color="primary"
+class="full-width-login background-overall box pull-right m-r-5"
+(click)="generateAbhaCard()"
+>
+Generate Abha Card
+</button>

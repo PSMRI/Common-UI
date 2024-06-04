@@ -3,11 +3,11 @@ import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { RegistrarService } from '../services/registrar.service';
-import moment from 'moment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-registration',
@@ -31,6 +31,7 @@ export class RegistrationComponent {
   revisitDataSubscription!: Subscription;
   currentLanguageSet: any;
   revisitData: any;
+  abhaInfoData: any;
 
 
 
@@ -42,21 +43,17 @@ export class RegistrationComponent {
     private route: ActivatedRoute,
     private languageComponent: SetLanguageComponent,
     private httpServiceService: HttpServiceService,
-    private router: Router,
-
-  ){}
-
-  preventSubmitOnEnter(event: Event) {
-    event.preventDefault();
-  }
-  ngOnInit(){
-    this.fetchLanguageResponse();
+    private router: Router ){
     this.mainForm = this.fb.group({
       personalInfoForm: this.fb.group({}),
       locationInfoForm: this.fb.group({}),
       otherInfoForm: this.fb.group({}),
       abhaInfoForm: this.fb.group({}),
     });
+  }
+
+  ngOnInit(){
+    this.fetchLanguageResponse();
     this.getRegistrationData();
     this.checkPatientRevisit();
     }
@@ -112,15 +109,16 @@ export class RegistrationComponent {
       }
  
       if (item.allowMin !== undefined) {
-        validators.push(this.minValidator(item.allowMin));
+        validators.push(this.minValidator(parseInt(item.allowMin)));
       }
       if (item.allowMax !== undefined) {
-        validators.push(this.maxValidator(item.allowMax));
+        validators.push(this.maxValidator(parseInt(item.allowMax)));
       }
  
-      const control = this.fb.control('', validators);
-      if(item.fieldName)
+      const control = this.fb.control(null, validators);
+      if(item.fieldName){
       formGroup.addControl(item.fieldName, control);
+      }
     });
   }
 
@@ -133,6 +131,10 @@ export class RegistrationComponent {
   }
 
   get otherInfoFormGroup(): FormGroup{
+    return this.mainForm.get('otherInfoForm') as FormGroup;
+  }
+
+  get abhaInfoFormGroup(): FormGroup{
     return this.mainForm.get('otherInfoForm') as FormGroup;
   }
 
@@ -241,13 +243,15 @@ export class RegistrationComponent {
       this.otherInfoData = item.fields;
       }
       if(item.sectionName.toLowerCase() === "abha information"){
-      this.enableAbhaInfo = true;
+        this.abhaInfoData = item.fields;
+        this.enableAbhaInfo = true;
       }
     });
     this.addControlsToFormGroup('personalInfo', this.personalInfoData);
     this.addControlsToFormGroup('locationInfo', this.locationInfoData);
     this.addControlsToFormGroup('otherInfo', this.otherInfoData);
-    // this.addControlsToFormGroup('abhaInfo', this.abhaInfoData)
+    this.addControlsToFormGroup('abhaInfo', this.abhaInfoData)
+    console.log('final form controls', this.mainForm)
     }
 
   onFormSubmit() {
@@ -608,6 +612,53 @@ export class RegistrationComponent {
       this.revisitDataSubscription.unsubscribe();
       this.registrarService.clearBeneficiaryEditDetails();
     }
+  }
+
+  NavigateToFamilyTagging() {
+    let benFullName =
+      this.revisitData.firstName !== undefined &&
+      this.revisitData.firstName !== null
+        ? this.revisitData.firstName
+        : null;
+    if (
+      this.revisitData.lastName !== undefined &&
+      this.revisitData.lastName !== null &&
+      this.revisitData.lastName !== ''
+    ) {
+      benFullName = benFullName + ' ' + this.revisitData.lastName;
+    }
+
+    const reqObj = {
+      beneficiaryRegID: this.revisitData.beneficiaryRegID,
+      familyName:
+        this.revisitData.familyName !== null &&
+        this.revisitData.familyName !== undefined
+          ? this.revisitData.familyName
+          : this.revisitData.lastName,
+      familyId:
+        this.revisitData.familyId !== null &&
+        this.revisitData.familyId !== undefined
+          ? this.revisitData.familyId
+          : null,
+      beneficiaryName: benFullName,
+      benDistrictId:
+        this.revisitData.i_bendemographics.districtID !== null &&
+        this.revisitData.i_bendemographics.districtID !== undefined
+          ? this.revisitData.i_bendemographics.districtID
+          : null,
+      benBlockId:
+        this.revisitData.i_bendemographics.blockID !== null &&
+        this.revisitData.i_bendemographics.blockID !== undefined
+          ? this.revisitData.i_bendemographics.blockID
+          : null,
+      benVillageId:
+        this.revisitData.i_bendemographics.districtBranchID !== null &&
+        this.revisitData.i_bendemographics.districtBranchID !== undefined
+          ? this.revisitData.i_bendemographics.districtBranchID
+          : null,
+      beneficiaryId: this.revisitData.beneficiaryID,
+    };
+    this.router.navigate(['/registrar/familyTagging', reqObj]);
   }
 
 }

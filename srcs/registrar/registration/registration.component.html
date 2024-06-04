@@ -1,7 +1,17 @@
 <div>
 <mat-sidenav-container class="example-sidenav-fab-container">
+  <button
+mat-raised-button
+style="margin: 5px"
+*ngIf="patientRevisit"
+class="full-width-login background-overall box pull-right m-r-5"
+id="familyTagging"
+type="accent"
+(click)="NavigateToFamilyTagging()"
+>Family Tagging 
+</button>
   <div class="example-scrolling-content content">
-    <form [formGroup]="mainForm" autocomplete="off" tabindex="{0}" (keyup.enter)="preventSubmitOnEnter($event)">
+    <form [formGroup]="mainForm" autocomplete="off" tabindex="{0}">
       <mat-horizontal-stepper linear="false" #stepper>
         <mat-step *ngIf="enablePersonalInfo">
           <ng-template matStepLabel>
@@ -58,13 +68,13 @@
           </mat-card>
           <div class="row m-t-20">
             <div class="col-sm-12 step-btn m-b-40">
-              <button *ngIf="!patientRevisit" id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
+              <button *ngIf="!patientRevisit && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
                 [disabled]="!mainForm.valid">Submit</button>
-                <button *ngIf="patientRevisit" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
+                <button *ngIf="patientRevisit && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
                 [disabled]="!mainForm.valid">Update</button>
+                <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableAbhaInfo">Next</button>
               <button id="backButton" class="mat_blue" mat-raised-button matStepperPrevious
                 *ngIf="enableLocationInfo">Back</button>
-              <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableAbhaInfo">Next</button>
       
             </div>
           </div>
@@ -78,11 +88,15 @@
               Abha Information
             </mat-card-title>
             <mat-card-content>
-              <app-abha-information></app-abha-information>
+              <app-abha-information [abhaInfoFormGroup]="abhaInfoFormGroup" [patientRevisit]="patientRevisit" [revisitData]="revisitData"></app-abha-information>
             </mat-card-content>
           </mat-card>
           <div class="row m-t-20">
             <div class="col-sm-12 step-btn m-b-40">
+              <button *ngIf="!patientRevisit && enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
+              [disabled]="!mainForm.valid">Submit</button>
+              <button *ngIf="patientRevisit && enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
+              [disabled]="!mainForm.valid">Update</button>
               <button class="mat_blue back" mat-raised-button matStepperPrevious *ngIf="enablePersonalInfo">Back</button>
             </div>
           </div>

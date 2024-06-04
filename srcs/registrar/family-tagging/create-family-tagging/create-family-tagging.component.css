@@ -1,0 +1,51 @@
+.padding15 {
+    padding: 15px;
+}
+
+#searchDialog {
+    z-index: 998 !important;
+}
+
+.info {
+    background: #336CFB !important;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+}
+
+.title {
+    margin-left: -15px;
+    margin-right: -15px;
+    padding: 15px;
+    color: white;
+}
+
+.title h4 {
+    display: inline-block;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+}
+
+.close-btn {
+    color: white !important;
+}
+
+.box{
+    height: 60px;
+}
+
+.text-field {
+    color: #52575C !important;
+}
+
+.full-width-login {
+    width: 50%;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    height: 30px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    max-width: 140px;
+    padding: 5px 20px 5px 20px;
+}

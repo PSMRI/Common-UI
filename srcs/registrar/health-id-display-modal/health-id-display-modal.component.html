@@ -1,0 +1,365 @@
+<div>
+  <div class="title info">
+    <h4
+      *ngIf="
+        (!healthIDMapping && !enablehealthIdOTPForm && !searchPopup) ||
+        (searchDetails !== undefined &&
+          searchDetails !== null &&
+          searchDetails.data.length > 0)
+      "
+    >
+      {{ currentLanguageSet?.abhaDetails }}
+    </h4>
+    <h4 *ngIf="(healthIDMapping || enablehealthIdOTPForm) && !searchPopup">
+      {{ currentLanguageSet?.aBHACareContextMapping }}
+    </h4>
+    <button
+      class="pull-right close-btn"
+      matTooltip="{{ currentLanguageSet?.common?.close }}"
+      matDialogClose
+      (click)="closeDialog()"
+      mat-icon-button
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="overlay" *ngIf="showProgressBar">
+    <div class="overlay-content">
+      <mat-spinner></mat-spinner>
+    </div>
+  </div>
+  <!--List the health ID details-->
+  <section class="message">
+    <section
+      class="table-responsive vw100"
+      class="table table-striped"
+      *ngIf="
+        searchDetails !== undefined &&
+        searchDetails !== null &&
+        searchDetails.data.length > 0
+      "
+    >
+      <table
+        mat-table
+        class="table table-striped"
+        [dataSource]="searchDetails"
+        class="mat-elevation-z8"
+      >
+        <!-- sno Column -->
+        <ng-container matColumnDef="sno">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.coreComponents?.sno }}
+          </th>
+          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+
+        <!-- abhaNumber Column -->
+        <ng-container matColumnDef="abhaNumber">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.abhaNumber }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.healthIdNumber ? element?.healthIdNumber : "" }}
+          </td>
+        </ng-container>
+
+        <!-- abha Column -->
+        <ng-container matColumnDef="abha">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.abha }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.HealthID ? element?.HealthID : "" }}
+          </td>
+        </ng-container>
+
+        <!-- dateOfCreation Column -->
+        <ng-container matColumnDef="dateOfCreation">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.dateOfCreation }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.CreatedDate | date: "yyyy-MM-dd hh:mm:ss a" }}
+          </td>
+        </ng-container>
+
+        <!-- abhaMode Column -->
+        <ng-container matColumnDef="abhaMode">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.abhaMode }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.AuthenticationMode }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      <div
+        class="pull-center"
+        style="margin-top: 5px; text-align: center"
+        *ngIf="searchDetails === null || searchDetails?.data?.length === 0"
+      >
+        <strong>{{ currentLanguageSet?.casesheet?.noRecordFound }}</strong>
+      </div>
+    </section>
+    <section
+      class="table-responsive vw100"
+      *ngIf="!healthIDMapping && !enablehealthIdOTPForm && !searchPopup"
+    >
+      <table
+        mat-table
+        class="table table-striped"
+        [dataSource]="healthIDArray"
+        class="mat-elevation-z8"
+      >
+        <!-- sno Column -->
+        <ng-container matColumnDef="sno">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.coreComponents?.sno }}
+          </th>
+          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+
+        <!-- abhaNumber Column -->
+        <ng-container matColumnDef="abhaNumber">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.abhaNumber }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.healthIdNumber ? element?.healthIdNumber : "" }}
+          </td>
+        </ng-container>
+
+        <!-- abha Column -->
+        <ng-container matColumnDef="abha">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.abha }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.HealthID ? element?.HealthID : "" }}
+          </td>
+        </ng-container>
+
+        <!-- dateOfCreation Column -->
+        <ng-container matColumnDef="dateOfCreation">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.dateOfCreation }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.CreatedDate | date: "yyyy-MM-dd hh:mm:ss a" }}
+          </td>
+        </ng-container>
+
+        <!-- abhaMode Column -->
+        <ng-container matColumnDef="abhaMode">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.abhaMode }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.AuthenticationMode }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th
+            mat-header-cell
+            style="border-bottom: none"
+            *matHeaderCellDef
+            mat-sort-header
+          >
+            {{ currentLanguageSet?.bendetails?.action }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <button
+              mat-icon-button
+              matTooltip="{{ currentLanguageSet?.printABHACard }}"
+              (click)="printHealthIDCard(element)"
+              class="pull-right width-20px"
+            >
+              <mat-icon>print</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns1"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns1"></tr>
+      </table>
+      <div
+        class="pull-center"
+        style="margin-top: 5px; text-align: center"
+        *ngIf="healthIDArray?.data?.length === 0"
+      >
+        <strong>{{ currentLanguageSet?.casesheet?.noRecordFound }}</strong>
+      </div>
+    </section>
+    <!--Map health ID to care context-->
+    <section
+      class="table-responsive vw100"
+      *ngIf="healthIDMapping && !enablehealthIdOTPForm && !searchPopup"
+    >
+      <table
+        mat-table
+        class="table table-striped"
+        [dataSource]="healthIDArray"
+        class="mat-elevation-z8"
+      >
+        <ng-container matColumnDef="sno">
+          <th
+            mat-header-cell
+            style="border-bottom: none"
+            *matHeaderCellDef
+            mat-sort-header
+          >
+            {{ currentLanguageSet?.coreComponents?.sno }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.sno }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="healthIDNo">
+          <th
+            mat-header-cell
+            style="border-bottom: none"
+            *matHeaderCellDef
+            mat-sort-header
+          >
+            {{ currentLanguageSet?.aBHANumber }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.healthIdNumber ? element?.healthIdNumber : null }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="healthID">
+          <th
+            mat-header-cell
+            style="border-bottom: none"
+            *matHeaderCellDef
+            mat-sort-header
+          >
+            {{ currentLanguageSet?.aBHA }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.healthId ? element?.healthId : null }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="createdDate">
+          <th
+            mat-header-cell
+            style="border-bottom: none"
+            *matHeaderCellDef
+            mat-sort-header
+          >
+            {{ currentLanguageSet?.dateOfCreation }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.createdDate }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="healthIDMode">
+          <th
+            mat-header-cell
+            style="border-bottom: none"
+            *matHeaderCellDef
+            mat-sort-header
+          >
+            {{ currentLanguageSet?.aBHAMode }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element?.authenticationMode }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="rblMode">
+          <th
+            mat-header-cell
+            style="border-bottom: none"
+            *matHeaderCellDef
+            mat-sort-header
+          ></th>
+          <td mat-cell *matCellDef="let element">
+            <button
+              mat-icon-button
+              matTooltip="{{ currentLanguageSet?.printABHACard }}"
+              (click)="printHealthIDCard(element)"
+              class="pull-right width-20px"
+            >
+              <mat-icon>print</mat-icon>
+            </button>
+          </td>
+          <td mat-cell *matCellDef="let element">
+            <mat-radio-group [(ngModel)]="chooseHealthID">
+              <mat-radio-button
+                color="primary"
+                class="radio-btnn"
+                [value]="element"
+                (change)="onRadioChange(element)"
+              >
+              </mat-radio-button>
+            </mat-radio-group>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns2"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns2"></tr>
+      </table>
+
+      <div
+        class="pull-center"
+        style="margin-top: 5px; text-align: center"
+        *ngIf="healthIDArray?.data?.length === 0"
+      >
+        <strong>{{ currentLanguageSet?.casesheet?.noRecordFound }}</strong>
+      </div>
+    </section>
+  </section>
+</div>
+<!-- Entering OTP for Health ID Generation-->
+<div
+  *ngIf="enablehealthIdOTPForm && !searchPopup"
+  class="col-xs-12 col-sm-12"
+  [formGroup]="healthIdOTPForm"
+>
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+      <mat-form-field [style.width]="'100%'">
+        <input
+          defaultNull
+          autocomplete="off"
+          required
+          matInput
+          type="text"
+          placeholder="{{ currentLanguageSet?.enterOTP }}"
+          formControlName="otp"
+          minlength="6"
+          maxlength="6"
+          (keypress)="numberOnly($event)"
+          required
+        />
+      </mat-form-field>
+    </div>
+    <div class="col-sm-12 step-btn m-b-20" style="text-align: right">
+      <button
+        id="cancelButton"
+        mat-raised-button
+        type="button"
+        color="primary"
+        class="pull-right mat_blue"
+        (click)="resendOtp()"
+      >
+        {{ currentLanguageSet?.resendOTP }}
+      </button>
+      <button
+        id="submitButton"
+        mat-raised-button
+        class="pull-right mat_blue"
+        type="accent"
+        color="accent"
+        [disabled]="!healthIdOTPForm.valid || !checkOTP()"
+        (click)="verifyOtp()"
+      >
+        {{ currentLanguageSet?.common?.submit }}
+      </button>
+    </div>
+  </div>
+</div>
