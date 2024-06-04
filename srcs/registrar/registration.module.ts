@@ -16,7 +16,6 @@ import { SearchComponent } from './search/search.component';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
 import { RegistrarService } from './services/registrar.service';
 import { RegistrationService } from './services/registration.service';
 import { BiometricAuthenticationComponent } from './biometric-authentication/biometric-authentication.component';
@@ -31,6 +30,8 @@ import { ViewHealthIdCardComponent } from './view-health-id-card/view-health-id-
 import { SearchFamilyComponent } from './search-family/search-family.component';
 import { BeneficiaryDetailsComponent } from './beneficiary-details/beneficiary-details.component';
 import { HealthIdValidateComponent } from './health-id-validatepopup/health-id-validatepopup.component';
+import { SharedModule } from 'src/app/app-modules/core/shared/shared.module';
+import { SetPasswordForAbhaComponent } from './set-password-for-abha/set-password-for-abha.component';
 
 
 @NgModule({
@@ -54,7 +55,8 @@ import { HealthIdValidateComponent } from './health-id-validatepopup/health-id-v
     ViewHealthIdCardComponent,
     SearchFamilyComponent,
     BeneficiaryDetailsComponent,
-    HealthIdValidateComponent
+    HealthIdValidateComponent,
+    SetPasswordForAbhaComponent
   ],
   imports: [
     CommonModule,
@@ -85,7 +87,8 @@ import { HealthIdValidateComponent } from './health-id-validatepopup/health-id-v
     HealthIdDisplayModalComponent,
     HealthIdOtpGenerationComponent,
     BeneficiaryDetailsComponent,
-    HealthIdValidateComponent
+    HealthIdValidateComponent,
+    SetPasswordForAbhaComponent
   ],
   providers: [
     RegistrarService,

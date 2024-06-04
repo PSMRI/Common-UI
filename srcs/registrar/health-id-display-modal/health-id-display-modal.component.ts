@@ -22,17 +22,17 @@
 import { Component, DoCheck, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { HealthIdValidateComponent } from 'src/app/app-modules/registrar/registration/register-other-details/register-other-details.component';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
-import { RegistrarService } from 'src/app/app-modules/registrar/shared/services/registrar.service';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { RegistrarService } from '../services/registrar.service';
+import { HealthIdValidateComponent } from '../health-id-validatepopup/health-id-validatepopup.component';
 
 @Component({
   selector: 'app-health-id-display-modal',

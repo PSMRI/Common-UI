@@ -29,11 +29,11 @@ import {
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { SetPasswordForAbhaComponent } from 'src/app/app-modules/registrar/set-password-for-abha/set-password-for-abha.component';
-import { ServicePointService } from 'src/app/user-login/service-point/service-point.service';
 import { GenerateMobileOtpGenerationComponent } from '../generate-mobile-otp-generation/generate-mobile-otp-generation.component';
 import { HealthIdValidateComponent } from '../health-id-validatepopup/health-id-validatepopup.component';
 import { RegistrarService } from '../services/registrar.service';
+import { ServicePointService } from 'src/app/app-modules/service-point/service-point.service';
+import { SetPasswordForAbhaComponent } from '../set-password-for-abha/set-password-for-abha.component';
 
 @Component({
   selector: 'app-health-id-otp-generation',
