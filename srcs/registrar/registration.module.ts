@@ -30,8 +30,8 @@ import { ViewHealthIdCardComponent } from './view-health-id-card/view-health-id-
 import { SearchFamilyComponent } from './search-family/search-family.component';
 import { BeneficiaryDetailsComponent } from './beneficiary-details/beneficiary-details.component';
 import { HealthIdValidateComponent } from './health-id-validatepopup/health-id-validatepopup.component';
-import { SharedModule } from 'src/app/app-modules/core/shared/shared.module';
 import { SetPasswordForAbhaComponent } from './set-password-for-abha/set-password-for-abha.component';
+import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
 
 
 @NgModule({

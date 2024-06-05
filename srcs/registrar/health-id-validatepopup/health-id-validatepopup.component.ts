@@ -373,6 +373,7 @@ export class HealthIdValidateComponent implements OnInit, DoCheck {
       }
     } else {
       this.idErrorText = 'Please Valid Health ID / HealthID Number';
+      return null;
     }
   }
   validateHealthIDNumberPattern(pattern: any, healthidval: any) {
@@ -394,6 +395,7 @@ export class HealthIdValidateComponent implements OnInit, DoCheck {
     if (checkPattern) {
       return true;
     }
+    return null;
   }
   posthealthIDValidationCall() {
     this.showProgressBar = true;
