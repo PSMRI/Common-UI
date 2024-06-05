@@ -274,11 +274,20 @@ export class RegistrationComponent {
     iEMRForm['vanID'] = servicePointDetails.vanID;
     iEMRForm['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
     iEMRForm['createdBy'] = localStorage.getItem('userName');
+    iEMRForm['providerServiceMapID'] = localStorage.getItem('providerServiceID');
     phoneMaps[0]['vanID'] = servicePointDetails.vanID;
     phoneMaps[0]['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
     phoneMaps[0]['createdBy'] = localStorage.getItem('userName');
-
-    this.registrarService.submitBeneficiary(iEMRForm).subscribe((res: any) => {
+    console.log('iemrform', iEMRForm);
+    const mainForm = this.mainFormData();
+    console.log('mainForm', mainForm);
+    const remaingData = this.findMissingKeys(iEMRForm, mainForm)
+    let finalRqObj = {
+      ...remaingData,
+      ...iEMRForm
+    }
+    console.log('finalRqObj', finalRqObj);
+    this.registrarService.submitBeneficiary(finalRqObj).subscribe((res: any) => {
       if (res.statusCode === 200) {
         this.confirmationService.alert(res.data.response, 'success');
         this.mainForm.reset();
@@ -306,80 +315,108 @@ export class RegistrationComponent {
     );
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
-      firstName: personalForm.controls['firstName']?.value,
-      lastName: personalForm.controls['lastName']?.value,
-      dOB: personalForm.controls['dOB']?.value,
-      fatherName: othersForm.controls['fatherName']?.value,
-      spouseName: personalForm.controls['spouseName']?.value,
-      motherName: othersForm.controls['motherName']?.value,
-      // govtIdentityNo: null,
-      // govtIdentityTypeID: null,
-      emergencyRegistration: false,
-      titleId: null,
-      benImage: personalForm.controls['image']?.value,
-      bankName: othersForm.controls['bankName']?.value,
-      branchName: othersForm.controls['branchName']?.value,
-      ifscCode: othersForm.controls['ifscCode']?.value,
-      accountNo: othersForm.controls['accountNo']?.value,
-      // maritalStatusID: personalForm.controls['maritalStatus',
-      maritalStatusName: personalForm.controls['maritalStatus']?.value,
-      ageAtMarriage: personalForm.controls['ageAtMarriage']?.value,
-      // genderID: personalForm.controls[gender,
-      genderName: personalForm.controls['genderName']?.value,
-      literacyStatus: personalForm.controls['literacyStatus']?.value,
-      email: othersForm.controls['emailID']?.value,
-      // providerServiceMapId: localStorage.getItem('providerServiceID'),
-      providerServiceMapID: localStorage.getItem('providerServiceID'),
+      // firstName: personalForm.controls['firstName']?.value,
+      // lastName: personalForm.controls['lastName']?.value,
+      // dOB: personalForm.controls['dOB']?.value,
+      // fatherName: othersForm.controls['fatherName']?.value,
+      // spouseName: personalForm.controls['spouseName']?.value,
+      // motherName: othersForm.controls['motherName']?.value,
+      // // govtIdentityNo: null,
+      // // govtIdentityTypeID: null,
+      // emergencyRegistration: false,
+      // titleId: null,
+      // benImage: personalForm.controls['image']?.value,
+      // bankName: othersForm.controls['bankName']?.value,
+      // branchName: othersForm.controls['branchName']?.value,
+      // ifscCode: othersForm.controls['ifscCode']?.value,
+      // accountNo: othersForm.controls['accountNo']?.value,
+      // // maritalStatusID: personalForm.controls['maritalStatus',
+      // maritalStatusName: personalForm.controls['maritalStatus']?.value,
+      // ageAtMarriage: personalForm.controls['ageAtMarriage']?.value,
+      // // genderID: personalForm.controls[gender,
+      // genderName: personalForm.controls['genderName']?.value,
+      // literacyStatus: personalForm.controls['literacyStatus']?.value,
+      // email: othersForm.controls['emailID']?.value,
+      // // providerServiceMapId: localStorage.getItem('providerServiceID'),
+      // providerServiceMapID: localStorage.getItem('providerServiceID'),
 
       i_bendemographics: {
         // incomeStatusID: personalForm.controls[income,
-        incomeStatusName: personalForm.controls['incomeName']?.value,
-        monthlyFamilyIncome: personalForm.controls['monthlyFamilyIncome']?.value,
-        // occupationID: personalForm.controls[occupation,
-        occupationName: personalForm.controls['occupationName']?.value,
-        // educationID: personalForm.controls[educationQualification,
-        educationName: personalForm.controls['educationQualificationName']?.value,
-        // communityID: othersForm.controls[community,
-        communityName: othersForm.controls['communityName']?.value,
-        // religionID: othersForm.controls[religion,
-        religionName: othersForm.controls['religionOther']?.value,
-        countryID: this.country.id,
-        countryName: this.country.Name,
-        stateID: demographicsForm.controls['stateID']?.value,
-        stateName: demographicsForm.controls['stateName']?.value,
-        districtID: demographicsForm.controls['districtID']?.value,
-        districtName: demographicsForm.controls['districtName']?.value,
-        blockID: demographicsForm.controls['blockID']?.value,
-        blockName: demographicsForm.controls['blockName']?.value,
+        // incomeStatusName: personalForm.controls['incomeName']?.value,
+        monthlyFamilyIncome: personalForm.controls['monthlyFamilyIncome']?.value || null,
+        // occupationID: personalForm.controls[occupation || null,
+        occupationName: personalForm.controls['occupationName']?.value || null,
+        communityName: othersForm.controls['communityName']?.value || null,
+        countryID: this.country.id || null,
+        countryName: this.country.Name || null,
+        // educationID: personalForm.controls[educationQualification || null,
+        // educationName: personalForm.controls['educationQualificationName']?.value || null,
+        // communityID: othersForm.controls[community || null,
+        // religionID: othersForm.controls[religion || null,
+        // religionName: othersForm.controls['religionOther']?.value || null,
+        // countryName: this.country.Name || null,
+        stateID: demographicsForm.controls['stateID']?.value  || null,
+        stateName: demographicsForm.controls['stateName']?.value || null,
+        districtID: demographicsForm.controls['districtID']?.value || null,
+        districtName: demographicsForm.controls['districtName']?.value || null,
+        blockID: demographicsForm.controls['blockID']?.value || null,
+        blockName: demographicsForm.controls['blockName']?.value || null,
         districtBranchID:
-          demographicsForm.controls['districtBranchID']?.value,
-        districtBranchName: demographicsForm.controls['districtBranchName']?.value,
-        zoneID: demographicsForm.controls['zoneID']?.value,
-        zoneName: demographicsForm.controls['zoneName']?.value,
-        parkingPlaceID: demographicsForm.controls['parkingPlace']?.value,
-        parkingPlaceName: demographicsForm.controls['parkingPlaceName']?.value,
-        servicePointID: localStorage.getItem('servicePointID'),
-        servicePointName: localStorage.getItem('servicePointName'),
-        habitation: demographicsForm.controls['habitation']?.value,
-        pinCode: demographicsForm.controls['pincode']?.value,
-        addressLine1: demographicsForm.controls['addressLine1']?.value,
-        addressLine2: demographicsForm.controls['addressLine2']?.value,
-        addressLine3: demographicsForm.controls['addressLine3']?.value,
+          demographicsForm.controls['districtBranchID']?.value || null,
+        districtBranchName: demographicsForm.controls['districtBranchName']?.value || null,
+        zoneID: demographicsForm.controls['zoneID']?.value || null,
+        zoneName: demographicsForm.controls['zoneName']?.value || null,
+        // parkingPlaceID: demographicsForm.controls['parkingPlace']?.value || null,
+        parkingPlaceName: demographicsForm.controls['parkingPlaceName']?.value || null,
+        servicePointID: localStorage.getItem('servicePointID') || null,
+        servicePointName: localStorage.getItem('servicePointName') || null,
+        habitation: demographicsForm.controls['habitation']?.value || null,
+        pinCode: demographicsForm.controls['pincode']?.value || null,
+        addressLine1: demographicsForm.controls['addressLine1']?.value || null,
+        addressLine2: demographicsForm.controls['addressLine2']?.value || null,
+        addressLine3: demographicsForm.controls['addressLine3']?.value || null,
+        religionName: othersForm.controls['religionOther']?.value || null,
       },
       benPhoneMaps: [
         {
-          parentBenRegID: personalForm.controls['parentRegID']?.value,
+          // parentBenRegID: personalForm.controls['parentRegID']?.value,
           phoneNo: personalForm.controls['phoneNo']?.value,
           phoneTypeID: this.makePhoneTypeID(personalForm.controls['phoneNo']?.value),
-          benRelationshipID: personalForm.controls['parentRelation']?.value,
+          // benRelationshipID: personalForm.controls['parentRelation']?.value,
         },
       ],
-      ...this.mainForm.controls['personalInfoForm'].value,
-      ...this.mainForm.controls['locationInfoForm'].value,
-      ...this.mainForm.controls['otherInfoForm'].value
       // beneficiaryIdentities: iEMRids,
     };
     return finalForm;
+  }
+
+  mainFormData(){
+    const mainForm = {
+    ...this.mainForm.controls['personalInfoForm'].value,
+    ...this.mainForm.controls['locationInfoForm'].value,
+    ...this.mainForm.controls['otherInfoForm'].value
+    }
+    return mainForm;
+  }
+
+  findMissingKeys(iemrForm: any , mainForm: any): any {
+    const differences: { [key: string]: any } = {};
+ 
+    // Add keys from iemrForm that are not in mainForm
+    // for (const key in iemrForm) {
+    //   if (!(key in mainForm)) {
+    //     differences[key] = iemrForm[key];
+    //   }
+    // }
+ 
+    // Add keys from mainForm that are not in iemrForm
+    for (const key in mainForm) {
+      if (!(key in iemrForm.i_bendemographics) && !(key in iemrForm.benPhoneMaps)) {
+        differences[key] = mainForm[key];
+      }
+    }
+ 
+    return differences;
   }
 
   makePhoneTypeID(phoneNo: any) {
