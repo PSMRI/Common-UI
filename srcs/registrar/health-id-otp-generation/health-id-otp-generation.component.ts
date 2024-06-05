@@ -32,7 +32,7 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { GenerateMobileOtpGenerationComponent } from '../generate-mobile-otp-generation/generate-mobile-otp-generation.component';
 import { HealthIdValidateComponent } from '../health-id-validatepopup/health-id-validatepopup.component';
 import { RegistrarService } from '../services/registrar.service';
-import { ServicePointService } from 'src/app/app-modules/service-point/service-point.service';
+// import { ServicePointService } from 'src/app/app-modules/service-point/service-point.service';
 import { SetPasswordForAbhaComponent } from '../set-password-for-abha/set-password-for-abha.component';
 
 @Component({
@@ -61,7 +61,7 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
-    private servicePointService: ServicePointService,
+    // private servicePointService: ServicePointService,
     private dialog: MatDialog,
   ) {
     dialogRef.disableClose = true;
