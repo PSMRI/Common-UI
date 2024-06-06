@@ -54,6 +54,7 @@ export class PersonalInformationComponent {
     console.log("personalInfoFormGroup Data", this.personalInfoFormGroup);
     if(this.patientRevisit){
       this.personalInfoFormGroup.addControl('beneficiaryRegID', new FormControl());
+      this.personalInfoFormGroup.addControl('beneficiaryID', new FormControl());
       this.personalInfoFormGroup.patchValue(this.revisitData);
       this.personalInfoFormGroup.get('phoneNo')?.patchValue(this.revisitData.benPhoneMaps[0].phoneNo);
     }

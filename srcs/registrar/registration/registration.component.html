@@ -2,17 +2,17 @@
   <div style="    margin-bottom: 10px;
   display: flex;
   justify-content: end;">
-    <button
-  mat-raised-button
-  *ngIf="patientRevisit"
-  class="full-width-login pull-right mat_blue"
-  id="familyTagging"
-  type="accent"
-  (click)="NavigateToFamilyTagging()"
-  >Family Tagging 
-  </button>
-  </div>
-   
+  <button
+mat-raised-button
+
+*ngIf="patientRevisit && serviceLine === 'HWC'"
+class="full-width-login  pull-right m-r-5 mat_blue"
+id="familyTagging"
+type="accent"
+(click)="NavigateToFamilyTagging()"
+>Family Tagging 
+</button>
+</div>
     <div class="example-scrolling-content content">
       <form [formGroup]="mainForm" autocomplete="off" tabindex="{0}">
         <mat-horizontal-stepper linear="false" #stepper>

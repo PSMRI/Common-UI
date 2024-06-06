@@ -32,6 +32,7 @@ import { BeneficiaryDetailsComponent } from './beneficiary-details/beneficiary-d
 import { HealthIdValidateComponent } from './health-id-validatepopup/health-id-validatepopup.component';
 import { SetPasswordForAbhaComponent } from './set-password-for-abha/set-password-for-abha.component';
 import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
+import { FamilyTaggingService } from './services/familytagging.service';
 
 
 @NgModule({
@@ -92,7 +93,9 @@ import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.
   ],
   providers: [
     RegistrarService,
-    RegistrationService
+    RegistrationService,
+    FamilyTaggingService
+    
   ]
 })
 export class RegistrationModule { }
