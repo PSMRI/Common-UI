@@ -21,7 +21,6 @@
           class="col-1 col-lg-1 col-sm-1 col-md-1 col-xs-1"
           style="padding-left: 0">
           <button
-            style="margin-left: 38rem; margin-top: 7px"
             class="search_button pull-right"
             (click)="identityQuickSearch(quicksearchTerm)"
             matTooltip="{{ currentLanguageSet?.quickSearch }}">
@@ -98,7 +97,7 @@
 <div class="row m-b-40">
   <div class="col-sm-12">
     <mat-card>
-      <div *ngIf="beneficiaryList?.length > 0" style="float: right">
+      <div *ngIf="beneficiaryList?.length > 0" style="text-align: end;">
         <mat-form-field id="filterbox" class="m-t-20-">
           <input
             autocomplete="off"

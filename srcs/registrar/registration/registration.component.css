@@ -43,12 +43,12 @@
     margin-bottom: 40px;
   }
 
-  .mat_blue {
+  /* .mat_blue {
     background-color: #0277bd !important;
     border-color: unset !important;
     color: white;
     border: unset;
-    border-radius: 3px;
+    border-radius: 20px;
     line-height: 36px;
     min-width: 88px;
   }
@@ -60,7 +60,7 @@
     border-radius: 3px;
     line-height: 36px;
     min-width: 88px;
-  }
+  } */
 
   .mat-stepper-horizontal {
     padding: 0px;

@@ -3,6 +3,7 @@
     <h4>{{ currentLanguageSet?.common?.advanceBeneficiarySearch }}</h4>
     <button
       class="pull-right close-btn"
+      style="border: unset;background-color: unset;color: white;"
       (click)="matDialogRef.close(false)"
       mat-icon-button>
       <mat-icon>close</mat-icon>
@@ -83,7 +84,7 @@
                 currentLanguageSet?.ro?.personalInfo?.gender
               }}</mat-label>
               <mat-select
-                class="p-t-12"
+                 
                 (selectionChange)="selectGender()"
                 required
                 [style.width]="'100%'"
@@ -124,7 +125,7 @@
                 {{ currentLanguageSet?.travel?.state }}
               </mat-label>
               <mat-select
-                class="p-t-12"
+                 
                 (selectionChange)="onStateChange()"
                 required
                 [style.width]="'100%'"
@@ -144,7 +145,7 @@
                 currentLanguageSet?.travel?.district
               }}</mat-label>
               <mat-select
-                class="p-t-12"
+                 
                 required
                 [style.width]="'100%'"
                 name="district"
