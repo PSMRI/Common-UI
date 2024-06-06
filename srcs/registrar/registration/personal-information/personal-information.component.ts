@@ -1,6 +1,17 @@
 import { Component, Input } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { BeneficiaryDetailsService, CameraService, ConfirmationService } from 'src/app/app-modules/core/services';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
+import {
+  BeneficiaryDetailsService,
+  CameraService,
+  ConfirmationService,
+} from 'src/app/app-modules/core/services';
 import { RegistrarService } from '../../services/registrar.service';
 import { Subscription } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
@@ -9,10 +20,9 @@ import * as moment from 'moment';
 @Component({
   selector: 'app-personal-information',
   templateUrl: './personal-information.component.html',
-  styleUrls: ['./personal-information.component.css']
+  styleUrls: ['./personal-information.component.css'],
 })
 export class PersonalInformationComponent {
-
   @Input('personalInfoFormGroup')
   personalInfoFormGroup!: FormGroup;
 
@@ -42,37 +52,85 @@ export class PersonalInformationComponent {
     private beneficiaryDetailsService: BeneficiaryDetailsService,
     private confirmationService: ConfirmationService,
     private languageComponent: SetLanguageComponent
+  ) {}
 
-  ){}
-
-  ngOnInit(){
+  ngOnInit() {
     this.formData.forEach((item: any) => {
-      if(item.fieldName)
-      this.personalInfoFormGroup.addControl(item.fieldName, new FormControl());
+      if (item.fieldName && item.allowText) {
+        this.personalInfoFormGroup.addControl(
+          item.fieldName,
+          new FormControl(null, [
+            Validators.pattern(this.allowTextValidator(item.allowText)),
+            Validators.minLength(parseInt(item?.allowMin)),
+            Validators.maxLength(parseInt(item?.allowMax)),
+          ])
+        );
+      } else {
+        this.personalInfoFormGroup.addControl(
+          item.fieldName,
+          new FormControl(null)
+        );
+      }
     });
     this.personalInfoFormGroup.addControl('image', new FormControl());
-    console.log("personalInfoFormGroup Data", this.personalInfoFormGroup);
-    if(this.patientRevisit){
-      this.personalInfoFormGroup.addControl('beneficiaryRegID', new FormControl());
+    console.log('personalInfoFormGroup Data', this.personalInfoFormGroup);
+    if (this.patientRevisit) {
+      this.personalInfoFormGroup.addControl(
+        'beneficiaryRegID',
+        new FormControl()
+      );
       this.personalInfoFormGroup.addControl('beneficiaryID', new FormControl());
       this.personalInfoFormGroup.patchValue(this.revisitData);
-      this.personalInfoFormGroup.get('phoneNo')?.patchValue(this.revisitData.benPhoneMaps[0].phoneNo);
+      this.personalInfoFormGroup
+        .get('phoneNo')
+        ?.patchValue(this.revisitData.benPhoneMaps[0].phoneNo);
     }
-  console.log('personal Form Data', this.formData);
-  console.log('this.revist data - personal info', this.revisitData);
-  this.setupFormValueChanges();
+    console.log('personal Form Data', this.formData);
+    console.log('this.revist data - personal info', this.revisitData);
+    this.setupFormValueChanges();
   }
 
-    /**
+  /**
    * set Date Limits for Calendar and Age
    *
    */
-    today!: Date;
-    minDate!: Date;
+  today!: Date;
+  minDate!: Date;
   setDateLimits() {
     this.today = new Date();
     this.minDate = new Date();
     this.minDate.setFullYear(this.today.getFullYear() - (this.ageLimit + 1));
+  }
+
+  allowTextValidator(allowText: any) {
+    let regex: RegExp;
+
+    switch (allowText) {
+      case 'alpha':
+        regex = /^[a-zA-Z]*$/;
+        break;
+      case 'numeric':
+        regex = /^[0-9]*$/;
+        break;
+      case 'alphaNumeric':
+        regex = /^[a-zA-Z0-9]*$/;
+        break;
+      default:
+        regex = /^[a-zA-Z0-9 ]*$/;
+        break; // Add break statement here
+    }
+
+    return regex; // Move this line outside the switch block
+  }
+
+  onInputChanged(event: Event, maxLength: any) {
+    const inputElement = event.target as HTMLInputElement;
+    const inputValue = inputElement.value;
+
+    if (maxLength && inputValue.length >= parseInt(maxLength)) {
+      // Add 'A' character when the input length exceeds the limit
+      inputElement.value = inputValue.slice(0, maxLength);
+    }
   }
 
   captureImage() {
@@ -88,25 +146,25 @@ export class PersonalInformationComponent {
     });
   }
 
-    /**
+  /**
    *
    * Load Basic Master Data Observable
    */
-    loadMasterDataObservable() {
-      this.masterDataSubscription =
-        this.registrarService.registrationMasterDetails$.subscribe(res => {
-          // console.log('res personal', res)
-          if (res !== null) {
-            this.masterData = res;
-            console.log('masterData', )
-            if (this.patientRevisit) {
-              this.loadPersonalDataForEditing();
-            }
+  loadMasterDataObservable() {
+    this.masterDataSubscription =
+      this.registrarService.registrationMasterDetails$.subscribe(res => {
+        // console.log('res personal', res)
+        if (res !== null) {
+          this.masterData = res;
+          console.log('masterData');
+          if (this.patientRevisit) {
+            this.loadPersonalDataForEditing();
           }
-        });
-    }
+        }
+      });
+  }
 
-      /**
+  /**
    *
    * Load Personal Details Componen Details
    *
@@ -123,58 +181,57 @@ export class PersonalInformationComponent {
       });
   }
 
-    onGenderSelected() {
-      const genderMaster = this.masterData.genderMaster;
-      genderMaster.forEach((element: any, i: any) => {
-        if (element.genderID === this.personalInfoFormGroup.value.gender) {
-          this.personalInfoFormGroup.patchValue({
-            genderName: element.genderName,
-          });
-        }
-      });
-      console.log(
-        'this.masterData',
-        genderMaster,
-        this.masterData.maritalStatusMaster
-      );
-  
-      if (this.personalInfoFormGroup.value.gender === 3) {
-        this.confirmationService
-          .confirm('info', 'You have selected Transgender, please confirm')
-          .subscribe(
-            res => {
-              if (!res) {
-                this.personalInfoFormGroup.patchValue({
-                  gender: null,
-                  genderName: null,
-                });
-              } else {
-                this.maritalStatusMaster = this.masterData.maritalStatusMaster;
-              }
-            },
-            err => {}
-          );
-      } else {
-        this.maritalStatusMaster = this.masterData.maritalStatusMaster.filter(
-          (maritalStatus: any) => {
-            if (
-              this.personalInfoFormGroup.value.gender === 1 &&
-              maritalStatus.maritalStatusID !== 5
-            ) {
-              return maritalStatus;
-            }
-            if (
-              this.personalInfoFormGroup.value.gender === 2 &&
-              maritalStatus.maritalStatusID !== 6
-            ) {
-              return maritalStatus;
-            }
-          }
-        );
+  onGenderSelected() {
+    const genderMaster = this.masterData.genderMaster;
+    genderMaster.forEach((element: any, i: any) => {
+      if (element.genderID === this.personalInfoFormGroup.value.gender) {
+        this.personalInfoFormGroup.patchValue({
+          genderName: element.genderName,
+        });
       }
-    }
+    });
+    console.log(
+      'this.masterData',
+      genderMaster,
+      this.masterData.maritalStatusMaster
+    );
 
-    
+    if (this.personalInfoFormGroup.value.gender === 3) {
+      this.confirmationService
+        .confirm('info', 'You have selected Transgender, please confirm')
+        .subscribe(
+          res => {
+            if (!res) {
+              this.personalInfoFormGroup.patchValue({
+                gender: null,
+                genderName: null,
+              });
+            } else {
+              this.maritalStatusMaster = this.masterData.maritalStatusMaster;
+            }
+          },
+          err => {}
+        );
+    } else {
+      this.maritalStatusMaster = this.masterData.maritalStatusMaster.filter(
+        (maritalStatus: any) => {
+          if (
+            this.personalInfoFormGroup.value.gender === 1 &&
+            maritalStatus.maritalStatusID !== 5
+          ) {
+            return maritalStatus;
+          }
+          if (
+            this.personalInfoFormGroup.value.gender === 2 &&
+            maritalStatus.maritalStatusID !== 6
+          ) {
+            return maritalStatus;
+          }
+        }
+      );
+    }
+  }
+
   validateMaritalStatusMaster(revisitData: any) {
     if (revisitData.m_gender.genderID === 3) {
       this.maritalStatusMaster = this.masterData.maritalStatusMaster;
@@ -198,362 +255,382 @@ export class PersonalInformationComponent {
     }
   }
 
-  
-    changeLiteracyStatus() {
-      const literacyStatus = this.personalInfoFormGroup.value.literacyStatus;
-  
-      if (literacyStatus !== 'Literate') {
-        console.log(this.personalInfoFormGroup.controls, 'controls');
-        // this.personalInfoFormGroup.controls['educationQualification'].clearValidators();
-        console.log(
-          this.personalInfoFormGroup.controls['educationQualification'],
-          'controls'
-        );
-      } else {
-        this.personalInfoFormGroup.controls['educationQualification'].reset();
-      }
+  changeLiteracyStatus() {
+    const literacyStatus = this.personalInfoFormGroup.value.literacyStatus;
+
+    if (literacyStatus !== 'Literate') {
+      console.log(this.personalInfoFormGroup.controls, 'controls');
+      // this.personalInfoFormGroup.controls['educationQualification'].clearValidators();
+      console.log(
+        this.personalInfoFormGroup.controls['educationQualification'],
+        'controls'
+      );
+    } else {
+      this.personalInfoFormGroup.controls['educationQualification'].reset();
     }
-  
-    /**
-     * Phone Number Parent Relations
-     */
-    getParentDetails() {
-      const searchTerm = this.personalInfoFormGroup.value.phoneNo;
-      const searchObject = {
-        beneficiaryRegID: null,
-        beneficiaryID: null,
-        phoneNo: null,
-      };
-      if (searchTerm && searchTerm.trim().length === 10) {
-        searchObject['phoneNo'] = searchTerm;
-        this.registrarService.identityQuickSearch(searchObject).subscribe(
-          (beneficiaryList: any) => {
-            if (
-              beneficiaryList &&
-              beneficiaryList.length > 0 &&
-              beneficiaryList[0].benPhoneMaps.length > 0
-            ) {
-              console.log(
-                'ta d ad a d a',
-                JSON.stringify(beneficiaryList, null, 4)
-              );
-              this.personalInfoFormGroup.patchValue({
-                parentRegID: beneficiaryList[0].benPhoneMaps[0].parentBenRegID,
-                parentRelation: 11,
-              });
-              console.log(this.personalInfoFormGroup.value.parentRegID);
-            } else {
-              this.personalInfoFormGroup.patchValue({
-                parentRegID: null,
-                parentRelation: 1,
-              });
-              console.log(this.personalInfoFormGroup.value.parentRegID);
-  
-              if (this.patientRevisit) {
-                this.personalInfoFormGroup.patchValue({
-                  parentRegID: this.personalInfoFormGroup.value.beneficiaryRegID,
-                });
-                console.log(this.personalInfoFormGroup.value.parentRegID);
-              }
-            }
-          },
-          error => {
-            this.confirmationService.alert(error, 'error');
+  }
+
+  /**
+   * Phone Number Parent Relations
+   */
+  getParentDetails() {
+    const searchTerm = this.personalInfoFormGroup.value.phoneNo;
+    const searchObject = {
+      beneficiaryRegID: null,
+      beneficiaryID: null,
+      phoneNo: null,
+    };
+    if (searchTerm && searchTerm.trim().length === 10) {
+      searchObject['phoneNo'] = searchTerm;
+      this.registrarService.identityQuickSearch(searchObject).subscribe(
+        (beneficiaryList: any) => {
+          if (
+            beneficiaryList &&
+            beneficiaryList.length > 0 &&
+            beneficiaryList[0].benPhoneMaps.length > 0
+          ) {
+            console.log(
+              'ta d ad a d a',
+              JSON.stringify(beneficiaryList, null, 4)
+            );
+            this.personalInfoFormGroup.patchValue({
+              parentRegID: beneficiaryList[0].benPhoneMaps[0].parentBenRegID,
+              parentRelation: 11,
+            });
+            console.log(this.personalInfoFormGroup.value.parentRegID);
+          } else {
             this.personalInfoFormGroup.patchValue({
               parentRegID: null,
               parentRelation: 1,
-              phoneNo: null,
             });
+            console.log(this.personalInfoFormGroup.value.parentRegID);
+
+            if (this.patientRevisit) {
+              this.personalInfoFormGroup.patchValue({
+                parentRegID: this.personalInfoFormGroup.value.beneficiaryRegID,
+              });
+              console.log(this.personalInfoFormGroup.value.parentRegID);
+            }
           }
-        );
-      } else {
-        if (this.patientRevisit) {
-          this.personalInfoFormGroup.patchValue({
-            parentRegID: this._parentBenRegID,
-            parentRelation: null,
-            phoneNo: null,
-          });
-        } else {
+        },
+        error => {
+          this.confirmationService.alert(error, 'error');
           this.personalInfoFormGroup.patchValue({
             parentRegID: null,
-            parentRelation: null,
+            parentRelation: 1,
             phoneNo: null,
           });
         }
-      }
-    }
-    /**
-     *
-     * Age Entered in Input
-     */
-    enableMaritalStatus = false;
-    setupFormValueChanges() {
-      // Listen to both age and ageUnits changes
-      this.personalInfoFormGroup.get('age')!.valueChanges.subscribe(() => {
-        this.onAgeOrUnitEntered();
-      });
-  
-      this.personalInfoFormGroup.get('ageUnits')!.valueChanges.subscribe(() => {
-        this.onAgeOrUnitEntered();
-      });
-  
-      // Listen to dOB changes
-      this.personalInfoFormGroup.get('dOB')!.valueChanges.subscribe(() => {
-        this.dobChangeByCalender();
-      });
-    }
-  
-    onAgeOrUnitEntered() {
-      const ageValue = this.personalInfoFormGroup.get('age')!.value;
-      const ageUnits = this.personalInfoFormGroup.get('ageUnits')!.value;
-  
-      if (ageValue && ageUnits) {
-        this.calculateDOB();
-      }
-    }
-  
-    calculateDOB() {
-      const ageValue = this.personalInfoFormGroup.get('age')!.value;
-      const ageUnits = this.personalInfoFormGroup.get('ageUnits')!.value;
-  
-      if (ageValue && ageUnits) {
-        const valueEntered = parseInt(ageValue, 10);
-        if (!isNaN(valueEntered)) {
-          if (valueEntered > this.ageLimit && ageUnits.toLowerCase() === 'years') {
-            this.confirmationService.alert(
-              this.currentLanguageSet.alerts.info.ageRestriction,
-              'info'
-            );
-            this.personalInfoFormGroup.patchValue({ age: null });
-          } else {
-            const dob = moment().subtract(valueEntered, ageUnits).toDate();
-            this.personalInfoFormGroup.patchValue({
-              dOB: dob,
-            }, { emitEvent: false }); // Prevent emitting the event to avoid circular updates
-          }
-        }
-      }
-    }
-  
-    dobChangeByCalender() {
-      const dobValue = this.personalInfoFormGroup.get('dOB')?.value;
-  
-      if (dobValue) {
-        this.dateForCalendar = moment(dobValue);
-        const date = new Date(this.dateForCalendar);
-  
-        if (
-          this.dateForCalendar &&
-          dobValue &&
-          this.personalInfoFormGroup.controls['dOB'].valid
-        ) {
-          const dateDiff = Date.now() - date.getTime();
-          const age = new Date(dateDiff);
-          const yob = Math.abs(age.getUTCFullYear() - 1970);
-          const mob = Math.abs(age.getUTCMonth());
-          const dob = Math.abs(age.getUTCDate() - 1);
-  
-          if (yob > 0) {
-            this.personalInfoFormGroup.patchValue({ age: yob, ageUnits: 'years' }, { emitEvent: false });
-          } else if (mob > 0) {
-            this.personalInfoFormGroup.patchValue({ age: mob, ageUnits: 'months' }, { emitEvent: false });
-          } else if (dob > 0) {
-            this.personalInfoFormGroup.patchValue({ age: dob, ageUnits: 'days' }, { emitEvent: false });
-          }
-  
-          if (date.setHours(0, 0, 0, 0) === this.today.setHours(0, 0, 0, 0)) {
-            this.personalInfoFormGroup.patchValue({ age: 1, ageUnits: 'days' }, { emitEvent: false });
-          }
-  
-          this.checkAgeAtMarriage();
-        } else if (dobValue === 'Invalid date') {
-          this.personalInfoFormGroup.patchValue({ dOB: null });
-          this.dateForCalendar = null;
-          this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.invalidData,
-            'info'
-          );
-        } else {
-          this.personalInfoFormGroup.patchValue({ age: null });
-        }
-      }
-    }
-
-    checkFieldValidations(field: any){
-      if(field.fieldName === 'age')
-      this.onAgeOrUnitEntered();
-     else if(field.fieldName === 'ageUnits')
-     this.onAgeOrUnitEntered();
-    else if(field.fieldName.toLowerCase() === 'dob')
-    this.dobChangeByCalender();
-    }
-
-  
-    /**
-     * Income Status Select and get Name
-     */
-    onIncomeChanged() {
-      const incomeMaster = this.masterData.incomeMaster;
-      incomeMaster.forEach((element: any, i: any) => {
-        if (element.incomeStatusID === this.personalInfoFormGroup.value.income) {
-          this.personalInfoFormGroup.patchValue({
-            incomeName: element.incomeStatus,
-          });
-        }
-      });
-    }
-  
-    /**
-     *
-     * Marital Status Changed
-     */
-    enableMarriageDetails = false;
-    enableSpouseMandatory = false;
-    onMaritalStatusChanged() {
-      if (
-        this.personalInfoFormGroup.value.maritalStatus === 1 ||
-        this.personalInfoFormGroup.value.maritalStatus === 7
-      ) {
-        this.enableMarriageDetails = false;
-        this.clearMarriageDetails();
-      } else {
-        this.enableMarriageDetails = true;
-      }
-      if (this.personalInfoFormGroup.value.maritalStatus === 2) {
-        this.enableSpouseMandatory = true;
-        this.clearMarriageDetails();
-      } else {
-        this.enableSpouseMandatory = false;
-        this.clearMarriageDetails();
-      }
-  
-      const maritalMaster = this.masterData.maritalStatusMaster;
-      maritalMaster.forEach((element: any, i: any) => {
-        if (
-          element.maritalStatusID === this.personalInfoFormGroup.value.maritalStatus
-        ) {
-          this.personalInfoFormGroup.patchValue({
-            maritalStatusName: element.status,
-          });
-        }
-      });
-    }
-  
-    /**
-     * Clear Marriage Details if Entered
-     *
-     */
-    clearMarriageDetails() {
-      if (this.personalInfoFormGroup.value.spouseName !== null) {
-        this.personalInfoFormGroup.patchValue({ spouseName: null });
-      }
-      if (this.personalInfoFormGroup.value.ageAtMarriage !== null) {
-        this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
-      }
-    }
-  
-    /**
-     *
-     * check for validity of Age At Marriage with other Details
-     */
-    checkAgeAtMarriage() {
-      if (this.personalInfoFormGroup.value.ageAtMarriage !== null) {
-        if (this.personalInfoFormGroup.value.age === null) {
-          this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.pleaseenterBeneficiaryagefirst,
-            'info'
-          );
-          this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
-        } else if (this.personalInfoFormGroup.value.ageUnits.toLowerCase() !== 'years') {
-          this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.marriageAge +
-              ' ' +
-              this.ageforMarriage +
-              ' ' +
-              this.currentLanguageSet.alerts.info.years,
-            'info'
-          );
-          this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
-        } else if (this.personalInfoFormGroup.value.age < this.ageforMarriage) {
-          this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.marriageAge +
-              ' ' +
-              this.ageforMarriage +
-              ' ' +
-              this.currentLanguageSet.alerts.info.years,
-            'info'
-          );
-          this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
-        } else if (
-          this.personalInfoFormGroup.value.ageAtMarriage < this.ageforMarriage
-        ) {
-          this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.marriageAge +
-              ' ' +
-              this.ageforMarriage +
-              ' ' +
-              this.currentLanguageSet.alerts.info.years,
-            'info'
-          );
-          this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
-        } else if (
-          this.personalInfoFormGroup.value.age -
-            this.personalInfoFormGroup.value.ageAtMarriage <
-          0
-        ) {
-          this.confirmationService.alert(
-            this.currentLanguageSet.common.marriageatageismorethantheactualage,
-            'info'
-          );
-          this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
-        }
-      }
-    }
-  
-    /**
-     * Occupation Name when ID is selected
-     */
-    getOccupationName() {
-      this.masterData.occupationMaster.forEach((occupation: any) => {
-        if (
-          this.personalInfoFormGroup.value.occupation === occupation.occupationID &&
-          this.personalInfoFormGroup.value.occupation !== 7
-        ) {
-          this.personalInfoFormGroup.patchValue({
-            occupationOther: occupation.occupationType,
-          });
-          console.log('reached form');
-        }
-      });
-  
-      if (
-        !this.personalInfoFormGroup.value.occupationOther ||
-        this.personalInfoFormGroup.value.occupation === 7
-      ) {
+      );
+    } else {
+      if (this.patientRevisit) {
         this.personalInfoFormGroup.patchValue({
-          occupationOther: null,
+          parentRegID: this._parentBenRegID,
+          parentRelation: null,
+          phoneNo: null,
+        });
+      } else {
+        this.personalInfoFormGroup.patchValue({
+          parentRegID: null,
+          parentRelation: null,
+          phoneNo: null,
         });
       }
     }
-  
-    /**
-     * Education Qualification when ID is selected
-     */
-    onEducationQualificationChanged() {
-      const qualificationMaster = this.masterData.qualificationMaster;
-      qualificationMaster.forEach((element: any, i: any) => {
+  }
+  /**
+   *
+   * Age Entered in Input
+   */
+  enableMaritalStatus = false;
+  setupFormValueChanges() {
+    // Listen to both age and ageUnits changes
+    this.personalInfoFormGroup.get('age')!.valueChanges.subscribe(() => {
+      this.onAgeOrUnitEntered();
+    });
+
+    this.personalInfoFormGroup.get('ageUnits')!.valueChanges.subscribe(() => {
+      this.onAgeOrUnitEntered();
+    });
+
+    // Listen to dOB changes
+    this.personalInfoFormGroup.get('dOB')!.valueChanges.subscribe(() => {
+      this.dobChangeByCalender();
+    });
+  }
+
+  onAgeOrUnitEntered() {
+    const ageValue = this.personalInfoFormGroup.get('age')!.value;
+    const ageUnits = this.personalInfoFormGroup.get('ageUnits')!.value;
+
+    if (ageValue && ageUnits) {
+      this.calculateDOB();
+    }
+  }
+
+  calculateDOB() {
+    const ageValue = this.personalInfoFormGroup.get('age')!.value;
+    const ageUnits = this.personalInfoFormGroup.get('ageUnits')!.value;
+
+    if (ageValue && ageUnits) {
+      const valueEntered = parseInt(ageValue, 10);
+      if (!isNaN(valueEntered)) {
         if (
-          element.educationID ===
-          this.personalInfoFormGroup.value.educationQualification
+          valueEntered > this.ageLimit &&
+          ageUnits.toLowerCase() === 'years'
         ) {
-          this.personalInfoFormGroup.patchValue({
-            educationQualificationName: element.educationType,
-          });
+          this.confirmationService.alert(
+            'Age can only be set between Today to 120 Years',
+            'info'
+          );
+          this.personalInfoFormGroup.patchValue({ age: null });
+        } else {
+          const dob = moment().subtract(valueEntered, ageUnits).toDate();
+          let fromDate = moment(dob).toISOString();
+          console.log('dob after conversion', fromDate);
+          this.personalInfoFormGroup.patchValue(
+            {
+              dOB: fromDate,
+            },
+            { emitEvent: false }
+          ); // Prevent emitting the event to avoid circular updates
         }
-      });
+      }
+    }
+  }
+
+  dobChangeByCalender() {
+    const dobValue = this.personalInfoFormGroup.get('dOB')?.value;
+
+    if (dobValue) {
+      this.dateForCalendar = moment(dobValue);
+      const date = new Date(this.dateForCalendar);
+
+      if (
+        this.dateForCalendar &&
+        dobValue &&
+        this.personalInfoFormGroup.controls['dOB'].valid
+      ) {
+        const dateDiff = Date.now() - date.getTime();
+        const age = new Date(dateDiff);
+        const yob = Math.abs(age.getUTCFullYear() - 1970);
+        const mob = Math.abs(age.getUTCMonth());
+        const dob = Math.abs(age.getUTCDate() - 1);
+
+        if (yob > 0) {
+          this.personalInfoFormGroup.patchValue(
+            { age: yob, ageUnits: 'years' },
+            { emitEvent: false }
+          );
+        } else if (mob > 0) {
+          this.personalInfoFormGroup.patchValue(
+            { age: mob, ageUnits: 'months' },
+            { emitEvent: false }
+          );
+        } else if (dob > 0) {
+          this.personalInfoFormGroup.patchValue(
+            { age: dob, ageUnits: 'days' },
+            { emitEvent: false }
+          );
+        }
+
+        if (date.setHours(0, 0, 0, 0) === this.today.setHours(0, 0, 0, 0)) {
+          this.personalInfoFormGroup.patchValue(
+            { age: 1, ageUnits: 'days' },
+            { emitEvent: false }
+          );
+        }
+
+        this.checkAgeAtMarriage();
+      } else if (dobValue === 'Invalid date') {
+        this.personalInfoFormGroup.patchValue({ dOB: null });
+        this.dateForCalendar = null;
+        this.confirmationService.alert(
+          this.currentLanguageSet.alerts.info.invalidData,
+          'info'
+        );
+      } else {
+        this.personalInfoFormGroup.patchValue({ age: null });
+      }
+    }
+  }
+
+  checkFieldValidations(field: any) {
+    if (field.fieldName === 'age') this.onAgeOrUnitEntered();
+    else if (field.fieldName === 'ageUnits') this.onAgeOrUnitEntered();
+    else if (field.fieldName.toLowerCase() === 'dob')
+      this.dobChangeByCalender();
+  }
+
+  /**
+   * Income Status Select and get Name
+   */
+  onIncomeChanged() {
+    const incomeMaster = this.masterData.incomeMaster;
+    incomeMaster.forEach((element: any, i: any) => {
+      if (element.incomeStatusID === this.personalInfoFormGroup.value.income) {
+        this.personalInfoFormGroup.patchValue({
+          incomeName: element.incomeStatus,
+        });
+      }
+    });
+  }
+
+  /**
+   *
+   * Marital Status Changed
+   */
+  enableMarriageDetails = false;
+  enableSpouseMandatory = false;
+  onMaritalStatusChanged() {
+    if (
+      this.personalInfoFormGroup.value.maritalStatus === 1 ||
+      this.personalInfoFormGroup.value.maritalStatus === 7
+    ) {
+      this.enableMarriageDetails = false;
+      this.clearMarriageDetails();
+    } else {
+      this.enableMarriageDetails = true;
+    }
+    if (this.personalInfoFormGroup.value.maritalStatus === 2) {
+      this.enableSpouseMandatory = true;
+      this.clearMarriageDetails();
+    } else {
+      this.enableSpouseMandatory = false;
+      this.clearMarriageDetails();
     }
 
-      /***
+    const maritalMaster = this.masterData.maritalStatusMaster;
+    maritalMaster.forEach((element: any, i: any) => {
+      if (
+        element.maritalStatusID ===
+        this.personalInfoFormGroup.value.maritalStatus
+      ) {
+        this.personalInfoFormGroup.patchValue({
+          maritalStatusName: element.status,
+        });
+      }
+    });
+  }
+
+  /**
+   * Clear Marriage Details if Entered
+   *
+   */
+  clearMarriageDetails() {
+    if (this.personalInfoFormGroup.value.spouseName !== null) {
+      this.personalInfoFormGroup.patchValue({ spouseName: null });
+    }
+    if (this.personalInfoFormGroup.value.ageAtMarriage !== null) {
+      this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
+    }
+  }
+
+  /**
+   *
+   * check for validity of Age At Marriage with other Details
+   */
+  checkAgeAtMarriage() {
+    if (this.personalInfoFormGroup.value.ageAtMarriage !== null) {
+      if (this.personalInfoFormGroup.value.age === null) {
+        this.confirmationService.alert(
+          this.currentLanguageSet.alerts.info.pleaseenterBeneficiaryagefirst,
+          'info'
+        );
+        this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
+      } else if (
+        this.personalInfoFormGroup.value.ageUnits.toLowerCase() !== 'years'
+      ) {
+        this.confirmationService.alert(
+          this.currentLanguageSet.alerts.info.marriageAge +
+            ' ' +
+            this.ageforMarriage +
+            ' ' +
+            this.currentLanguageSet.alerts.info.years,
+          'info'
+        );
+        this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
+      } else if (this.personalInfoFormGroup.value.age < this.ageforMarriage) {
+        this.confirmationService.alert(
+          this.currentLanguageSet.alerts.info.marriageAge +
+            ' ' +
+            this.ageforMarriage +
+            ' ' +
+            this.currentLanguageSet.alerts.info.years,
+          'info'
+        );
+        this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
+      } else if (
+        this.personalInfoFormGroup.value.ageAtMarriage < this.ageforMarriage
+      ) {
+        this.confirmationService.alert(
+          this.currentLanguageSet.alerts.info.marriageAge +
+            ' ' +
+            this.ageforMarriage +
+            ' ' +
+            this.currentLanguageSet.alerts.info.years,
+          'info'
+        );
+        this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
+      } else if (
+        this.personalInfoFormGroup.value.age -
+          this.personalInfoFormGroup.value.ageAtMarriage <
+        0
+      ) {
+        this.confirmationService.alert(
+          this.currentLanguageSet.common.marriageatageismorethantheactualage,
+          'info'
+        );
+        this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
+      }
+    }
+  }
+
+  /**
+   * Occupation Name when ID is selected
+   */
+  getOccupationName() {
+    this.masterData.occupationMaster.forEach((occupation: any) => {
+      if (
+        this.personalInfoFormGroup.value.occupation ===
+          occupation.occupationID &&
+        this.personalInfoFormGroup.value.occupation !== 7
+      ) {
+        this.personalInfoFormGroup.patchValue({
+          occupationOther: occupation.occupationType,
+        });
+        console.log('reached form');
+      }
+    });
+
+    if (
+      !this.personalInfoFormGroup.value.occupationOther ||
+      this.personalInfoFormGroup.value.occupation === 7
+    ) {
+      this.personalInfoFormGroup.patchValue({
+        occupationOther: null,
+      });
+    }
+  }
+
+  /**
+   * Education Qualification when ID is selected
+   */
+  onEducationQualificationChanged() {
+    const qualificationMaster = this.masterData.qualificationMaster;
+    qualificationMaster.forEach((element: any, i: any) => {
+      if (
+        element.educationID ===
+        this.personalInfoFormGroup.value.educationQualification
+      ) {
+        this.personalInfoFormGroup.patchValue({
+          educationQualificationName: element.educationType,
+        });
+      }
+    });
+  }
+
+  /***
    *
    * Load Editing Data to Form
    */
@@ -682,13 +759,26 @@ export class PersonalInformationComponent {
     }
   }
 
-    ngOnDestroy() {
-      if (this.masterDataSubscription) {
-        this.masterDataSubscription.unsubscribe();
-      }
-      if (this.patientRevisit && this.revisitDataSubscription) {
-        this.revisitDataSubscription.unsubscribe();
-      }
+  ngOnDestroy() {
+    if (this.masterDataSubscription) {
+      this.masterDataSubscription.unsubscribe();
     }
-  
+    if (this.patientRevisit && this.revisitDataSubscription) {
+      this.revisitDataSubscription.unsubscribe();
+    }
+  }
+}
+
+export function maxLengthValidator(maxLength: number): ValidatorFn {
+  return (control: AbstractControl): { [key: string]: any } | null => {
+    const value = control.value;
+
+    if (value && value.length > maxLength) {
+      console.log('maxLnegthvalidator', value);
+
+      return { maxLengthExceeded: true };
+    }
+
+    return null;
+  };
 }

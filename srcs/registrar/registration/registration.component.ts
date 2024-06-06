@@ -99,29 +99,6 @@ export class RegistrationComponent {
       };
     }
 
-  addControlsToFormGroup(groupName: string, formData: any[]): void {
-    const formGroup = this.mainForm.get(groupName) as FormGroup;
-    formData.forEach(item => {
-      const validators: any = [];
- 
-      if (item.allowText) {
-        validators.push(this.allowTextValidator(item.allowText));
-      }
- 
-      if (item.allowMin !== undefined) {
-        validators.push(this.minValidator(parseInt(item.allowMin)));
-      }
-      if (item.allowMax !== undefined) {
-        validators.push(this.maxValidator(parseInt(item.allowMax)));
-      }
- 
-      const control = this.fb.control(null, validators);
-      if(item.fieldName){
-      formGroup.addControl(item.fieldName, control);
-      }
-    });
-  }
-
   get personalInfoFormGroup(): FormGroup{
     return this.mainForm.get('personalInfoForm') as FormGroup;
   }
@@ -157,8 +134,11 @@ export class RegistrationComponent {
       this.revisitDataSubscription =
         this.registrarService.beneficiaryEditDetails$.subscribe(res => {
           if (res !== null && benID === res.beneficiaryID) {
-            console.log('beneficiary revisit data', res)
-            this.revisitData = Object.assign({}, res);
+            console.log('beneficiary revisit data', res);
+            let otherFieldsData = JSON.parse(res.otherFields);
+            let data = Object.assign({}, res, otherFieldsData)
+            this.revisitData = Object.assign({}, data);
+            console.log('revist Data json', data);
           } else {
             this.redirectToSearch();
           }
@@ -250,11 +230,6 @@ export class RegistrationComponent {
         }
       }
     });
-    this.addControlsToFormGroup('personalInfo', this.personalInfoData);
-    this.addControlsToFormGroup('locationInfo', this.locationInfoData);
-    this.addControlsToFormGroup('otherInfo', this.otherInfoData);
-    this.addControlsToFormGroup('abhaInfo', this.abhaInfoData)
-    console.log('final form controls', this.mainForm)
     }
 
   onFormSubmit() {
@@ -318,48 +293,15 @@ export class RegistrationComponent {
     );
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
-      // firstName: personalForm.controls['firstName']?.value,
-      // lastName: personalForm.controls['lastName']?.value,
-      // dOB: personalForm.controls['dOB']?.value,
-      // fatherName: othersForm.controls['fatherName']?.value,
-      // spouseName: personalForm.controls['spouseName']?.value,
-      // motherName: othersForm.controls['motherName']?.value,
-      // // govtIdentityNo: null,
-      // // govtIdentityTypeID: null,
-      // emergencyRegistration: false,
-      // titleId: null,
-      // benImage: personalForm.controls['image']?.value,
-      // bankName: othersForm.controls['bankName']?.value,
-      // branchName: othersForm.controls['branchName']?.value,
-      // ifscCode: othersForm.controls['ifscCode']?.value,
-      // accountNo: othersForm.controls['accountNo']?.value,
-      // // maritalStatusID: personalForm.controls['maritalStatus',
-      // maritalStatusName: personalForm.controls['maritalStatus']?.value,
-      // ageAtMarriage: personalForm.controls['ageAtMarriage']?.value,
-      // // genderID: personalForm.controls[gender,
-      // genderName: personalForm.controls['genderName']?.value,
-      // literacyStatus: personalForm.controls['literacyStatus']?.value,
-      // email: othersForm.controls['emailID']?.value,
-      // // providerServiceMapId: localStorage.getItem('providerServiceID'),
-      // providerServiceMapID: localStorage.getItem('providerServiceID'),
       dob: personalForm.controls['dOB']?.value,
 
 
       i_bendemographics: {
-        // incomeStatusID: personalForm.controls[income,
-        // incomeStatusName: personalForm.controls['incomeName']?.value,
         monthlyFamilyIncome: personalForm.controls['monthlyFamilyIncome']?.value || null,
-        // occupationID: personalForm.controls[occupation || null,
         occupationName: personalForm.controls['occupationName']?.value || null,
         communityName: othersForm.controls['communityName']?.value || null,
         countryID: this.country.id || null,
         countryName: this.country.Name || null,
-        // educationID: personalForm.controls[educationQualification || null,
-        // educationName: personalForm.controls['educationQualificationName']?.value || null,
-        // communityID: othersForm.controls[community || null,
-        // religionID: othersForm.controls[religion || null,
-        // religionName: othersForm.controls['religionOther']?.value || null,
-        // countryName: this.country.Name || null,
         stateID: demographicsForm.controls['stateID']?.value  || null,
         stateName: demographicsForm.controls['stateName']?.value || null,
         districtID: demographicsForm.controls['districtID']?.value || null,
@@ -376,11 +318,11 @@ export class RegistrationComponent {
         servicePointID: localStorage.getItem('servicePointID') || null,
         servicePointName: localStorage.getItem('servicePointName') || null,
         habitation: demographicsForm.controls['habitation']?.value || null,
-        pinCode: demographicsForm.controls['pincode']?.value || null,
+        pinCode: demographicsForm.controls['PinCode']?.value || null,
         addressLine1: demographicsForm.controls['addressLine1']?.value || null,
         addressLine2: demographicsForm.controls['addressLine2']?.value || null,
         addressLine3: demographicsForm.controls['addressLine3']?.value || null,
-        religionName: othersForm.controls['religionOther']?.value || null,
+        religionName: othersForm.controls['religionName']?.value || null,
       },
       benPhoneMaps: [
         {
@@ -390,7 +332,6 @@ export class RegistrationComponent {
           // benRelationshipID: personalForm.controls['parentRelation']?.value,
         },
       ],
-      // beneficiaryIdentities: iEMRids,
     };
     return finalForm;
   }
@@ -406,14 +347,7 @@ export class RegistrationComponent {
 
   findMissingKeys(iemrForm: any , mainForm: any): any {
     const differences: { [key: string]: any } = {};
- 
-    // Add keys from iemrForm that are not in mainForm
-    // for (const key in iemrForm) {
-    //   if (!(key in mainForm)) {
-    //     differences[key] = iemrForm[key];
-    //   }
-    // }
- 
+
     // Add keys from mainForm that are not in iemrForm
     for (const key in mainForm) {
       if (!(key in iemrForm.i_bendemographics) && !(key in iemrForm.benPhoneMaps)) {

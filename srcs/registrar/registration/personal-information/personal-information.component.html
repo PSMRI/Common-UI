@@ -34,11 +34,18 @@
       <div id="data_row" class="col-md-10 order-md-first">
       <div class="row">
         <div  class="col-xs-12 col-sm-6 col-md-3 col-lg-3 box" *ngFor="let item of formData">
+          <div>
         <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="input" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}" (change)="checkFieldValidations(item)"
+            <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}" (change)="checkFieldValidations(item)"
              formControlName="{{item.fieldName}}"/>
           </mat-form-field>
+          <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['required'] && personalInfoFormGroup.controls[item.fieldName].value?.dirty"> Field is Required</mat-error>
+            <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['minlength'] ">
+                Minimum length should be {{item.allowMin}} characters </mat-error>
+             <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['maxlength']">
+              Maximum length can only be {{item.allowMax}} characters</mat-error>
+            </div>
 
           <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
@@ -46,6 +53,7 @@
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
+          
 
           <!-- <mat-form-field class="input-full-width"  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
             <mat-label> {{ item.fieldTitle }}</mat-label>

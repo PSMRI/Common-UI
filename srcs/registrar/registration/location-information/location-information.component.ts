@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { RegistrarService } from '../../services/registrar.service';
 
 @Component({
@@ -42,9 +42,18 @@ export class LocationInformationComponent {
 
   ngOnInit(){
     this.formData.forEach((item: any) => {
-      if(item.fieldName)
-      this.locationInfoFormGroup.addControl(item.fieldName, new FormControl());
-    });
+      if(item.fieldName && item.allowText){
+        this.locationInfoFormGroup.addControl(item.fieldName, new FormControl(null,
+          [
+            Validators.pattern(this.allowTextValidator(item.allowText)),
+            Validators.minLength(parseInt(item?.allowMin)),
+            Validators.maxLength(parseInt(item?.allowMax)),
+          ]
+      ));
+    } else {
+      this.locationInfoFormGroup.addControl(item.fieldName, new FormControl(null));
+    }    
+  });
     this.locationInfoFormGroup.addControl('stateID', new FormControl());
     this.locationInfoFormGroup.addControl('districtID', new FormControl());
     this.locationInfoFormGroup.addControl('blockID', new FormControl());
@@ -90,6 +99,38 @@ export class LocationInformationComponent {
       this.loadServicePoint();
     }
   }
+
+  allowTextValidator(allowText: any) {
+    let regex: RegExp;
+ 
+    switch (allowText) {
+        case 'alpha':
+            regex = /^[a-zA-Z]*$/;
+            break;
+        case 'numeric':
+            regex = /^[0-9]*$/;
+            break;
+        case 'alphaNumeric':
+            regex = /^[a-zA-Z0-9]*$/;
+            break;
+        default:
+            regex = /^[a-zA-Z0-9 ]*$/;
+            break; // Add break statement here
+    };
+    
+    return regex; // Move this line outside the switch block
+}
+
+onInputChanged(event: Event,maxLength:any) {
+  const inputElement = event.target as HTMLInputElement;
+  const inputValue = inputElement.value;
+   
+ 
+  if (maxLength && inputValue.length >= parseInt(maxLength)) {
+    // Add 'A' character when the input length exceeds the limit      
+    inputElement.value = inputValue.slice(0, maxLength);
+  }
+}
 
   // Calling all data masters separately
   loadLocalMasterForDemographic() {
@@ -211,8 +252,8 @@ export class LocationInformationComponent {
       });
       if(this.patientRevisit){
         this.locationInfoFormGroup.patchValue({
-          districtBranchID: this.locationPatchDetails.subDistrictID,
-          districtBranchName: this.locationPatchDetails.villageName,
+          districtBranchID: this.locationPatchDetails.districtBranchID,
+          districtBranchName: this.locationPatchDetails.districtBranchName,
         });
       } else {
         this.locationInfoFormGroup.patchValue({
