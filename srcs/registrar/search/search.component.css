@@ -7,7 +7,7 @@
   }
 
   .btn {
-    background: #0277bd !important;
+    background: #336CFB   !important;
   }
 
   .spacer {
@@ -48,10 +48,11 @@
     overflow: hidden;
     border-radius: 2px;
     border-width: 0px;
+    margin-left: 0px;
     box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08);
-    display: flex;
+    /* display: flex; */
     justify-content: space-between;
-    width: 850px;
+    width: 440px;
   }
 
   .search_icon {
@@ -60,13 +61,14 @@
 
   .search_button {
     padding: 0;
-    width: 440px;
+    width: -1px;
     min-height: 40px;
     background: none;
     border: none;
     transform: scale(1);
     transition: all 1s;
     outline: none;
+    color: #336CFB   !important ;
   }
 
   .search_button:active {
