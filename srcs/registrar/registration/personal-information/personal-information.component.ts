@@ -589,7 +589,7 @@ export class PersonalInformationComponent {
       }`,
       gender: element.m_gender.genderID,
       genderName: element.m_gender.genderName,
-      dob: moment(element.dOB).toDate(),
+      dOB: moment(element.dOB).toDate(),
       maritalStatus:
         (element.maritalStatus && element.maritalStatus.maritalStatusID) ||
         null,
