@@ -354,7 +354,10 @@ export class RegistrationComponent {
         differences[key] = mainForm[key];
       }
     }
- 
+    if (differences['dob']) {
+      const dobDate = new Date(differences['dob']);
+      differences['dob'] = dobDate.toISOString();
+    }
     return differences;
   }
 
@@ -472,7 +475,7 @@ export class RegistrationComponent {
         {
           // benPhMapID: this.getBenPhMapID(personalForm.controls.benPhMapID),
           beneficiaryRegID: personalForm.controls['beneficiaryRegID']?.value || null,
-          parentBenRegID: personalForm.controls['parentRegID']?.value || null,
+          parentBenRegID: personalForm.controls['beneficiaryRegID']?.value || null,
           benRelationshipID: personalForm.controls['parentRelation']?.value || null,
           // benRelationshipType: {
             // benRelationshipID: personalForm.controls['parentRelation']?.value,
@@ -488,6 +491,9 @@ export class RegistrationComponent {
         },
       ],
       beneficiaryID: personalForm.controls['beneficiaryID']?.value || null,
+      changeInSelfDetails: true,
+      changeInOtherDetails: true,
+      changeInAssociations: true,
     };
 
     return finalForm;
