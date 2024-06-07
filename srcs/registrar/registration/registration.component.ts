@@ -318,7 +318,7 @@ export class RegistrationComponent {
         servicePointID: localStorage.getItem('servicePointID') || null,
         servicePointName: localStorage.getItem('servicePointName') || null,
         habitation: demographicsForm.controls['habitation']?.value || null,
-        pinCode: demographicsForm.controls['PinCode']?.value || null,
+        pinCode: demographicsForm.controls['pinCode']?.value || null,
         addressLine1: demographicsForm.controls['addressLine1']?.value || null,
         addressLine2: demographicsForm.controls['addressLine2']?.value || null,
         addressLine3: demographicsForm.controls['addressLine3']?.value || null,
