@@ -121,6 +121,7 @@ export class SearchComponent implements OnInit, DoCheck {
               this.beneficiaryList = [];
               this.filteredBeneficiaryList = [];
               this.dataSource.data = [];
+              console.log("this.dataSource.data1", this.dataSource.data);
               this.dataSource.paginator = this.paginator;
               // this.dataSource.data.forEach((sectionCount: any, index: number) => {
               //   sectionCount.sno = index + 1;
@@ -135,8 +136,10 @@ export class SearchComponent implements OnInit, DoCheck {
                 beneficiaryList,
                 searchObject
               );
+              console.log("this.beneficiaryList2", this.beneficiaryList);
               this.filteredBeneficiaryList = this.beneficiaryList;
               this.dataSource.data = this.beneficiaryList;
+              console.log("this.dataSource.data2", this.dataSource.data);
               this.dataSource.paginator = this.paginator;
             }
             console.log('hi', JSON.stringify(beneficiaryList, null, 4));
@@ -164,7 +167,7 @@ export class SearchComponent implements OnInit, DoCheck {
         beneficiaryID: element.beneficiaryID,
         beneficiaryRegID: element.beneficiaryRegID,
         benName: `${element.firstName} ${element.lastName || ''}`,
-        genderName: `${element.m_gender.genderName || 'Not Available'}`,
+        genderName: `${element.genderName || 'Not Available'}`,
         fatherName: `${element.fatherName || 'Not Available'}`,
         districtName: `${
           element.i_bendemographics.districtName || 'Not Available'
@@ -182,7 +185,7 @@ export class SearchComponent implements OnInit, DoCheck {
       });
     });
     console.log(JSON.stringify(requiredBenData, null, 4), 'yoooo!');
-
+   console.log("requiredBenData", JSON.stringify(requiredBenData));
     return requiredBenData;
   }
 
@@ -241,7 +244,7 @@ export class SearchComponent implements OnInit, DoCheck {
     if (
       benObject &&
       benObject.m_gender &&
-      benObject.m_gender.genderName &&
+      benObject.genderName &&
       benObject.dOB
     ) {
       const action = false;
@@ -354,6 +357,7 @@ export class SearchComponent implements OnInit, DoCheck {
                 this.beneficiaryList = [];
                 this.filteredBeneficiaryList = [];
                 this.dataSource.data = [];
+                console.log("this.dataSource.data3", this.dataSource.data);
                 this.dataSource.paginator = this.paginator;
                 this.quicksearchTerm = null;
                 this.confirmationService.alert(
@@ -364,6 +368,7 @@ export class SearchComponent implements OnInit, DoCheck {
                 this.beneficiaryList = this.searchRestruct(beneficiaryList, {});
                 this.filteredBeneficiaryList = this.beneficiaryList;
                 this.dataSource.data = this.beneficiaryList;
+                console.log("this.dataSource.data4", this.dataSource.data);
                 this.dataSource.paginator = this.paginator;
                 this.dataSource.data.forEach(
                   (sectionCount: any, index: number) => {
