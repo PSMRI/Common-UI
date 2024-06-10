@@ -131,12 +131,21 @@ export class RegistrationComponent {
    * Loading Data of Beneficiary as Observable
    */
     callBeneficiaryDataObservable(benID: any) {
+      let data: any;
       this.revisitDataSubscription =
         this.registrarService.beneficiaryEditDetails$.subscribe(res => {
           if (res !== null && benID === res.beneficiaryID) {
             console.log('beneficiary revisit data', res);
-            let otherFieldsData = JSON.parse(res.otherFields);
-            let data = Object.assign({}, res, otherFieldsData)
+            let addForm = res.otherFields;
+            if(addForm !== undefined){
+              let otherFieldsData = JSON.parse(res.otherFields);
+              data = Object.assign({}, res, otherFieldsData)
+            }
+            else{
+              data = Object.assign({}, res);
+            }
+            // let otherFieldsData = JSON.parse(res.otherFields);
+            // let data = Object.assign({}, res, otherFieldsData)
             this.revisitData = Object.assign({}, data);
             console.log('revist Data json', data);
           } else {
