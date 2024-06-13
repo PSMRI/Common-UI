@@ -34,21 +34,12 @@ export class LocationInformationComponent {
   villageList: any;
   servicePointList: any=[];
   locationPatchDetails: any;
-  locationInfoSubscription!: Subscription;
 
 
   constructor(
     private fb: FormBuilder,
     private registrarService: RegistrarService
-  ){
-    this.locationInfoSubscription =
-    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
-      this.locationInfoFormGroup.patchValue({
-        stateName: response.state,
-        districtName: response.district,
-      });
-    });
-  }
+  ){ }
 
   ngOnInit(){
     this.formData.forEach((item: any) => {
@@ -362,11 +353,5 @@ onInputChanged(event: Event,maxLength:any) {
       servicePointName: this.demographicsMaster.servicePointName,
     });
   }
-  }
-
-  ngOnDestroy() {
-    if (this.locationInfoSubscription) {
-      this.locationInfoSubscription.unsubscribe();
-    }
   }
 }
