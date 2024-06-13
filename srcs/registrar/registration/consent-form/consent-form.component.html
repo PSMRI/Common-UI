@@ -1,0 +1,35 @@
+<section id="searchDialog" class="container-fluid box">
+  <div class="title">
+    <h4>{{ currentLanguageSet?.beneficaryConsent }}</h4>
+    <mat-icon
+      mat-icon-button
+      class="pull-right close-btn"
+      (click)="closeConsent('1')"
+      >close</mat-icon
+    >
+  </div>
+  <mat-dialog-content>
+    <section>
+      <p class="textFormat">
+        आपको बेहतर सेवा प्रदान करने के लिए, हम आपकी व्यक्तिगत जानकारी का अनुरोध
+        करते हैं। आपके द्वारा प्रदान की जाने वाली जानकारी को गोपनीय रखा जाएगा और
+        इसका उपयोग केवल अनुसंधान और विश्लेषण के लिए किया जाएगा।
+      </p>
+    </section>
+    <section>
+      <p class="textFormat">
+        {{ currentLanguageSet?.consentFormText }}
+      </p>
+    </section>
+  </mat-dialog-content>
+  <mat-dialog-actions class="pull-right">
+    <button
+      class="full-width-login background-overall"
+      type="button"
+      (click)="acceptConsent('1')"
+    >
+      Accept
+    </button>
+  </mat-dialog-actions>
+  <div class="clearfix"></div>
+</section>

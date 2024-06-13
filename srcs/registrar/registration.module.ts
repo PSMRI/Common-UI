@@ -25,7 +25,7 @@ import { EditFamilyTaggingComponent } from './family-tagging/edit-family-tagging
 import { GenerateAbhaComponentComponent } from './generate-abha-component/generate-abha-component.component';
 import { GenerateMobileOtpGenerationComponent } from './generate-mobile-otp-generation/generate-mobile-otp-generation.component';
 import { HealthIdDisplayModalComponent } from './health-id-display-modal/health-id-display-modal.component';
-import { HealthIdOtpGenerationComponent } from './health-id-otp-generation/health-id-otp-generation.component';
+import { HealthIdOtpGenerationComponent, HealthIdOtpSuccessComponent } from './health-id-otp-generation/health-id-otp-generation.component';
 import { ViewHealthIdCardComponent } from './view-health-id-card/view-health-id-card.component';
 import { SearchFamilyComponent } from './search-family/search-family.component';
 import { BeneficiaryDetailsComponent } from './beneficiary-details/beneficiary-details.component';
@@ -33,6 +33,7 @@ import { HealthIdValidateComponent } from './health-id-validatepopup/health-id-v
 import { SetPasswordForAbhaComponent } from './set-password-for-abha/set-password-for-abha.component';
 import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
 import { FamilyTaggingService } from './services/familytagging.service';
+import { ConsentFormComponent } from './registration/consent-form/consent-form.component';
 
 
 @NgModule({
@@ -53,11 +54,13 @@ import { FamilyTaggingService } from './services/familytagging.service';
     GenerateMobileOtpGenerationComponent,
     HealthIdDisplayModalComponent,
     HealthIdOtpGenerationComponent,
+    HealthIdOtpSuccessComponent,
     ViewHealthIdCardComponent,
     SearchFamilyComponent,
     BeneficiaryDetailsComponent,
     HealthIdValidateComponent,
-    SetPasswordForAbhaComponent
+    SetPasswordForAbhaComponent,
+    ConsentFormComponent
   ],
   imports: [
     CommonModule,

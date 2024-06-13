@@ -8,6 +8,8 @@ import { Subscription } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import * as moment from 'moment';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ConsentFormComponent } from './consent-form/consent-form.component';
 
 @Component({
   selector: 'app-registration',
@@ -33,6 +35,7 @@ export class RegistrationComponent {
   revisitData: any;
   abhaInfoData: any;
   serviceLine: any;
+  consentGranted: any;
 
   constructor(
     private registrationService: RegistrationService,
@@ -42,7 +45,8 @@ export class RegistrationComponent {
     private route: ActivatedRoute,
     private languageComponent: SetLanguageComponent,
     private httpServiceService: HttpServiceService,
-    private router: Router ){
+    private router: Router,
+    private dialog: MatDialog, ){
     this.mainForm = this.fb.group({
       personalInfoForm: this.fb.group({}),
       locationInfoForm: this.fb.group({}),
@@ -123,6 +127,24 @@ export class RegistrationComponent {
       );
     } else if (this.route.snapshot.params['beneficiaryID'] === undefined) {
       this.patientRevisit = false;
+    }
+    this.openConsent();
+  }
+
+  openConsent() {
+    if (this.patientRevisit === false) {
+      const mdDialogRef: MatDialogRef<ConsentFormComponent> = this.dialog.open(
+        ConsentFormComponent,
+        {
+          width: '50%',
+          height: '300px',
+          disableClose: true,
+        },
+      );
+      mdDialogRef.afterClosed().subscribe((consentProvided) => {
+        this.consentGranted = consentProvided;
+        this.registrarService.sendConsentStatus(consentProvided);
+      });
     }
   }
 
@@ -233,7 +255,7 @@ export class RegistrationComponent {
       this.otherInfoData = item.fields;
       }
       if(item.sectionName.toLowerCase() === "abha information"){
-        if(this.serviceLine === 'HWC'){
+        if(this.serviceLine === 'HWC' || this.serviceLine === 'TM'){
         this.abhaInfoData = item.fields;
         this.enableAbhaInfo = true;
         }
@@ -302,6 +324,7 @@ export class RegistrationComponent {
     );
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
+      beneficiaryConsent: true,
       dob: personalForm.controls['dOB']?.value,
 
 

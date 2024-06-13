@@ -272,6 +272,7 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
         (res: any) => {
           if (res.statusCode === 200 && res.data) {
             this.registrarService.abhaGenerateData = res.data;
+            console.log(this.registrarService.abhaGenerateData, "MY ABHA STORED RES");
             this.registrarService.aadharNumberNew = this.aadharNum;
             this.registrarService.getabhaDetail(true);
 
@@ -296,80 +297,21 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
                 gender = 'Transgender';
               }
 
-              const filteredGender =
-                this.registrarMasterData.genderMaster.filter(
-                  (g: any) => g.genderName === gender,
-                );
-
-              let genderID: any;
-              let genderName: any;
-              if (filteredGender.length > 0) {
-                genderID = filteredGender[0].genderID;
-                genderName = filteredGender[0].genderName;
-              }
-              let stateID: any;
-              let stateName: any;
-              let matchedState;
-              let matchedDistrict;
-              let districtID: any;
-              let districtName: any;
-              const location = JSON.parse(
-                localStorage.getItem('location') as any,
-              );
-              location.stateMaster.forEach((item: any) => {
-                if (item.govtLGDStateID === res.data.stateCode) {
-                  matchedState = item;
-                  stateID = matchedState.stateID;
-                  stateName = matchedState.stateName;
-
-                  this.registrarService
-                    .getDistrictList(stateID)
-                    .subscribe((resp: any) => {
-                      if (resp && resp.statusCode === 200) {
-                        const districtList = resp.data;
-                        this.registrarService.updateDistrictList(districtList);
-                        resp.data.forEach((item: any) => {
-                          if (
-                            item.govtLGDDistrictID === res.data.districtCode
-                          ) {
-                            matchedDistrict = item;
-                            districtID = matchedDistrict.districtID;
-                            districtName = matchedDistrict.districtName;
-                          }
-                        });
-                        this.registrarService
-                          .getSubDistrictList(districtID)
-                          .subscribe((res: any) => {
-                            if (res && res.statusCode === 200) {
-                              const subDistrictList = res.data;
-                              this.registrarService.updateSubDistrictList(
-                                subDistrictList,
-                              );
-                            }
-                          });
-
-                        const dat = {
-                          healthIdNumber: res.data.healthIdNumber,
-                          healthId: res.data.healthId,
-                          firstName: res.data.firstName,
-                          lastName: res.data.lastName,
-                          phoneNo: res.data.mobile,
-                          dob: dob,
-                          gender: genderID,
-                          genderName: genderName,
-                          // "stateID": res.data.stateCode,
-                          // "stateName": res.data.stateName,
-                          stateID: stateID,
-                          stateName: stateName,
-                          districtID: districtID,
-                          districtName: districtName,
-                        };
-                        this.registrarService.setHealthIdMobVerification(dat);
-                        this.dialogRef.close(dat);
-                      }
-                    });
-                }
-              });
+              const dat = {
+                healthIdNumber: res.data.healthIdNumber,
+                healthId: res.data.healthId,
+                firstName: res.data.firstName,
+                lastName: res.data.lastName,
+                phoneNo: res.data.mobile,
+                dob: dob,
+                genderName: gender,
+                emailID: res.data.email,
+                state: res.data.stateName,
+                district: res.data.districtName,
+              };
+              this.registrarService.setHealthIdMobVerification(dat);
+              this.registrarService.getRegistrarAbhaDetail(dat);
+              this.dialogRef.close(dat);
             });
           } else {
             this.showProgressBar = false;

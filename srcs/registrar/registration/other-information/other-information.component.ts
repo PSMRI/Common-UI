@@ -6,6 +6,10 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { RegistrarService } from '../../services/registrar.service';
+import { Subscription } from 'rxjs';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ConsentFormComponent } from '../consent-form/consent-form.component';
 
 @Component({
   selector: 'app-other-information',
@@ -24,8 +28,19 @@ export class OtherInformationComponent {
 
   @Input()
   revisitData: any;
+  otherInfoSubscription!: Subscription;
+  consentGranted: any;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder,
+    private registrarService: RegistrarService,
+    private dialog: MatDialog,) {
+    this.otherInfoSubscription =
+    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
+      this.otherInfoFormGroup.patchValue({
+        email: response.emailID,
+      });
+    });
+  }
 
   ngOnInit() {
     this.formData.forEach((item: any) => {
@@ -62,7 +77,7 @@ export class OtherInformationComponent {
         regex = /^[0-9]*$/;
         break;
       case 'alphaNumeric':
-        regex = /^[a-zA-Z0-9]*$/;
+        regex = /^[0-9a-zA-Z_.]+@[a-zA-Z_]+?\.\b(org|com|in|co.in|ORG|COM|IN|CO.IN)\b$/;
         break;
       default:
         regex = /^[a-zA-Z0-9 ]*$/;
@@ -79,6 +94,29 @@ export class OtherInformationComponent {
     if (maxLength && inputValue.length >= parseInt(maxLength)) {
       // Add 'A' character when the input length exceeds the limit
       inputElement.value = inputValue.slice(0, maxLength);
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.otherInfoSubscription) {
+      this.otherInfoSubscription.unsubscribe();
+    }
+  }
+
+  openConsent() {
+    if (this.patientRevisit === false) {
+      const matDialogRef: MatDialogRef<ConsentFormComponent> = this.dialog.open(
+        ConsentFormComponent,
+        {
+          width: '650px',
+          height: '700px',
+          disableClose: true,
+        },
+      );
+      matDialogRef.afterClosed().subscribe((consentProvided) => {
+        this.consentGranted = consentProvided;
+        this.registrarService.sendConsentStatus(consentProvided);
+      });
     }
   }
 }

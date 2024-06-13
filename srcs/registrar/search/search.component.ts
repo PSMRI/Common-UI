@@ -38,6 +38,10 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { RegistrarService } from 'Common-UI/srcs/registrar/services/registrar.service';
 import * as moment from 'moment';
 
+export interface Consent {
+  consentGranted: string;
+}
+
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
@@ -56,6 +60,7 @@ export class SearchComponent implements OnInit, DoCheck {
   languageComponent!: SetLanguageComponent;
   currentLanguageSet: any;
   searchPattern!: string;
+  consentGranted: any;
   displayedColumns: string[] = [
     'edit',
     'beneficiaryID',

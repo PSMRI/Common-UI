@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { RegistrarService } from '../../services/registrar.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-location-information',
@@ -33,12 +34,21 @@ export class LocationInformationComponent {
   villageList: any;
   servicePointList: any=[];
   locationPatchDetails: any;
+  locationInfoSubscription!: Subscription;
 
 
   constructor(
     private fb: FormBuilder,
     private registrarService: RegistrarService
-  ){}
+  ){
+    this.locationInfoSubscription =
+    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
+      this.locationInfoFormGroup.patchValue({
+        stateName: response.state,
+        districtName: response.district,
+      });
+    });
+  }
 
   ngOnInit(){
     this.formData.forEach((item: any) => {
@@ -354,4 +364,9 @@ onInputChanged(event: Event,maxLength:any) {
   }
   }
 
+  ngOnDestroy() {
+    if (this.locationInfoSubscription) {
+      this.locationInfoSubscription.unsubscribe();
+    }
+  }
 }

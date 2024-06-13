@@ -44,6 +44,7 @@ export class PersonalInformationComponent {
   ageLimit = 120;
   ageforMarriage = 12;
   maritalStatusMaster: any;
+  personalInfoSubscription!: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -52,7 +53,18 @@ export class PersonalInformationComponent {
     private beneficiaryDetailsService: BeneficiaryDetailsService,
     private confirmationService: ConfirmationService,
     private languageComponent: SetLanguageComponent
-  ) {}
+  ) {
+    this.personalInfoSubscription =
+    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
+      this.personalInfoFormGroup.patchValue({
+        firstName: response.firstName,
+        lastName: response.lastName,
+        phoneNo: response.phoneNo,
+        genderName: response.genderName,
+        dOB: response.dob,
+      });
+    });
+  }
 
   ngOnInit() {
     this.formData.forEach((item: any) => {
@@ -765,6 +777,9 @@ export class PersonalInformationComponent {
     }
     if (this.patientRevisit && this.revisitDataSubscription) {
       this.revisitDataSubscription.unsubscribe();
+    }
+    if (this.personalInfoSubscription) {
+      this.personalInfoSubscription.unsubscribe();
     }
   }
 }

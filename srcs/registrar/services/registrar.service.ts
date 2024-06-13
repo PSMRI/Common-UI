@@ -27,6 +27,7 @@ import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class RegistrarService {
+  consentGranted = '0';
 
   stateIdFamily: any = null;
 
@@ -67,6 +68,10 @@ export class RegistrarService {
 
   public dialogData = new BehaviorSubject<any>(null);
   dialogResult$ = this.dialogData.asObservable();
+
+  registrationABHA: any = null;
+  registrationABHADet = new BehaviorSubject<any>(this.registrationABHA);
+  registrationABHADetails$ = this.registrationABHADet.asObservable();
 
 
   constructor(private http: HttpClient) {}
@@ -293,6 +298,11 @@ export class RegistrarService {
     this.abhaDetailData.next(this.abhaDetail);
   }
 
+  getRegistrarAbhaDetail(registrationABHADetails: any) {
+    this.registrationABHA = registrationABHADetails;
+    this.registrationABHADet.next(this.registrationABHA);
+  }
+
   districtMainList = new BehaviorSubject<any[]>([]);
   districtList$ = this.districtMainList.asObservable();
 
@@ -306,5 +316,11 @@ export class RegistrarService {
     this.subDistrictMainList.next(subDistrictList);
   }
 
+  subject = new BehaviorSubject(this.consentGranted);
+  consentStatus$ = this.subject.asObservable();
 
+  sendConsentStatus(grantValue: string) {
+    this.consentGranted = grantValue;
+    this.subject.next(grantValue);
+  }
 }
