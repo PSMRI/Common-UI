@@ -137,8 +137,8 @@ export class RegistrationComponent {
         ConsentFormComponent,
         {
           width: '50%',
-          height: '300px',
-          disableClose: true,
+          height: '350px',
+          // disableClose: true,
         },
       );
       mdDialogRef.afterClosed().subscribe((consentProvided) => {
