@@ -1,4 +1,4 @@
-<section id="searchDialog" class="container-fluid" style="overflow: hidden;">
+<section id="searchDialog" class="container-fluid" style="overflow: hidden">
   <div class="title">
     <h4>{{ currentLanguageSet?.beneficaryConsent }}</h4>
     <mat-icon
@@ -18,7 +18,9 @@
     </section>
     <section>
       <p class="textFormat">
-        {{ currentLanguageSet?.consentFormText }}
+        To provide you with better service, we would,request your personal
+        information. The information that you will providewill be kept
+        confidential and will only be used for research and analysis.
       </p>
     </section>
   </mat-dialog-content>
@@ -26,8 +28,7 @@
     <button
       class="full-width-login mat_blue"
       type="button"
-      (click)="acceptConsent('1')"
-    >
+      (click)="acceptConsent('1')">
       Accept
     </button>
   </mat-dialog-actions>

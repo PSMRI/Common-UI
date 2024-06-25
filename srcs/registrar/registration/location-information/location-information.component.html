@@ -42,7 +42,8 @@
           </mat-form-field> -->
 
           <div *ngIf="item?.fieldType?.toLowerCase() === 'radio'">
-            <mat-label>{{ item.fieldTitle }}</mat-label>
+            <mat-label *ngIf="item.isRequired === true">{{ item.fieldTitle }}*</mat-label>
+            <mat-label *ngIf="item.isRequired !== true">{{ item.fieldTitle }}</mat-label>            
           <mat-radio-group  formControlName="{{item.fieldName}}" required="{{item.isRequired}}">
             <mat-radio-button class="radioButtonFontStyle" style="margin-left: 5px; margin-right: 5px;" *ngFor="let option of item.options" [value]="option">
               {{option}}
