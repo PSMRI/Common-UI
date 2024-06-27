@@ -137,7 +137,7 @@ export class RegistrationComponent {
         ConsentFormComponent,
         {
           width: '50%',
-          height: '320px',
+          height: '330px',
           // disableClose: true,
         },
       );
