@@ -11,7 +11,7 @@
 }
 
 .title_background {
-    background: #0277bd;
+    /* background: #0277bd; */
     color: white;
 }
 
@@ -23,9 +23,9 @@
     margin: 15px;
 }
 
-.info {
+/* .info {
     background: #0277bd;
-}
+} */
 
 .title {
     margin-left: -15px;
