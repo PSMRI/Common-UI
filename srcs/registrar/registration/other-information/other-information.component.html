@@ -5,7 +5,7 @@
       <div>
         <mat-form-field  class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.fieldTitle }}</mat-label>
-          <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}"
+          <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false"
           formControlName="{{item.fieldName}}"/>
        </mat-form-field>
        <mat-error *ngIf="otherInfoFormGroup.controls[item.fieldName].errors?.['required'] && otherInfoFormGroup.controls[item.fieldName].value?.dirty"> Field is Required</mat-error>
