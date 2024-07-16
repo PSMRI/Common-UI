@@ -109,7 +109,7 @@
         </mat-form-field>
       </div>
       <div class="clearfix"></div>
-      <section class="table-responsive table-striped">
+      <section>
         <table
           mat-table
           [dataSource]="dataSource"
@@ -288,10 +288,10 @@
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
         <div
-          class="pull-center"
-          style="margin-top: 5px; text-align: center"
-          [hidden]="dataSource.data.length > 0">
-          <strong>{{ currentLanguageSet?.common?.noRecordsFound }}</strong>
+        class="pull-center"
+        style="margin-top: 5px; text-align: center"
+        [hidden]="dataSource.data.length > 0">
+          <strong>{{ currentLanguageSet?.noRecordsFound }}</strong>
         </div>
         <mat-paginator
           *ngIf="dataSource.data.length > 0"

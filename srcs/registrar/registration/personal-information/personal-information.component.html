@@ -53,17 +53,6 @@
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
-          
-
-          <!-- <mat-form-field  [style.width]="'85%'"class=" "  *ngIf="item?.fieldType?.toLowerCase() === 'time'">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="time"  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
-          </mat-form-field>
-
-          <mat-form-field  [style.width]="'85%'"class=" " *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="datetime-local"  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
-          </mat-form-field> -->
 
           <mat-form-field  [style.width]="'85%'"class="  backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
