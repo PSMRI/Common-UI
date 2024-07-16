@@ -33,11 +33,11 @@
       </div>
       <div id="data_row" class="col-md-10 order-md-first">
       <div class="row">
-        <div  class="col-xs-12 col-sm-6 col-md-4 col-lg-4 box" *ngFor="let item of formData">
+        <div  class="col-xs-12 col-sm-6 col-md-4 col-lg-4" *ngFor="let item of formData">
           <div>
         <mat-form-field  [style.width]="'85%'" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}" (change)="checkFieldValidations(item)"
+            <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" (change)="checkFieldValidations(item)"
              formControlName="{{item.fieldName}}"/>
           </mat-form-field>
           <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['required'] && personalInfoFormGroup.controls[item.fieldName].value?.dirty"> Field is Required</mat-error>

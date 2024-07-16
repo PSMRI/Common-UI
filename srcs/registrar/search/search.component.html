@@ -11,7 +11,7 @@
             searchPattern
             maxlength="12"
             placeholder="{{
-              currentLanguageSet?.common?.lookForBeneficiaryIDorPhonenumberhere
+              currentLanguageSet?.ro?.benIDOrPhNo
             }}"
             class="pull-left search_textbox"
             [(ngModel)]="quicksearchTerm"
@@ -113,11 +113,8 @@
         <table
           mat-table
           [dataSource]="dataSource"
-          class="mat-elevation-z8 responsiveTable"
+          class="table table-striped"
           aria-describedby="searchBenResults">
-          {{
-            dataSource.data | json
-          }}
           <ng-container matColumnDef="edit">
             <th
               mat-header-cell
@@ -294,7 +291,7 @@
           class="pull-center"
           style="margin-top: 5px; text-align: center"
           [hidden]="dataSource.data.length > 0">
-          <strong>{{ currentLanguageSet?.noRecordsFound }}</strong>
+          <strong>{{ currentLanguageSet?.common?.noRecordsFound }}</strong>
         </div>
         <mat-paginator
           *ngIf="dataSource.data.length > 0"
