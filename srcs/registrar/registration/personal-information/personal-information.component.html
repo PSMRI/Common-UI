@@ -45,6 +45,9 @@
                 Minimum length should be {{item.allowMin}} characters </mat-error>
              <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['maxlength']">
               Maximum length can only be {{item.allowMax}} characters</mat-error>
+              <mat-error *ngIf="item.fieldName === 'ageAtMarriage'&&  personalInfoFormGroup.hasError('ageAtMarriageInvalid')">
+                Age at marriage must be less than or equal to age.
+              </mat-error>
             </div>
 
           <mat-form-field  [style.width]="'85%'" *ngIf="item?.fieldType?.toLowerCase() === 'date'">

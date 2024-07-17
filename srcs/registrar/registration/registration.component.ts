@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { RegistrarService } from '../services/registrar.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -48,7 +48,11 @@ export class RegistrationComponent {
     private router: Router,
     private dialog: MatDialog, ){
     this.mainForm = this.fb.group({
-      personalInfoForm: this.fb.group({}),
+      // personalInfoForm: this.fb.group({}),
+      personalInfoForm: this.fb.group({
+        age: [null], // Add your age control here
+        ageAtMarriage: [null], // Add your ageAtMarriage control here
+      }, { validators: ageAtMarriageValidator }),
       locationInfoForm: this.fb.group({}),
       otherInfoForm: this.fb.group({}),
       abhaInfoForm: this.fb.group({}),
@@ -619,4 +623,14 @@ export class RegistrationComponent {
     this.router.navigate(['/registrar/familyTagging', reqObj]);
   }
 
+}
+function ageAtMarriageValidator(control: AbstractControl): ValidationErrors | null {
+  const age = control.get('age')?.value;
+  const ageAtMarriage = control.get('ageAtMarriage')?.value;
+
+  if (ageAtMarriage && ageAtMarriage > age) {
+    return { ageAtMarriageInvalid: true };
+  }
+
+  return null;
 }
