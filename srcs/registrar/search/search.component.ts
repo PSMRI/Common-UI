@@ -37,6 +37,7 @@ import { ConfirmationService, CameraService, BeneficiaryDetailsService } from 's
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from 'Common-UI/srcs/registrar/services/registrar.service';
 import * as moment from 'moment';
+import { environment } from 'src/environments/environment';
 
 export interface Consent {
   consentGranted: string;
@@ -102,63 +103,333 @@ export class SearchComponent implements OnInit, DoCheck {
       beneficiaryRegID: null,
       beneficiaryID: null,
       phoneNo: null,
+      HealthID: null,
+      HealthIDNumber: null,
     };
+    if (this.validateSearchItem(searchTerm, searchObject)) {
+    this.registrarService.identityQuickSearch(searchObject).subscribe(
+      (beneficiaryList: any) => {
+        if (!beneficiaryList || beneficiaryList.length <= 0) {
+          this.beneficiaryList = [];
+          this.filteredBeneficiaryList = [];
+          this.dataSource.data = [];
+          console.log("this.dataSource.data1", this.dataSource.data);
+          this.dataSource.paginator = this.paginator;
+          // this.dataSource.data.forEach((sectionCount: any, index: number) => {
+          //   sectionCount.sno = index + 1;
+          // });
+          this.pagedList = [];
+          this.confirmationService.alert(
+            this.currentLanguageSet.alerts.info.beneficiarynotfound,
+            'info'
+          );
+        } else {
+          this.beneficiaryList = this.searchRestruct(
+            beneficiaryList,
+            searchObject
+          );
+          console.log("this.beneficiaryList2", this.beneficiaryList);
+          this.filteredBeneficiaryList = this.beneficiaryList;
+          this.dataSource.data = this.beneficiaryList;
+          console.log("this.dataSource.data2", this.dataSource.data);
+          this.dataSource.paginator = this.paginator;
+        }
+        console.log('hi', JSON.stringify(beneficiaryList, null, 4));
+      },
+      error => {
+        this.confirmationService.alert(error, 'error');
+      }
+    );
+    }
+  }
 
+  validateSearchItem(searchTerm: any, searchObject: any) {
     if (
       searchTerm === undefined ||
+      searchTerm === null ||
       searchTerm.trim() === '' ||
       searchTerm.trim().length <= 0
     ) {
       this.confirmationService.alert(
-        this.currentLanguageSet.alerts.info.pleaseenterBeneficiaryID,
-        'info'
+        this.currentLanguageSet.pleaseEnterValidInput,
+        'info',
       );
+      return false;
     } else {
-      if (searchTerm.trim().length === 10 || searchTerm.trim().length === 12) {
-        if (searchTerm.trim().length === 10) {
-          searchObject['phoneNo'] = searchTerm;
-        } else if (searchTerm.trim().length === 12) {
-          searchObject['beneficiaryID'] = searchTerm;
+      if (
+        searchTerm !== undefined &&
+        searchTerm !== null &&
+        searchTerm.trim().length >= 8 &&
+        searchTerm.trim().length <= 32
+      ) {
+        if (
+          searchTerm.trim().length === 10 ||
+          searchTerm.trim().length === 12
+        ) {
+          return this.validatePhoneNumberOrBenID(
+            searchTerm.trim(),
+            searchObject,
+          );
+        } else if (
+          searchTerm.trim().length === 14 ||
+          searchTerm.trim().length === 17
+        ) {
+          return this.checkValidHealthIDNumber(searchTerm, searchObject);
+        } else {
+          return this.validateHealthIDPattern(searchTerm.trim(), searchObject);
         }
-        this.registrarService.identityQuickSearch(searchObject).subscribe(
-          (beneficiaryList: any) => {
-            if (!beneficiaryList || beneficiaryList.length <= 0) {
-              this.beneficiaryList = [];
-              this.filteredBeneficiaryList = [];
-              this.dataSource.data = [];
-              console.log("this.dataSource.data1", this.dataSource.data);
-              this.dataSource.paginator = this.paginator;
-              // this.dataSource.data.forEach((sectionCount: any, index: number) => {
-              //   sectionCount.sno = index + 1;
-              // });
-              this.pagedList = [];
-              this.confirmationService.alert(
-                this.currentLanguageSet.alerts.info.beneficiarynotfound,
-                'info'
-              );
-            } else {
-              this.beneficiaryList = this.searchRestruct(
-                beneficiaryList,
-                searchObject
-              );
-              console.log("this.beneficiaryList2", this.beneficiaryList);
-              this.filteredBeneficiaryList = this.beneficiaryList;
-              this.dataSource.data = this.beneficiaryList;
-              console.log("this.dataSource.data2", this.dataSource.data);
-              this.dataSource.paginator = this.paginator;
-            }
-            console.log('hi', JSON.stringify(beneficiaryList, null, 4));
-          },
-          error => {
-            this.confirmationService.alert(error, 'error');
-          }
-        );
       } else {
         this.confirmationService.alert(
-          this.currentLanguageSet.alerts.info.phoneDetails,
-          'info'
+          this.currentLanguageSet.pleaseEnterValidInput,
+          'info',
         );
+        return false;
       }
+    }
+  }
+
+  validatePhoneNumberOrBenID(searchTerm: any, searchObject: any) {
+    const phoneNoPattern = /\d{10}$/;
+    const verifyPhoneNoPattern = phoneNoPattern.test(searchTerm);
+    if (verifyPhoneNoPattern) {
+      searchObject['phoneNo'] =
+        searchTerm.length === 10
+          ? searchTerm
+          : (searchObject['beneficiaryID'] = searchTerm);
+      return true;
+    } else {
+      return this.validateHealthIDPattern(searchTerm, searchObject);
+    }
+  }
+
+  validateSearchTerm(searchTerm: any, searchObject: any) {
+    if (
+      searchTerm === undefined ||
+      searchTerm === null ||
+      searchTerm.trim() === '' ||
+      searchTerm.trim().length <= 0
+    ) {
+      this.confirmationService.alert(
+        this.currentLanguageSet.pleaseEnterValidInput,
+        'info',
+      );
+    } else {
+      this.searchBeneficiaryDetails(searchTerm, searchObject);
+    }
+  }
+
+  searchBeneficiaryDetails(searchTerm?: string, searchObject?: string) {
+    if (
+      searchTerm !== undefined &&
+      searchTerm !== null &&
+      searchTerm.trim().length >= 8 &&
+      searchTerm.trim().length <= 32
+    ) {
+      let reqObj: any;
+      if (
+        searchTerm.trim().length === 10 &&
+        searchObject?.toLowerCase() === 'phone no' &&
+        searchTerm !== null &&
+        searchTerm !== undefined
+      ) {
+        reqObj = {
+          beneficiaryRegID: null,
+          beneficiaryID: null,
+          phoneNo: searchTerm,
+          HealthID: null,
+          HealthIDNumber: null,
+          familyId: null,
+          identity: null,
+        };
+        this.getSearchResult(reqObj, searchObject);
+      } else if (
+        searchTerm.trim().length === 12 &&
+        searchObject?.toLowerCase() === 'beneficiary id' &&
+        searchTerm !== null &&
+        searchTerm !== undefined
+      ) {
+        reqObj = {
+          beneficiaryRegID: null,
+          beneficiaryID: searchTerm,
+          phoneNo: null,
+          HealthID: null,
+          HealthIDNumber: null,
+          familyId: null,
+          identity: null,
+        };
+        this.getSearchResult(reqObj, searchObject);
+      } else if (
+        searchTerm.trim().length === 17 &&
+        searchObject?.toLowerCase() === 'family id' &&
+        searchTerm !== null &&
+        searchTerm !== undefined
+      ) {
+        reqObj = {
+          beneficiaryRegID: null,
+          beneficiaryID: null,
+          phoneNo: null,
+          HealthID: null,
+          HealthIDNumber: null,
+          familyId: searchTerm,
+          identity: null,
+        };
+        this.getSearchResult(reqObj, searchObject);
+      } else if (
+        (searchTerm.trim().length === 14 || searchTerm.trim().length === 17) &&
+        (searchObject?.toLowerCase() === 'health id' ||
+          searchObject?.toLowerCase() === 'healthid number') &&
+        searchTerm !== null &&
+        searchTerm !== undefined
+      ) {
+        this.checkValidHealthIDNumber(searchTerm, searchObject);
+        reqObj = {
+          beneficiaryRegID: null,
+          beneficiaryID: null,
+          phoneNo: null,
+          HealthID: searchTerm,
+          HealthIDNumber: null,
+          familyId: null,
+          identity: null,
+        };
+        this.getSearchResult(reqObj, searchObject);
+      } else if (
+        (searchTerm.trim().length === 12 || searchTerm.trim().length === 10) &&
+        searchObject?.toLowerCase() === 'govid' &&
+        searchTerm !== null &&
+        searchTerm !== undefined
+      ) {
+        reqObj = {
+          beneficiaryRegID: null,
+          beneficiaryID: null,
+          phoneNo: null,
+          HealthID: null,
+          HealthIDNumber: null,
+          familyId: null,
+          identity: searchTerm,
+        };
+        this.getSearchResult(reqObj, searchObject);
+      } else {
+        // this.confirmationService.alert(
+        //   this.currentLanguageSet.pleaseEnterValidInputFor + searchObject,
+        //   'info',
+        // );
+      }
+    } else {
+      this.confirmationService.alert(
+        this.currentLanguageSet.pleaseEnterValidInput,
+        'info',
+      );
+    }
+  }
+
+  getSearchResult(reqObj: any, searchObject: any) {
+    this.registrarService.identityQuickSearch(reqObj).subscribe(
+      (beneficiaryList: any) => {
+        if (!beneficiaryList || beneficiaryList.data.length <= 0) {
+          this.beneficiaryList.data = [];
+          this.filteredBeneficiaryList = [];
+          this.dataSource.data = [];
+          this.pagedList = [];
+          this.confirmationService.alert(
+            this.currentLanguageSet.alerts.info.beneNotFound,
+            'info',
+          );
+        } else {
+          this.beneficiaryList = this.searchRestruct(
+            beneficiaryList,
+            searchObject,
+          );
+          this.filteredBeneficiaryList = this.beneficiaryList;
+          this.dataSource.data = this.beneficiaryList;
+          if (this.paginator) {
+            this.dataSource.paginator = this.paginator;
+            this.paginator.pageSize = 5;
+            this.paginator.firstPage();
+          }
+
+          this.changeDetectorRef.detectChanges();
+        }
+        console.log(
+          'beneficiaryList********* in line 182',
+          this.beneficiaryList,
+        );
+      },
+      (error: any) => {
+        this.confirmationService.alert(error, 'error');
+      },
+    );
+  }
+
+  checkValidHealthIDNumber(searchTerm: any, searchObject: any) {
+    const healthidval =
+      searchTerm !== undefined && searchTerm !== null
+        ? searchTerm.trim()
+        : searchTerm;
+    if (
+      searchTerm !== undefined &&
+      searchTerm !== null &&
+      searchTerm.trim().length === 14
+    ) {
+      const healthIDNumberPatternWithoutHypen = /\d{14}$/;
+      return this.validateHealthIDNumberPattern(
+        healthIDNumberPatternWithoutHypen,
+        healthidval,
+        searchObject,
+      );
+    } else if (healthidval.length === 17) {
+      const healthIDNumberPatternWithHypen =
+        /^(\d{2})-(\d{4})-(\d{4})-(\d{4})*$/;
+      return this.validateHealthIDNumberPattern(
+        healthIDNumberPatternWithHypen,
+        healthidval,
+        searchObject,
+      );
+    } else {
+      return this.validateHealthIDPattern(searchTerm, searchObject);
+    }
+  }
+
+  validateHealthIDNumberPattern(
+    pattern: any,
+    healthidval: any,
+    searchObject: any,
+  ) {
+    const checkPattern = pattern.test(healthidval);
+    if (checkPattern) {
+      searchObject =
+        healthidval.length === 14
+          ? healthidval.substring(0, 2) +
+            '-' +
+            healthidval.substring(2, 6) +
+            '-' +
+            healthidval.substring(6, 10) +
+            '-' +
+            healthidval.substring(10, healthidval.length)
+          : healthidval;
+      return true;
+    } else {
+      return this.validateHealthIDPattern(healthidval, searchObject);
+    }
+  }
+
+  validateHealthIDPattern(healthidval: any, searchObject: any) {
+    let healthIDPattern;
+    if (environment.abhaExtension === '@abdm') {
+      healthIDPattern = /^([a-zA-Z0-9])+(\.[a-zA-Z0-9]+)?@([a-zA-Z]{4})$/;
+    } else {
+      healthIDPattern = /^([a-zA-Z0-9])+(\.[a-zA-Z0-9]+)?@([a-zA-Z]{3})$/;
+    }
+
+    const checkPattern = healthIDPattern.test(healthidval);
+    if (checkPattern) {
+      searchObject['HealthID'] = healthidval;
+      return true;
+    } else {
+      this.confirmationService.alert(
+        this.currentLanguageSet.pleaseEnterValidInput,
+        'info',
+      );
+      return false;
     }
   }
 
