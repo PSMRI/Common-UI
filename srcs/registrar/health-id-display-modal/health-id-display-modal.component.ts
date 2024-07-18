@@ -91,19 +91,19 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
 
   displayedColumns: any = [
     'sno',
-    'healthIDNo',
-    'healthID',
-    'createdDate',
-    'healthIDMode',
+    'abhaNumber',
+    'abha',
+    'dateOfCreation',
+    'abhaMode',
   ];
   searchDetails = new MatTableDataSource<any>();
 
   displayedColumns1: any = [
     'sno',
-    'healthIDNo',
-    'healthID',
-    'createdDate',
-    'healthIDMode',
+    'abhaNumber',
+    'abha',
+    'dateOfCreation',
+    'abhaMode',
     'action',
   ];
   displayedColumns2: any = [
