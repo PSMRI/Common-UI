@@ -38,6 +38,7 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { RegistrarService } from 'Common-UI/srcs/registrar/services/registrar.service';
 import * as moment from 'moment';
 import { environment } from 'src/environments/environment';
+import { HealthIdDisplayModalComponent } from '../health-id-display-modal/health-id-display-modal.component';
 
 export interface Consent {
   consentGranted: string;
@@ -72,6 +73,7 @@ export class SearchComponent implements OnInit, DoCheck {
     'districtVillage',
     'phoneNo',
     'registeredOn',
+    'abhaAddress',
     'image',
   ];
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
@@ -218,6 +220,24 @@ export class SearchComponent implements OnInit, DoCheck {
     }
   }
 
+  getHealthIDDetails(data: any)
+  {
+    console.log("data",data);
+    if(data.benObject !=undefined && data.benObject.abhaDetails !=undefined && data.benObject.abhaDetails !=null && 
+      data.benObject.abhaDetails.length >0)
+      {
+        this.dialog.open(HealthIdDisplayModalComponent, {
+          data: { 'dataList': data.benObject.abhaDetails ,'search':true}
+        } );
+      }
+      else
+      this.confirmationService.alert(
+        this.currentLanguageSet.abhaDetailsNotAvailable,
+        "info"
+      );
+   
+  }
+  
   searchBeneficiaryDetails(searchTerm?: string, searchObject?: string) {
     if (
       searchTerm !== undefined &&

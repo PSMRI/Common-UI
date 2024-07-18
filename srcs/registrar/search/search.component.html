@@ -4,26 +4,28 @@
       <div class="row alignBox">
         <div
           class="col-11 col-lg-11 col-sm-11 col-md-11 col-xs-11"
-          style="padding: 0; border-right: 1px solid lightgray">
+          style="padding: 0; border-right: 1px solid lightgray"
+        >
           <input
             autocomplete="off"
             id="searchbox"
             searchPattern
             maxlength="32"
-            placeholder="{{
-              currentLanguageSet?.ro?.benIDOrPhNo
-            }}"
+            placeholder="{{ currentLanguageSet?.ro?.benIDOrPhNo }}"
             class="pull-left search_textbox"
             [(ngModel)]="quicksearchTerm"
-            (keyup.enter)="identityQuickSearch(quicksearchTerm)" />
+            (keyup.enter)="identityQuickSearch(quicksearchTerm)"
+          />
         </div>
         <div
           class="col-1 col-lg-1 col-sm-1 col-md-1 col-xs-1"
-          style="padding-left: 0">
+          style="padding-left: 0"
+        >
           <button
             class="search_button pull-right"
             (click)="identityQuickSearch(quicksearchTerm)"
-            matTooltip="{{ currentLanguageSet?.quickSearch }}">
+            matTooltip="{{ currentLanguageSet?.quickSearch }}"
+          >
             <mat-icon class="material-icons search_icon">search</mat-icon>
           </button>
         </div>
@@ -38,20 +40,23 @@
         class="btn btn-link"
         data-toggle="modal "
         data-target="#fingerPrintPage "
-        matTooltip="{{ currentLanguageSet?.common?.fingerPrintSearch }}">
+        matTooltip="{{ currentLanguageSet?.common?.fingerPrintSearch }}"
+      >
         {{ currentLanguageSet?.common?.fingerPrintSearch }}
       </button>
       <button
-      mat-raised-button
-      class=" btn-default cu-btn-default reg-button mat_blue"
-      (click)="navigateTORegistrar()">
-      {{ currentLanguageSet?.ro?.registration }}
-    </button>
+        mat-raised-button
+        class="btn-default cu-btn-default reg-button mat_blue"
+        (click)="navigateTORegistrar()"
+      >
+        {{ currentLanguageSet?.ro?.registration }}
+      </button>
       <button
         mat-raised-button
-        class=" btn-default pull-right adv-button mat_blue"
+        class="btn-default pull-right adv-button mat_blue"
         data-toggle="modal "
-        (click)="openSearchDialog()">
+        (click)="openSearchDialog()"
+      >
         {{ currentLanguageSet?.bendetails?.advanceSearch }}
       </button>
       <div id="fingerPrintPage " class="modal fade" role="dialog ">
@@ -72,7 +77,8 @@
               <button
                 mat-raised-button
                 class="btn btn-default pull-right"
-                data-dismiss="modal ">
+                data-dismiss="modal "
+              >
                 {{ currentLanguageSet?.common?.close }}
               </button>
               <button mat-raised-button class="btn btn-default pull-right">
@@ -81,7 +87,8 @@
               <button
                 mat-raised-button
                 class="btn btn-default pull-right"
-                data-dismiss="modal ">
+                data-dismiss="modal "
+              >
                 {{ currentLanguageSet?.common?.submit }}
               </button>
             </div>
@@ -97,14 +104,15 @@
 <div class="row m-b-40">
   <div class="col-sm-12">
     <mat-card>
-      <div *ngIf="beneficiaryList?.length > 0" style="text-align: end;">
+      <div *ngIf="beneficiaryList?.length > 0" style="text-align: end">
         <mat-form-field id="filterbox" class="m-t-20-">
           <input
             autocomplete="off"
             matInput
             placeholder="{{ currentLanguageSet?.common?.inTableSearch }}"
             #filterTerm
-            (keyup)="filterBeneficiaryList(filterTerm.value)" />
+            (keyup)="filterBeneficiaryList(filterTerm.value)"
+          />
           <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
       </div>
@@ -114,13 +122,15 @@
           mat-table
           [dataSource]="dataSource"
           class="table table-striped"
-          aria-describedby="searchBenResults">
+          aria-describedby="searchBenResults"
+        >
           <ng-container matColumnDef="edit">
             <th
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.edit }}
             </th>
             <td mat-cell *matCellDef="let beneficiary">
@@ -128,10 +138,12 @@
                 matTooltip="{{ currentLanguageSet?.editBeneficiary }}"
                 type="button"
                 class="btn text-center"
-                (click)="editPatientInfo(beneficiary)">
+                (click)="editPatientInfo(beneficiary)"
+              >
                 <span
                   class="fa fa-pencil cursorPointer fa-lg"
-                  aria-hidden="true "></span>
+                  aria-hidden="true "
+                ></span>
               </button>
             </td>
           </ng-container>
@@ -141,13 +153,15 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.beneficiaryID }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
-              (click)="patientRevisited(beneficiary.benObject)">
+              (click)="patientRevisited(beneficiary.benObject)"
+            >
               {{ beneficiary?.beneficiaryID }}
             </td>
           </ng-container>
@@ -157,14 +171,16 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.beneficiaryName }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
               (click)="patientRevisited(beneficiary.benObject)"
-              style="max-width: 200px; word-break: break-word">
+              style="max-width: 200px; word-break: break-word"
+            >
               {{ beneficiary?.benName | titlecase }}
             </td>
           </ng-container>
@@ -174,13 +190,15 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.gender }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
-              (click)="patientRevisited(beneficiary.benObject)">
+              (click)="patientRevisited(beneficiary.benObject)"
+            >
               {{ beneficiary.genderName | titlecase }}
             </td>
           </ng-container>
@@ -190,14 +208,16 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.age }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
-              (click)="patientRevisited(beneficiary.benObject)">
-              {{ beneficiary.age === 'a year' ? '1 year' : beneficiary.age }}
+              (click)="patientRevisited(beneficiary.benObject)"
+            >
+              {{ beneficiary.age === "a year" ? "1 year" : beneficiary.age }}
             </td>
           </ng-container>
 
@@ -206,13 +226,15 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.fatherName }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
-              (click)="patientRevisited(beneficiary.benObject)">
+              (click)="patientRevisited(beneficiary.benObject)"
+            >
               {{ beneficiary.fatherName | titlecase }}
             </td>
           </ng-container>
@@ -222,13 +244,15 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.district }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
-              (click)="patientRevisited(beneficiary.benObject)">
+              (click)="patientRevisited(beneficiary.benObject)"
+            >
               {{ beneficiary.districtName | titlecase }} /
               {{ beneficiary.villageName | titlecase }}
             </td>
@@ -239,13 +263,15 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.phoneNo }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
-              (click)="patientRevisited(beneficiary.benObject)">
+              (click)="patientRevisited(beneficiary.benObject)"
+            >
               {{ beneficiary.phoneNo }}
             </td>
           </ng-container>
@@ -255,14 +281,38 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.registrationDate }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
-              (click)="patientRevisited(beneficiary.benObject)">
+              (click)="patientRevisited(beneficiary.benObject)"
+            >
               {{ beneficiary.registeredOn }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="abhaAddress">
+            <th
+              mat-header-cell
+              style="border-bottom: none"
+              *matHeaderCellDef
+              mat-sort-header
+            >
+              {{ currentLanguageSet?.abhaDetails }}
+            </th>
+            <td mat-cell *matCellDef="let beneficiary">
+              <button
+                mat-raised-button
+                type="button"
+                color="primary"
+                class="btn text-center"
+                (click)="getHealthIDDetails(beneficiary)"
+              >
+                <span>View</span>
+              </button>
             </td>
           </ng-container>
 
@@ -271,14 +321,16 @@
               mat-header-cell
               style="border-bottom: none"
               *matHeaderCellDef
-              mat-sort-header>
+              mat-sort-header
+            >
               {{ currentLanguageSet?.bendetails?.image }}
             </th>
             <td
               mat-cell
               *matCellDef="let beneficiary"
               (click)="patientImageView(beneficiary.beneficiaryRegID)"
-              matTooltip="{{ currentLanguageSet?.tc?.image }}">
+              matTooltip="{{ currentLanguageSet?.tc?.image }}"
+            >
               <img src="assets/images/Avatar-Profile_30X30.png " alt="image" />
             </td>
           </ng-container>
@@ -288,9 +340,10 @@
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
         <div
-        class="pull-center"
-        style="margin-top: 5px; text-align: center"
-        [hidden]="dataSource.data.length > 0">
+          class="pull-center"
+          style="margin-top: 5px; text-align: center"
+          [hidden]="dataSource.data.length > 0"
+        >
           <strong>{{ currentLanguageSet?.noRecordsFound }}</strong>
         </div>
         <mat-paginator
@@ -298,7 +351,8 @@
           [pageSizeOptions]="[5, 10, 20]"
           [pageSize]="5"
           showFirstLastButtons
-          aria-label="Select patient in search Worklist">
+          aria-label="Select patient in search Worklist"
+        >
         </mat-paginator>
       </section>
     </mat-card>
