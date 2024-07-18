@@ -90,12 +90,16 @@ export class PersonalInformationComponent {
   ) {
     this.personalInfoSubscription =
     this.registrarService.registrationABHADetails$.subscribe((response: any) => {
+      console.log("responseMY", response);
+      const formattedDate = response.dob ? new Date(response.dob) : null;
+      console.log("formattedDate", formattedDate)
       this.personalInfoFormGroup.patchValue({
         firstName: response.firstName,
         lastName: response.lastName,
         phoneNo: response.phoneNo,
         genderName: response.genderName,
-        dOB: response.dob,
+        dOB: formattedDate,
+        
       });
     });
   }
