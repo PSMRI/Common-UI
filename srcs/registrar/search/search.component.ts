@@ -182,14 +182,21 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked {
 
   getHealthIDDetails(data: any) {
     console.log('data', data);
+    // if (
+    //   data.benObject != undefined &&
+    //   data.benObject.abhaDetails != undefined &&
+    //   data.benObject.abhaDetails != null &&
+    //   data.benObject.abhaDetails.length > 0
+    // ) 
     if (
       data.benObject != undefined &&
-      data.benObject.abhaDetails != undefined &&
-      data.benObject.abhaDetails != null &&
-      data.benObject.abhaDetails.length > 0
-    ) {
+      data.benObject.otherFields != undefined &&
+      data.benObject.otherFields != null &&
+      data.benObject.otherFields.length > 0
+    ) 
+    {
       this.dialog.open(HealthIdDisplayModalComponent, {
-        data: { dataList: data.benObject.abhaDetails, search: true },
+        data: { dataList: data.benObject, search: true },
       });
     } else
       this.confirmationService.alert(
