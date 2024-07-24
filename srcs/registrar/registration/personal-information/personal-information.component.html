@@ -35,7 +35,7 @@
       <div class="row">
         <div  class="col-xs-12 col-sm-6 col-md-4 col-lg-4" *ngFor="let item of formData">
           <div>
-        <mat-form-field  [style.width]="'85%'" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
+          <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.fieldTitle }}</mat-label>
             <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" (change)="checkFieldValidations(item)"
              formControlName="{{item.fieldName}}"/>
@@ -50,14 +50,14 @@
               </mat-error>
             </div>
 
-          <mat-form-field  [style.width]="'85%'" *ngIf="item?.fieldType?.toLowerCase() === 'date'">
+            <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'date'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
             <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" (dateChange)="checkFieldValidations(item)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" readonly>
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
-          <mat-form-field  [style.width]="'85%'"class="  backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
+            <mat-form-field [style.width]="'100%'"  class="  backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
             <mat-select matInput multiple  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
@@ -77,7 +77,7 @@
         </div>
 
         <div *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
-          <mat-form-field  [style.width]="'85%'" class="backgroundWhite fieldForHRP dropdownfontStyle">
+            <mat-form-field [style.width]="'100%'"   class="backgroundWhite fieldForHRP dropdownfontStyle">
             <mat-label> {{ item.fieldTitle }}</mat-label>
             <mat-select matInput type="select" placeholder="{{ item.placeholder }}"  [required]="item.isRequired || false" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
