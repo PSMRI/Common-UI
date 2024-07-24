@@ -36,6 +36,7 @@ export class RegistrationComponent {
   abhaInfoData: any;
   serviceLine: any;
   consentGranted: any;
+  disableGenerateOTP = false;
 
   constructor(
     private registrationService: RegistrationService,
@@ -120,7 +121,7 @@ export class RegistrationComponent {
   }
 
   get abhaInfoFormGroup(): FormGroup{
-    return this.mainForm.get('otherInfoForm') as FormGroup;
+    return this.mainForm.get('abhaInfoForm') as FormGroup;
   }
 
   checkPatientRevisit() {
@@ -272,6 +273,47 @@ export class RegistrationComponent {
     // this.personalInfoFormValues = data;
   }
 
+  // submitBeneficiaryDetails() {
+  //   console.log('registration data', this.mainForm);
+  //   const newDate = this.dateFormatChange();
+  //   const valueToSend = this.mainForm.value;
+  //   valueToSend.personalInfoForm.dob = newDate;
+  //   const iEMRForm: any = this.iEMRForm();
+  //   const phoneMaps = iEMRForm.benPhoneMaps;
+
+  //   // createdBy, vanID, servicePointID
+  //   const serviceLineDetails: any = localStorage.getItem('serviceLineDetails');
+  //   const servicePointDetails = JSON.parse(serviceLineDetails);
+  //   iEMRForm['vanID'] = servicePointDetails.vanID;
+  //   iEMRForm['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
+  //   iEMRForm['createdBy'] = localStorage.getItem('userName');
+  //   iEMRForm['providerServiceMapID'] = localStorage.getItem('providerServiceID');
+  //   iEMRForm['providerServiceMapId'] = localStorage.getItem('providerServiceID');
+  //   phoneMaps[0]['vanID'] = servicePointDetails.vanID;
+  //   phoneMaps[0]['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
+  //   phoneMaps[0]['createdBy'] = localStorage.getItem('userName');
+  //   console.log('iemrform', iEMRForm);
+  //   const mainForm = this.mainFormData();
+  //   console.log('mainForm', mainForm);
+  //   const remaingData = this.findMissingKeys(iEMRForm, mainForm)
+  //   let finalRqObj = {
+  //     ...remaingData,
+  //     ...iEMRForm
+  //   }
+  //   console.log('finalRqObj', finalRqObj);
+  //   this.registrarService.submitBeneficiary(finalRqObj).subscribe((res: any) => {
+  //     if (res.statusCode === 200) {
+  //       this.confirmationService.alert(res.data.response, 'success');
+  //       this.mainForm.reset();
+  //     } else {
+  //       this.confirmationService.alert(
+  //         'issue in saving the data',
+  //         'error'
+  //       );
+  //     }
+  //   });
+  // }
+
   submitBeneficiaryDetails() {
     console.log('registration data', this.mainForm);
     const newDate = this.dateFormatChange();
@@ -303,13 +345,53 @@ export class RegistrationComponent {
     this.registrarService.submitBeneficiary(finalRqObj).subscribe((res: any) => {
       if (res.statusCode === 200) {
         this.confirmationService.alert(res.data.response, 'success');
+        const responseValue = res.data.response;
+        const benId = responseValue.replace(/^\D+/g, '');
+          const txt = res.data.response;
+          const numb = txt.replace(/\D/g, '');
+          const reqObj = {
+            beneficiaryRegID: null,
+            beneficiaryID: numb,
+            healthId: this.mainForm.controls['abhaInfoForm'].value['abha'],
+            healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['abha'],
+            providerServiceMapId: localStorage.getItem('providerServiceID'),
+            authenticationMode: null,
+            createdBy: localStorage.getItem('userName'),
+          };
+          if 
+            (this.mainForm.controls['abhaInfoForm'].value['abha'] !== undefined &&
+            this.mainForm.controls['abhaInfoForm'].value['abha'] !== null)  {
+            this.registrarService.mapHealthId(reqObj).subscribe((res: any) => {
+              if (res.statusCode === 200) {
+                // this.confirmationService.alert(res.data.response, 'success');
+                console.log('success');
+              } else {
+                this.confirmationService.alert(
+                  this.currentLanguageSet.alerts.info.issueInSavngData,
+                  'error',
+                );
+              }
+            });
+          }
         this.mainForm.reset();
-      } else {
+        this.disableGenerateOTP = false;
+        // this.confirmationService.alert(res.data.response, 'success');
+        // this.mainForm.reset();
+      } 
+
+      else {
         this.confirmationService.alert(
-          'issue in saving the data',
-          'error'
+          this.currentLanguageSet.alerts.info.issueInSavngData,
+          'error',
         );
       }
+      
+      // else {
+      //   this.confirmationService.alert(
+      //     'issue in saving the data',
+      //     'error'
+      //   );
+      // }
     });
   }
 
@@ -325,6 +407,11 @@ export class RegistrationComponent {
     const othersForm = Object.assign(
       {},
       this.mainForm.get('otherInfoForm') as FormGroup
+    );
+
+    const abhaForm = Object.assign(
+      {},
+      this.mainForm.get('abhaInfoForm') as FormGroup
     );
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
@@ -360,6 +447,7 @@ export class RegistrationComponent {
         addressLine3: demographicsForm.controls['addressLine3']?.value || null,
         religionName: othersForm.controls['religionName']?.value || null,
       },
+      abha: abhaForm.controls['abha']?.value || null,
       benPhoneMaps: [
         {
           // parentBenRegID: personalForm.controls['parentRegID']?.value,
@@ -376,7 +464,8 @@ export class RegistrationComponent {
     const mainForm = {
     ...this.mainForm.controls['personalInfoForm'].value,
     ...this.mainForm.controls['locationInfoForm'].value,
-    ...this.mainForm.controls['otherInfoForm'].value
+    ...this.mainForm.controls['otherInfoForm'].value,
+    ...this.mainForm.controls['abhaInfoForm'].value,
     }
     return mainForm;
   }
@@ -465,6 +554,10 @@ export class RegistrationComponent {
       {},
       this.mainForm.get('otherInfoForm') as FormGroup
     );
+    const abhaForm = Object.assign(
+      {},
+      this.mainForm.get('abhaInfoForm') as FormGroup
+    );
     const serviceLineDetails: any = localStorage.getItem('serviceLineDetails');
     const servicePointDetails = JSON.parse(serviceLineDetails);
     const finalForm = {
@@ -507,6 +600,7 @@ export class RegistrationComponent {
         addressLine3: demographicsForm.controls['addressLine3']?.value || null,
         religionName: othersForm.controls['religionOther']?.value || null,
       },
+      abha: abhaForm.controls['abha']?.value || null,
       benPhoneMaps: [
         {
           // benPhMapID: this.getBenPhMapID(personalForm.controls.benPhMapID),

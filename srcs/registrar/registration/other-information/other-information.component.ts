@@ -34,15 +34,6 @@ export class OtherInformationComponent {
   constructor(private fb: FormBuilder,
     private registrarService: RegistrarService,
     private dialog: MatDialog,) {
-    this.otherInfoSubscription =
-    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
-      console.log("responseABHA", response)
-      this.otherInfoFormGroup.patchValue({
-        email: response.emailID,
-        abha: response.healthIdNumber
-
-      });
-    });
   }
 
   ngOnInit() {

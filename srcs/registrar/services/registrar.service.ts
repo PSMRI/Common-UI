@@ -73,7 +73,6 @@ export class RegistrarService {
   registrationABHADet = new BehaviorSubject<any>(this.registrationABHA);
   registrationABHADetails$ = this.registrationABHADet.asObservable();
 
-
   constructor(private http: HttpClient) {}
 
   getRegistrationMaster(servicePointID: any) {

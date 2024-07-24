@@ -130,7 +130,6 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   }
 
   ngOnInit() {
-    console.log('datalist', this.input.dataList.otherFields);
     this.searchDetails.data = [];
     this.selectedHealthID = null;
     this.searchPopup = false;
@@ -138,29 +137,25 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     this.searchPopup =
       this.input.search !== undefined ? this.input.search : false;
     this.healthIDMapping = this.input.healthIDMapping;
-    // if (
-    //   this.input.dataList !== undefined &&
-    //   this.input.dataList.length > 0 &&
-    //   this.input.search === true
-    // )
     if (
       this.input.dataList !== undefined &&
       this.input.search === true
     )
     {
       let tempVal : any =  this.input.dataList.otherFields;
+      this.benDetails = this.input.dataList.otherFields;
       let tempCreatDate: any = this.input.dataList.createdDate;
       console.log("tempVal", tempVal);
       let tempDataList: any;
       if (typeof tempVal === 'string') {
         tempDataList = JSON.parse(tempVal);
         console.log("tempDataList", tempDataList);
-        if (tempDataList) {
-          tempDataList.tempCreatDate = this.datePipe.transform(
-            tempDataList.tempCreatDate,
-            'yyyy-MM-dd hh:mm:ss a'
-          );
-        }
+        // if (tempDataList) {
+        //   tempDataList.tempCreatDate = this.datePipe.transform(
+        //     tempDataList.tempCreatDate,
+        //     'yyyy-MM-dd hh:mm:ss a'
+        //   );
+        // }
         this.searchDetails.data.push(tempDataList);
         console.log("this.searchDetails.data%%",this.searchDetails.data)
       }
@@ -172,10 +167,12 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     //   this.input.dataList.data !== undefined &&
     //   this.input.dataList.data.BenHealthDetails !== undefined
     // )
-    if (
-      this.input.dataList !== undefined
-    )
-      this.benDetails = this.input.dataList.otherFields;
+    if (this.input.dataList !== undefined &&
+      this.input.dataList.data.BenHealthDetails !== undefined
+    ){
+      this.benDetails = this.input.dataList.data.BenHealthDetails;
+      console.log("this.benDetails1",this.benDetails)
+    }
     this.healthIdOTPForm = this.createOtpGenerationForm();
     this.createList();
   }
@@ -192,33 +189,18 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       otp: null,
     });
   }
-  // createList() {
-  //   if (this.benDetails.length > 0) {
-  //     this.benDetails.forEach((healthID: any) => {
-  //       healthID.createdDate = this.datePipe.transform(
-  //         healthID.createdDate,
-  //         'yyyy-MM-dd hh:mm:ss a',
-  //       );
-  //       this.healthIDArray.data.push(healthID);
-  //     });
-  //   }
-  // }
   createList() {
-    // Parse the string to an object first
-    if (typeof this.benDetails === 'string') {
-      this.benDetails = JSON.parse(this.benDetails);
+    if (this.benDetails.length > 0) {
+      this.benDetails.forEach((healthID: any) => {
+        healthID.createdDate = this.datePipe.transform(
+          healthID.createdDate,
+          'yyyy-MM-dd hh:mm:ss a',
+        );
+        this.healthIDArray.data.push(healthID);
+      });
     }
- 
-    // Now this.benDetails is an object, you can safely transform the dob property
-    if (this.benDetails) {
-      this.benDetails.dob = this.datePipe.transform(
-        this.benDetails.dob,
-        'yyyy-MM-dd hh:mm:ss a'
-      );
-    }
-    this.healthIDArray.data.push(this.benDetails);
-    console.log("this.healthIDArray.data%%",this.healthIDArray.data)
   }
+ 
   onRadioChange(data: any) {
     this.selectedHealthID = data;
   }

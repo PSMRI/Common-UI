@@ -7,8 +7,9 @@ import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { HealthIdValidateComponent } from '../../health-id-validatepopup/health-id-validatepopup.component';
-import { FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { GenerateAbhaComponentComponent } from '../../generate-abha-component/generate-abha-component.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-abha-information',
@@ -23,12 +24,16 @@ export class AbhaInformationComponent {
   @Input()
   revisitData: any;
 
-  @Input()
-  abhaInfoFormGroup: any;
+  @Input('abhaInfoFormGroup')
+  abhaInfoFormGroup!: FormGroup;
+
+  @Input('formData')
+  formData: any;
 
   currentLanguageSet: any
   disableGenerateOTP = false;
   genrateHealthIDCard = true;
+  abhaInfoSubscription!: Subscription;
 
   constructor(
     private router: Router,
@@ -37,11 +42,42 @@ export class AbhaInformationComponent {
     private confirmationService: ConfirmationService,
     private httpServiceService: HttpServiceService,
     private languageComponent: SetLanguageComponent
-  ){}
+  ){
+    this.abhaInfoSubscription =
+    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
+      console.log("responseABHACompoenet", response);
+      this.abhaInfoFormGroup.patchValue({
+        abha: response.healthIdNumber,
+      });
+    });
+  }
 
-  ngOnIt(){
+  ngOnInit(){
+    console.log("INSIDE ABHA COMPOENENT")
     this.fetchLanguageResponse();
-
+    this.formData.forEach((item: any) => {
+      if (item.fieldName && item.allowText) {
+        this.abhaInfoFormGroup.addControl(
+          item.fieldName,
+          new FormControl(null, [
+            Validators.pattern(this.allowTextValidator(item.allowText)),
+            Validators.minLength(parseInt(item?.allowMin)),
+            Validators.maxLength(parseInt(item?.allowMax)),
+          ])
+        );
+      } else {
+        this.abhaInfoFormGroup.addControl(
+          item.fieldName,
+          new FormControl(null)
+        );
+      }
+    });
+    console.log("formDataABHA",this.formData);
+    console.log('abhaInfoFormGroup Data', this.abhaInfoFormGroup);
+    if (this.patientRevisit){
+      this.abhaInfoFormGroup.patchValue(this.revisitData);
+    console.log('other Form Data', this.formData);
+    }
   }
 
   viewHealthIdData() {
@@ -70,6 +106,38 @@ export class AbhaInformationComponent {
       },
     );
   }
+
+  onInputChanged(event: Event, maxLength: any) {
+    const inputElement = event.target as HTMLInputElement;
+    const inputValue = inputElement.value;
+
+    if (maxLength && inputValue.length >= parseInt(maxLength)) {
+      // Add 'A' character when the input length exceeds the limit
+      inputElement.value = inputValue.slice(0, maxLength);
+    }
+  }
+
+  allowTextValidator(allowText: any) {
+    let regex: RegExp;
+
+    switch (allowText) {
+      case 'alpha':
+        regex = /^[a-zA-Z]*$/;
+        break;
+      case 'numeric':
+        regex = /^[0-9\-]*$/;
+        break;
+      case 'alphaNumeric':
+        regex = /^[0-9a-zA-Z_.]+@[a-zA-Z_]+?\.\b(org|com|in|co.in|ORG|COM|IN|CO.IN)\b$/;
+        break;
+      default:
+        regex = /^[a-zA-Z0-9 ]*$/;
+        break; // Add break statement here
+    }
+
+    return regex; // Move this line outside the switch block
+  }
+
 
   ngDoCheck() {
     this.fetchLanguageResponse();

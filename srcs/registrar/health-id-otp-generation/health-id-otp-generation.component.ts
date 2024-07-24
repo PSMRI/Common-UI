@@ -447,7 +447,6 @@ export class HealthIdOtpSuccessComponent implements OnInit, DoCheck {
     this.assignSelectedLanguage();
     this.fetchHealthIdsValue();
     console.log('popupdata', this.succdata);
-
     if (this.succdata.Auth) {
       if (
         this.succdata.Auth.Patient !== undefined &&
