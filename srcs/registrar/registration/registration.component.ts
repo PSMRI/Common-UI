@@ -507,8 +507,23 @@ export class RegistrationComponent {
           .subscribe((res: any) => {
             if (res && res.statusCode === 200) {
               this.confirmationService.alert(res.data.response, 'success');
+              const personalForm = Object.assign(
+                {},
+                this.mainForm.value.personalInfoForm,
+              );
+              console.log("personalForm",personalForm);
+              const reqObj = {
+                beneficiaryRegID: null,
+                beneficiaryID: personalForm.beneficiaryID,
+                healthId: this.mainForm.controls['abhaInfoForm'].value['abha'],
+                healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['abha'],
+                authenticationMode: null,
+                providerServiceMapId: localStorage.getItem('providerServiceID'),
+                createdBy: localStorage.getItem('userName'),
+              };
               this.router.navigate(['/registrar/search/']);
-            } else {
+            } 
+            else {
               this.confirmationService.alert(res.errorMessage, 'error');
             }
           });
