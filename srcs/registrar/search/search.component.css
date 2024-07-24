@@ -32,7 +32,7 @@
 
   .adv-button {
     margin: 0 10px;
-    width: 45%;
+    width: 26%;
     border-color: unset !important;
   }
 
@@ -144,11 +144,11 @@
     justify-content: flex-end;
   }
 
-  @media only screen and (max-width: 991px) {
+  /* @media only screen and (max-width: 991px) {
     .search-button-container {
       padding-top: 10px;
     }
-  }
+  } */
 
   .alignBox {
     display: flex;
@@ -158,5 +158,36 @@
   .reg-button {
     float: right;
     border-color: unset !important;
-    width: 45%;
+    width: 25%;
   }
+
+  
+@media screen  and (min-width:768px) and (max-width:1024px) {
+  .reg-button{
+ 
+    width: 30% !important;
+}
+.adv-button {
+  width: 40% !important;
+}
+}
+@media screen  and (min-width:360px) and (max-width:430px) {
+  .search-button-container{
+    margin-left: -8px !important;
+    margin-top: 10px !important;
+}
+.reg-button{
+ 
+  margin-right: 10px !important;
+}
+.adv-button {
+  margin: 0 10px;
+  width: 45%;
+  border-color: unset !important;
+}
+.reg-button {
+  float: right;
+  border-color: unset !important;
+  width: 45%;
+}
+}
