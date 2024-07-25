@@ -60,3 +60,9 @@
     font-weight: 600 !important;
     letter-spacing: initial !important;
   }
+
+  @media screen  and (min-width:360px) and (max-width:430px) {
+    .order-md-last {
+      float: unset !important;
+    }
+  }
