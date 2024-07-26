@@ -130,6 +130,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   }
 
   ngOnInit() {
+    console.log("this.input",this.input);
     this.searchDetails.data = [];
     this.selectedHealthID = null;
     this.searchPopup = false;
@@ -137,6 +138,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     this.searchPopup =
       this.input.search !== undefined ? this.input.search : false;
     this.healthIDMapping = this.input.healthIDMapping;
+    console.log("this.healthIDMapping",this.healthIDMapping);
     if (
       this.input.dataList !== undefined &&
       this.input.search === true

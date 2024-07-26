@@ -38,6 +38,7 @@ export class RegistrationComponent {
   consentGranted: any;
   disableGenerateOTP = false;
 
+
   constructor(
     private registrationService: RegistrationService,
     private confirmationService: ConfirmationService,
@@ -52,7 +53,8 @@ export class RegistrationComponent {
       // personalInfoForm: this.fb.group({}),
       personalInfoForm: this.fb.group({
         age: [null], // Add your age control here
-        ageAtMarriage: [null], // Add your ageAtMarriage control here
+        ageAtMarriage: [null],
+        genderID: [null] // Add your ageAtMarriage control here
       }, { validators: ageAtMarriageValidator }),
       locationInfoForm: this.fb.group({}),
       otherInfoForm: this.fb.group({}),
@@ -336,6 +338,7 @@ export class RegistrationComponent {
     console.log('iemrform', iEMRForm);
     const mainForm = this.mainFormData();
     console.log('mainForm', mainForm);
+    console.log('personalInfoFormGENDER', this.mainForm.controls['personalInfoForm'].value);
     const remaingData = this.findMissingKeys(iEMRForm, mainForm)
     let finalRqObj = {
       ...remaingData,
@@ -448,6 +451,18 @@ export class RegistrationComponent {
         religionName: othersForm.controls['religionName']?.value || null,
       },
       abha: abhaForm.controls['abha']?.value || null,
+      genderID: (() => {
+        const genderName = personalForm.controls['genderName']?.value;
+        if (genderName === 'Female') {
+            return 2;
+        } else if (genderName === 'Male') {
+            return 1;
+        } else if (genderName === 'Transgender') {
+            return 3;
+        } else {
+            return null;
+        }
+    })(),
       benPhoneMaps: [
         {
           // parentBenRegID: personalForm.controls['parentRegID']?.value,
@@ -616,6 +631,18 @@ export class RegistrationComponent {
         religionName: othersForm.controls['religionOther']?.value || null,
       },
       abha: abhaForm.controls['abha']?.value || null,
+      genderID: (() => {
+        const genderName = personalForm.controls['genderName']?.value;
+        if (genderName === 'Female') {
+            return 2;
+        } else if (genderName === 'Male') {
+            return 1;
+        } else if (genderName === 'Transgender') {
+            return 3;
+        } else {
+            return null;
+        }
+    })(),
       benPhoneMaps: [
         {
           // benPhMapID: this.getBenPhMapID(personalForm.controls.benPhMapID),
