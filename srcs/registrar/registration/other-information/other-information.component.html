@@ -5,7 +5,7 @@
       <div>
         <mat-form-field  class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'text'">
           <mat-label> {{ item.fieldTitle }}</mat-label>
-          <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" required="{{item.isRequired}}"
+          <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false"
           formControlName="{{item.fieldName}}"/>
        </mat-form-field>
        <mat-error *ngIf="otherInfoFormGroup.controls[item.fieldName].errors?.['required'] && otherInfoFormGroup.controls[item.fieldName].value?.dirty"> Field is Required</mat-error>
@@ -18,19 +18,19 @@
 
           <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" placeholder="{{ item.placeholder }}"required="{{item.isRequired}}" readonly>
+            <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" readonly>
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
           <!-- <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'time'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="time"  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
+            <input matInput type="time"  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
           </mat-form-field> -->
 
           <mat-form-field  class="input-full-width backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
-            <mat-select matInput multiple  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}">
+            <mat-select matInput multiple  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
                 {{ option }}
               </mat-option>
@@ -39,13 +39,13 @@
 
           <!-- <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="datetime-local"  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
+            <input matInput type="datetime-local"  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
           </mat-form-field> -->
 
           <div *ngIf="item?.fieldType?.toLowerCase() === 'radio'">
             <mat-label *ngIf="item.isRequired === true">{{ item.fieldTitle }}*</mat-label>
             <mat-label *ngIf="item.isRequired !== true">{{ item.fieldTitle }}</mat-label>            
-          <mat-radio-group  formControlName="{{item.fieldName}}" required="{{item.isRequired}}">
+          <mat-radio-group  formControlName="{{item.fieldName}}" [required]="item.isRequired || false">
             <mat-radio-button class="radioButtonFontStyle" style="margin-left: 5px; margin-right: 5px;" *ngFor="let option of item.options" [value]="option">
               {{option}}
             </mat-radio-button>
@@ -54,7 +54,7 @@
 
           <mat-form-field  class="input-full-width backgroundWhite fieldForHRP dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
-            <mat-select matInput type="select"  required="{{item.isRequired}}" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}">
+            <mat-select matInput type="select"  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}">
               <mat-option *ngFor="let option of item.options" [value]="option">
                 {{ option }}
               </mat-option>

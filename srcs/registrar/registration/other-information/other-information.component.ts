@@ -34,15 +34,10 @@ export class OtherInformationComponent {
   constructor(private fb: FormBuilder,
     private registrarService: RegistrarService,
     private dialog: MatDialog,) {
-    this.otherInfoSubscription =
-    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
-      this.otherInfoFormGroup.patchValue({
-        email: response.emailID,
-      });
-    });
   }
 
   ngOnInit() {
+    console.log("this.otherInfoSubscription",this.otherInfoSubscription);
     this.formData.forEach((item: any) => {
       if (item.fieldName && item.allowText) {
         this.otherInfoFormGroup.addControl(
@@ -74,7 +69,7 @@ export class OtherInformationComponent {
         regex = /^[a-zA-Z]*$/;
         break;
       case 'numeric':
-        regex = /^[0-9]*$/;
+        regex = /^[0-9\-]*$/;
         break;
       case 'alphaNumeric':
         regex = /^[0-9a-zA-Z_.]+@[a-zA-Z_]+?\.\b(org|com|in|co.in|ORG|COM|IN|CO.IN)\b$/;

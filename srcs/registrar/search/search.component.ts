@@ -26,6 +26,7 @@ import {
   ChangeDetectorRef,
   ViewChild,
   DoCheck,
+  AfterViewChecked,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SearchDialogComponent } from '../search-dialog/search-dialog.component';
@@ -33,10 +34,16 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
-import { ConfirmationService, CameraService, BeneficiaryDetailsService } from 'src/app/app-modules/core/services';
+import {
+  ConfirmationService,
+  CameraService,
+  BeneficiaryDetailsService,
+} from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from 'Common-UI/srcs/registrar/services/registrar.service';
 import * as moment from 'moment';
+import { environment } from 'src/environments/environment';
+import { HealthIdDisplayModalComponent } from '../health-id-display-modal/health-id-display-modal.component';
 
 export interface Consent {
   consentGranted: string;
@@ -47,7 +54,7 @@ export interface Consent {
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.css'],
 })
-export class SearchComponent implements OnInit, DoCheck {
+export class SearchComponent implements OnInit, DoCheck, AfterViewChecked {
   rowsPerPage = 5;
   activePage = 1;
   pagedList = [];
@@ -71,11 +78,12 @@ export class SearchComponent implements OnInit, DoCheck {
     'districtVillage',
     'phoneNo',
     'registeredOn',
+    'abhaAddress',
     'image',
   ];
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
   dataSource = new MatTableDataSource<any>();
-  // searchType: string;
+  searchCategory: any;
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -85,15 +93,15 @@ export class SearchComponent implements OnInit, DoCheck {
     private registrarService: RegistrarService,
     private cameraService: CameraService,
     private router: Router,
-    private beneficiaryDetailsService: BeneficiaryDetailsService
+    private beneficiaryDetailsService: BeneficiaryDetailsService,
   ) {}
 
   ngOnInit() {
     this.fetchLanguageResponse();
     this.searchPattern = '/^[a-zA-Z0-9](.|@|-)*$/;';
-    // this.searchType = 'ID';
   }
-  AfterViewChecked() {
+
+  ngAfterViewChecked() {
     this.changeDetectorRef.detectChanges();
   }
 
@@ -102,8 +110,11 @@ export class SearchComponent implements OnInit, DoCheck {
       beneficiaryRegID: null,
       beneficiaryID: null,
       phoneNo: null,
+      HealthID: null,
+      HealthIDNumber: null,
+      familyId: null,
+      identity: null,
     };
-
     if (
       searchTerm === undefined ||
       searchTerm.trim() === '' ||
@@ -111,14 +122,25 @@ export class SearchComponent implements OnInit, DoCheck {
     ) {
       this.confirmationService.alert(
         this.currentLanguageSet.alerts.info.pleaseenterBeneficiaryID,
-        'info'
+        'info',
       );
     } else {
-      if (searchTerm.trim().length === 10 || searchTerm.trim().length === 12) {
+      if (
+        searchTerm.trim().length === 10 ||
+        searchTerm.trim().length === 12 ||
+        searchTerm.trim().length === 14 ||
+        searchTerm.trim().length === 17
+      ) {
         if (searchTerm.trim().length === 10) {
           searchObject['phoneNo'] = searchTerm;
         } else if (searchTerm.trim().length === 12) {
           searchObject['beneficiaryID'] = searchTerm;
+        } else if (
+          searchTerm.trim().length === 14 ||
+          searchTerm.trim().length === 17
+        ) {
+          searchObject['HealthID'] = searchTerm;
+          searchObject['HealthIDNumber'] = searchTerm;
         }
         this.registrarService.identityQuickSearch(searchObject).subscribe(
           (beneficiaryList: any) => {
@@ -126,40 +148,61 @@ export class SearchComponent implements OnInit, DoCheck {
               this.beneficiaryList = [];
               this.filteredBeneficiaryList = [];
               this.dataSource.data = [];
-              console.log("this.dataSource.data1", this.dataSource.data);
+              console.log('this.dataSource.data1', this.dataSource.data);
               this.dataSource.paginator = this.paginator;
-              // this.dataSource.data.forEach((sectionCount: any, index: number) => {
-              //   sectionCount.sno = index + 1;
-              // });
-              this.pagedList = [];
               this.confirmationService.alert(
                 this.currentLanguageSet.alerts.info.beneficiarynotfound,
-                'info'
+                'info',
               );
             } else {
               this.beneficiaryList = this.searchRestruct(
                 beneficiaryList,
-                searchObject
+                searchObject,
               );
-              console.log("this.beneficiaryList2", this.beneficiaryList);
+              console.log('this.beneficiaryList2', this.beneficiaryList);
               this.filteredBeneficiaryList = this.beneficiaryList;
               this.dataSource.data = this.beneficiaryList;
-              console.log("this.dataSource.data2", this.dataSource.data);
+              console.log('this.dataSource.data2', this.dataSource.data);
               this.dataSource.paginator = this.paginator;
             }
             console.log('hi', JSON.stringify(beneficiaryList, null, 4));
           },
-          error => {
+          (error) => {
             this.confirmationService.alert(error, 'error');
-          }
+          },
         );
       } else {
         this.confirmationService.alert(
           this.currentLanguageSet.alerts.info.phoneDetails,
-          'info'
+          'info',
         );
       }
     }
+  }
+
+  getHealthIDDetails(data: any) {
+    console.log('data', data);
+    // if (
+    //   data.benObject != undefined &&
+    //   data.benObject.abhaDetails != undefined &&
+    //   data.benObject.abhaDetails != null &&
+    //   data.benObject.abhaDetails.length > 0
+    // ) 
+    if (
+      data.benObject != undefined &&
+      data.benObject.otherFields != undefined &&
+      data.benObject.otherFields != null &&
+      data.benObject.otherFields.length > 0
+    ) 
+    {
+      this.dialog.open(HealthIdDisplayModalComponent, {
+        data: { dataList: data.benObject, search: true },
+      });
+    } else
+      this.confirmationService.alert(
+        this.currentLanguageSet.abhaDetailsNotAvailable,
+        'info',
+      );
   }
 
   /**
@@ -190,7 +233,7 @@ export class SearchComponent implements OnInit, DoCheck {
       });
     });
     console.log(JSON.stringify(requiredBenData, null, 4), 'yoooo!');
-   console.log("requiredBenData", JSON.stringify(requiredBenData));
+    console.log('requiredBenData', JSON.stringify(requiredBenData));
     return requiredBenData;
   }
 
@@ -235,7 +278,7 @@ export class SearchComponent implements OnInit, DoCheck {
               this.dataSource.data.forEach(
                 (sectionCount: any, index: number) => {
                   sectionCount.sno = index + 1;
-                }
+                },
               );
               break;
             }
@@ -249,14 +292,14 @@ export class SearchComponent implements OnInit, DoCheck {
     if (
       benObject &&
       benObject.m_gender &&
-      benObject.genderName &&
+      benObject.m_gender.genderName &&
       benObject.dOB
     ) {
       const action = false;
       console.log(JSON.stringify(benObject, null, 4), 'benObject');
-      const vanID = JSON.parse(
-        localStorage.getItem('serviceLineDetails') ?? '{}'
-      )?.vanID;
+      const serviceLineDetails: any =
+        localStorage.getItem('serviceLineDetails');
+      const vanID = JSON.parse(serviceLineDetails).vanID;
       benObject['providerServiceMapId'] =
         localStorage.getItem('providerServiceID');
       benObject['vanID'] = vanID;
@@ -264,25 +307,25 @@ export class SearchComponent implements OnInit, DoCheck {
       this.confirmationService
         .confirm(
           `info`,
-          this.currentLanguageSet.alerts.info.confirmSubmitBeneficiary
+          this.currentLanguageSet.alerts.info.confirmSubmitBeneficiary,
         )
-        .subscribe(result => {
+        .subscribe((result) => {
           if (result) this.sendToNurseWindow(result, benObject);
         });
     } else if (!benObject.m_gender.genderName && !benObject.dOB) {
       this.confirmationService.alert(
         this.currentLanguageSet.alerts.info.genderAndAgeDetails,
-        'info'
+        'info',
       );
     } else if (!benObject.m_gender.genderName) {
       this.confirmationService.alert(
         this.currentLanguageSet.alerts.info.noGenderDetails,
-        'info'
+        'info',
       );
     } else if (!benObject.dOB) {
       this.confirmationService.alert(
         this.currentLanguageSet.alerts.info.noAgeDetailsAvail,
-        'info'
+        'info',
       );
     }
   }
@@ -290,12 +333,12 @@ export class SearchComponent implements OnInit, DoCheck {
   editPatientInfo(beneficiary: any) {
     this.confirmationService
       .confirm(`info`, this.currentLanguageSet.alerts.info.editDetails)
-      .subscribe(result => {
+      .subscribe((result) => {
         if (result) {
           this.registrarService.saveBeneficiaryEditDataASobservable(
-            beneficiary.benObject
+            beneficiary.benObject,
           );
-          console.log('beneficiaryyy details', beneficiary)
+          console.log('beneficiaryyy details', beneficiary);
           this.router.navigate([
             '/registrar/search/' + beneficiary.beneficiaryID,
           ]);
@@ -311,9 +354,9 @@ export class SearchComponent implements OnInit, DoCheck {
             this.confirmationService.alert(result.data.response, 'success');
           else this.confirmationService.alert(result.status, 'warn');
         },
-        error => {
+        (error) => {
           this.confirmationService.alert(error, 'error');
-        }
+        },
       );
     }
   }
@@ -332,7 +375,7 @@ export class SearchComponent implements OnInit, DoCheck {
             this.cameraService.viewImage(data.benImage);
           else
             this.confirmationService.alert(
-              this.currentLanguageSet.alerts.info.imageNotFound
+              this.currentLanguageSet.alerts.info.imageNotFound,
             );
         });
     }
@@ -344,10 +387,10 @@ export class SearchComponent implements OnInit, DoCheck {
       {
         width: '60%',
         disableClose: false,
-      }
+      },
     );
 
-    mdDialogRef.afterClosed().subscribe(result => {
+    mdDialogRef.afterClosed().subscribe((result) => {
       if (result) {
         console.log('something fishy happening here', result);
         this.advanceSearchTerm = result;
@@ -362,30 +405,30 @@ export class SearchComponent implements OnInit, DoCheck {
                 this.beneficiaryList = [];
                 this.filteredBeneficiaryList = [];
                 this.dataSource.data = [];
-                console.log("this.dataSource.data3", this.dataSource.data);
+                console.log('this.dataSource.data3', this.dataSource.data);
                 this.dataSource.paginator = this.paginator;
                 this.quicksearchTerm = null;
                 this.confirmationService.alert(
                   this.currentLanguageSet.alerts.info.beneficiarynotfound,
-                  'info'
+                  'info',
                 );
               } else {
                 this.beneficiaryList = this.searchRestruct(beneficiaryList, {});
                 this.filteredBeneficiaryList = this.beneficiaryList;
                 this.dataSource.data = this.beneficiaryList;
-                console.log("this.dataSource.data4", this.dataSource.data);
+                console.log('this.dataSource.data4', this.dataSource.data);
                 this.dataSource.paginator = this.paginator;
                 this.dataSource.data.forEach(
                   (sectionCount: any, index: number) => {
                     sectionCount.sno = index + 1;
-                  }
+                  },
                 );
               }
               console.log(JSON.stringify(beneficiaryList, null, 4));
             },
-            error => {
+            (error) => {
               this.confirmationService.alert(error, 'error');
-            }
+            },
           );
       }
     });
@@ -407,9 +450,9 @@ export class SearchComponent implements OnInit, DoCheck {
               `info`,
               `Do you really want to navigate? Any searched data would be lost`,
               'Yes',
-              'No'
+              'No',
             )
-            .subscribe(result => {
+            .subscribe((result) => {
               if (result) {
                 this.router.navigate([link]);
               }

@@ -59,7 +59,7 @@
             {{ currentLanguageSet?.abhaNumber }}
           </th>
           <td mat-cell *matCellDef="let element">
-            {{ element?.healthIdNumber ? element?.healthIdNumber : "" }}
+            {{ element?.abha ? element?.abha : "" }}
           </td>
         </ng-container>
 
@@ -69,7 +69,7 @@
             {{ currentLanguageSet?.abha }}
           </th>
           <td mat-cell *matCellDef="let element">
-            {{ element?.HealthID ? element?.HealthID : "" }}
+            {{ element?.abha ? element?.abha : "" }}
           </td>
         </ng-container>
 
@@ -79,7 +79,7 @@
             {{ currentLanguageSet?.dateOfCreation }}
           </th>
           <td mat-cell *matCellDef="let element">
-            {{ element?.CreatedDate | date: "yyyy-MM-dd hh:mm:ss a" }}
+            {{ element?.createdDate | date: "yyyy-MM-dd hh:mm:ss a" }}
           </td>
         </ng-container>
 
@@ -125,7 +125,7 @@
         <!-- abhaNumber Column -->
         <ng-container matColumnDef="abhaNumber">
           <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.abhaNumber }}
+            {{ currentLanguageSet?.aBHANumber }}
           </th>
           <td mat-cell *matCellDef="let element">
             {{ element?.healthIdNumber ? element?.healthIdNumber : "" }}
@@ -135,10 +135,10 @@
         <!-- abha Column -->
         <ng-container matColumnDef="abha">
           <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.abha }}
+            {{ currentLanguageSet?.aBHA }}
           </th>
           <td mat-cell *matCellDef="let element">
-            {{ element?.HealthID ? element?.HealthID : "" }}
+            {{ element?.healthId ? element?.healthId : "" }}
           </td>
         </ng-container>
 
@@ -148,17 +148,17 @@
             {{ currentLanguageSet?.dateOfCreation }}
           </th>
           <td mat-cell *matCellDef="let element">
-            {{ element?.CreatedDate | date: "yyyy-MM-dd hh:mm:ss a" }}
+            {{ element?.createdDate }}
           </td>
         </ng-container>
 
         <!-- abhaMode Column -->
         <ng-container matColumnDef="abhaMode">
           <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.abhaMode }}
+            {{ currentLanguageSet?.aBHAMode }}
           </th>
           <td mat-cell *matCellDef="let element">
-            {{ element?.AuthenticationMode }}
+            {{ element?.authenticationMode }}
           </td>
         </ng-container>
 
@@ -214,9 +214,7 @@
           >
             {{ currentLanguageSet?.coreComponents?.sno }}
           </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.sno }}
-          </td>
+            <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
         </ng-container>
         <ng-container matColumnDef="healthIDNo">
           <th
@@ -278,16 +276,6 @@
             mat-sort-header
           ></th>
           <td mat-cell *matCellDef="let element">
-            <button
-              mat-icon-button
-              matTooltip="{{ currentLanguageSet?.printABHACard }}"
-              (click)="printHealthIDCard(element)"
-              class="pull-right width-20px"
-            >
-              <mat-icon>print</mat-icon>
-            </button>
-          </td>
-          <td mat-cell *matCellDef="let element">
             <mat-radio-group [(ngModel)]="chooseHealthID">
               <mat-radio-button
                 color="primary"
@@ -303,6 +291,19 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns2"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns2"></tr>
       </table>
+      <div *ngIf="healthIDArray?.data?.length !== 0">
+        <button
+          mat-raised-button
+          class="pull-right button-overall-disabled background-overall"
+          color="primary"
+          (click)="generateOtpForMapping()"
+          [disabled]="
+            selectedHealthID === undefined || selectedHealthID === null
+          "
+        >
+          {{ currentLanguageSet?.generateOTP }}
+        </button>
+      </div>
 
       <div
         class="pull-center"

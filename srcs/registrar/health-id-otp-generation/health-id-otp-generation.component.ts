@@ -32,8 +32,11 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { GenerateMobileOtpGenerationComponent } from '../generate-mobile-otp-generation/generate-mobile-otp-generation.component';
 import { HealthIdValidateComponent } from '../health-id-validatepopup/health-id-validatepopup.component';
 import { RegistrarService } from '../services/registrar.service';
-// import { ServicePointService } from 'src/app/app-modules/service-point/service-point.service';
 import { SetPasswordForAbhaComponent } from '../set-password-for-abha/set-password-for-abha.component';
+import { RdDeviceService } from '../services/rddevice.service';
+import { ViewHealthIdCardComponent } from '../view-health-id-card/view-health-id-card.component';
+import { authMethodComponent } from '../generate-abha-component/generate-abha-component.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-health-id-otp-generation',
@@ -53,6 +56,11 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
   aadharNum: any;
   registrarMasterData: any;
   demographicsMaster: any;
+  authOption: boolean = false;
+  modeofAuthMethod: any;
+  abhaHealthMode: any;
+  pidRes: any;
+  healthIDCard: any;
 
   constructor(
     private fb: FormBuilder,
@@ -61,7 +69,6 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
-    // private servicePointService: ServicePointService,
     private dialog: MatDialog,
   ) {
     dialogRef.disableClose = true;
@@ -77,8 +84,8 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
     if (this.healthIdMode === 'AADHAR') {
       this.enablehealthIdOTPForm = true;
       this.getHealthIdOtpForInitial();
-      this.loadMasterDataObservable();
     }
+    this.loadMasterDataObservable();
   }
   ngDoCheck() {
     this.assignSelectedLanguage();
@@ -268,7 +275,7 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
         createdBy: localStorage.getItem('userName'),
         providerServiceMapID: localStorage.getItem('providerServiceID'),
       };
-      this.registrarService.generateHealthIdWithUID(reqObj).subscribe(
+      this.registrarService.generateHealthIdWithUID(reqObj).subscribe( 
         (res: any) => {
           if (res.statusCode === 200 && res.data) {
             this.registrarService.abhaGenerateData = res.data;
@@ -425,13 +432,19 @@ export class HealthIdOtpGenerationComponent implements OnInit, DoCheck {
   styleUrls: ['./health-id-otp-generation.component.css'],
 })
 export class HealthIdOtpSuccessComponent implements OnInit, DoCheck {
-  verify = false;
+  verify: boolean=false;
   genderName!: string;
   currentLanguageSet: any;
   transactionId: any;
   showProgressBar!: boolean;
   fetchHealthIds: any;
   otherDetailsForm: any;
+  authOption: boolean = false;
+  modeofAuthMethod: any;
+  abhaHealthMode: any;
+  pidRes: any;
+  healthIDCard: any;
+
   constructor(
     public dialogSucRef: MatDialogRef<HealthIdOtpSuccessComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -439,6 +452,7 @@ export class HealthIdOtpSuccessComponent implements OnInit, DoCheck {
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private confirmationValService: ConfirmationService,
+    private rdservice: RdDeviceService,
   ) {
     console.log('popupdata');
   }
@@ -447,7 +461,6 @@ export class HealthIdOtpSuccessComponent implements OnInit, DoCheck {
     this.assignSelectedLanguage();
     this.fetchHealthIdsValue();
     console.log('popupdata', this.succdata);
-
     if (this.succdata.Auth) {
       if (
         this.succdata.Auth.Patient !== undefined &&
@@ -504,7 +517,7 @@ export class HealthIdOtpSuccessComponent implements OnInit, DoCheck {
       disableClose: true,
       data: {
         healthId: data,
-        authenticationMode: this.fetchHealthIds.healthIdMode,
+        authenticationMode: this.abhaHealthMode,
         generateHealthIDCard: true,
         healthIDDetailsTxnID: txnId,
       },
@@ -515,116 +528,110 @@ export class HealthIdOtpSuccessComponent implements OnInit, DoCheck {
     });
   }
 
-  fetchOtp(healthIdValue: any, healthIdNumber: any) {
+  fetchOtp(healthIdValue: any, healthIdNumber: any){
     this.dialogSucRef.close();
-    let healthMode: string | null = null;
-    if (
-      this.fetchHealthIds.healthIdMode !== undefined &&
-      this.fetchHealthIds.healthIdMode !== null &&
-      this.fetchHealthIds.healthIdMode === 'AADHAR'
-    )
-      healthMode = 'AADHAAR';
-    else if (
-      this.fetchHealthIds.healthIdMode !== undefined &&
-      this.fetchHealthIds.healthIdMode !== null &&
-      this.fetchHealthIds.healthIdMode === 'MOBILE'
-    )
-      healthMode = 'MOBILE';
-
-    this.showProgressBar = true;
-    const reqObj = {
-      authMethod: healthMode + '_OTP',
-      healthid: healthIdValue ? healthIdValue : null,
-      healthIdNumber: healthIdNumber ? healthIdNumber : null,
-    };
-    this.registrarService.generateHealthIDCard(reqObj).subscribe(
-      (res: any) => {
-        if (res.statusCode === 200 && Object.keys(res.data).length > 0) {
-          if (healthMode === 'MOBILE') {
-            this.transactionId = res.data.tnxId;
-            if (this.dialogSucRef.componentInstance !== null) {
-              this.dialogSucRef.afterClosed().subscribe((result) => {
-                this.confirmationValService
-                  .confirmHealthId(
-                    'success',
-                    this.currentLanguageSet.OTPSentToRegMobNo,
-                  )
-                  .subscribe((result) => {
-                    if (result) {
-                      this.openDialogForprintHealthIDCard(
-                        healthIdValue,
-                        this.transactionId,
-                      );
-                    }
-                  });
-              });
-            } else {
-              this.confirmationValService
-                .confirmHealthId(
-                  'success',
-                  this.currentLanguageSet.OTPSentToRegMobNo,
-                )
-                .subscribe((result) => {
-                  if (result) {
-                    this.openDialogForprintHealthIDCard(
-                      healthIdValue,
-                      this.transactionId,
-                    );
-                  }
-                });
-            }
-          } else if (healthMode === 'AADHAAR') {
-            this.transactionId = res.data.txnId;
-            if (this.dialogSucRef.componentInstance !== null) {
-              this.dialogSucRef.afterClosed().subscribe((result) => {
-                this.confirmationValService
-                  .confirmHealthId(
-                    'success',
-                    this.currentLanguageSet.OTPSentToAadharLinkedNo,
-                  )
-                  .subscribe((result) => {
-                    if (result) {
-                      this.openDialogForprintHealthIDCard(
-                        healthIdValue,
-                        this.transactionId,
-                      );
-                    }
-                  });
-              });
-            } else {
-              this.confirmationValService
-                .confirmHealthId(
-                  'success',
-                  this.currentLanguageSet.OTPSentToAadharLinkedNo,
-                )
-                .subscribe((result) => {
-                  if (result) {
-                    this.openDialogForprintHealthIDCard(
-                      healthIdValue,
-                      this.transactionId,
-                    );
-                  }
-                });
-            }
+    let dialogRef = this.dialog.open(authMethodComponent, {
+      height: '250px',
+      width: '420px',
+    });
+    dialogRef.afterClosed().subscribe(response => {
+      console.log('result', response);
+      if(response) {
+        this.abhaHealthMode = response;
+        if(this.abhaHealthMode != null && this.abhaHealthMode != undefined) {
+          this.showProgressBar = true;
+          let reqObj = {
+            authMethod: this.abhaHealthMode,
+            healthid: healthIdValue ? healthIdValue : null,
+            healthIdNumber: healthIdNumber ? healthIdNumber : null
           }
+          this.registrarService.generateHealthIDCard(reqObj)
+          .subscribe((res: any)=> {
+           
+            if(res.statusCode == 200 && res.data) {
+             
+              if (this.abhaHealthMode === "MOBILE_OTP")
+              {
+              this.transactionId = res.data.txnId;
+              this.confirmationValService.confirmHealthId('success', this.currentLanguageSet.OTPSentToRegMobNo).subscribe((result) => {
+                if(result)
+                {
+                  this.openDialogForprintHealthIDCard(healthIdValue,this.transactionId);
+                }
+              });
+            }
+            else if (this.abhaHealthMode == "AADHAAR_OTP")
+            {
+              this.transactionId = res.data.txnId;
+              this.confirmationValService.confirmHealthId('success', this.currentLanguageSet.OTPSentToAadharLinkedNo).subscribe((result) => {
+                if(result)
+                {
+                  this.openDialogForprintHealthIDCard(healthIdValue,this.transactionId);
+                }
+                });
+            }
+          
+            else if (this.abhaHealthMode === "AADHAAR_BIO")
+            {
+              this.transactionId = res.data.txnId;
+                if(this.transactionId != null && this.transactionId != undefined)
+                {
+                  // this.openDialogForprintHealthIDCard(healthIdValue,this.transactionId);
+                  // this.downloadABHAForBio(this.transactionId);
+                }
+              }
+            this.showProgressBar = false;
+            }
+            else {
+              this.showProgressBar = false;
+              this.confirmationValService.alert(res.errorMessage, 'error');
+            }
+          }, err => {
+            this.showProgressBar = false;
+            this.confirmationValService.alert(err.errorMessage, 'error');
+          })
+        }
+      }
+    });
+  }
 
-          this.showProgressBar = false;
+  downloadABHAForBio(txnId: any) {
+    this.rdservice.pidDetailDetails$.subscribe((piddata) => {
+      if(piddata != null && piddata != undefined) {
+        this.pidRes = piddata;
+      }
+    });
+    if(this.pidRes != null && this.pidRes !== undefined) {
+    let requestObj = {
+      pid: this.pidRes ? this.pidRes : null,
+      txnId: txnId,
+      authType: "FINGERSCAN",
+      bioType: "FMR",
+     }
+       this.registrarService.confirmAadhar(requestObj).subscribe((res: any)=> {
+        if(res.statusCode == 200 && res.data != null ){
+          this.healthIDCard = res.data;
+          this.dialog.open(ViewHealthIdCardComponent, {
+            height: "530px",
+            width: "800px",
+            data: {
+              imgBase64: this.healthIDCard,
+            },
+          });
+
+          this.dialogSucRef.close();
         } else {
           this.showProgressBar = false;
-          this.dialogSucRef.afterClosed().subscribe((result) => {
-            this.confirmationValService.alert(res.status, 'error');
-          });
-        }
-      },
-      (err: any) => {
-        this.showProgressBar = false;
-        this.dialogSucRef.afterClosed().subscribe((result) => {
           this.confirmationValService.alert(
-            this.currentLanguageSet.issueInGettingBeneficiaryABHADetails,
-            'error',
-          );
-        });
+            this.currentLanguageSet.aBHACardNotAvailable + " - " + res.errorMessage, "error" );
+         }
       },
+      (err) => {
+        this.showProgressBar = false;
+        this.confirmationValService.alert(err.errorMessage, "error");
+      }
     );
+    }
+    this.rdservice.getpidDetail(null);
   }
 }

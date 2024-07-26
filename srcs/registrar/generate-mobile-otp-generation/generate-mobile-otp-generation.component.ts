@@ -23,8 +23,6 @@ import {
   Component,
   DoCheck,
   Inject,
-  OnChanges,
-  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
@@ -45,6 +43,8 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
   showProgressBar = false;
   txnId: any;
   enableMobileOTPForm = false;
+  bioVal: boolean = false;
+  verifyBioMobileOtp: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -60,6 +60,7 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
   ngOnInit() {
     this.assignSelectedLanguage();
     this.txnId = this.data.transactionId;
+    this.bioVal = this.data.bioValue;
     this.generateMobileOTPForm = this.createmobileOTPValidationForm();
   }
 
@@ -85,15 +86,18 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
 
   //while clicking on submit after entering the mobile number
   onSubmitOfMobileNo() {
-    if (this.enableMobileOTPForm === false) {
+    if (
+      this.enableMobileOTPForm === false &&
+      (this.bioVal == null || this.bioVal == undefined || this.bioVal === false)
+    ) {
       this.showProgressBar = true;
-      const reqObj = {
+      let reqObj = {
         mobile: this.generateMobileOTPForm.controls['mobileNo'].value,
         txnId: this.txnId,
       };
       this.registrarService.checkAndGenerateMobileOTPHealthId(reqObj).subscribe(
         (res: any) => {
-          if (res.statusCode === 200 && res.data) {
+          if (res.statusCode == 200 && res.data) {
             this.showProgressBar = false;
             if (
               res.data.mobileLinked === false ||
@@ -104,8 +108,10 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
                 .subscribe((responseData) => {
                   if (responseData === false) {
                     this.enableMobileOTPForm = false;
+                    this.verifyBioMobileOtp = false;
                   } else {
                     this.enableMobileOTPForm = true;
+                    this.verifyBioMobileOtp = false;
                   }
                 });
             } else {
@@ -116,7 +122,32 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
             this.confirmationService.alert(res.errorMessage, 'error');
           }
         },
-        (err: any) => {
+        (err) => {
+          this.showProgressBar = false;
+          this.confirmationService.alert(
+            this.currentLanguageSet.issueInGettingBeneficiaryABHADetails,
+            'error',
+          );
+        },
+      );
+    } else if (this.enableMobileOTPForm === false && this.bioVal === true) {
+      this.showProgressBar = true;
+      let reqObj = {
+        mobile: this.generateMobileOTPForm.controls['mobileNo'].value,
+        txnId: this.txnId,
+      };
+      this.registrarService.generateABHAForBiometricMobileOTP(reqObj).subscribe(
+        (res: any) => {
+          if (res.statusCode == 200 && res.data.tnxId) {
+            this.showProgressBar = false;
+            this.enableMobileOTPForm = true;
+            this.verifyBioMobileOtp = true;
+          } else {
+            this.showProgressBar = false;
+            this.confirmationService.alert(res.errorMessage, 'error');
+          }
+        },
+        (err) => {
           this.showProgressBar = false;
           this.confirmationService.alert(
             this.currentLanguageSet.issueInGettingBeneficiaryABHADetails,
@@ -154,8 +185,9 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
 
   //entering OTP for mobile verification
   verifyMobileOtp() {
-    if (this.enableMobileOTPForm === true) {
+    if(this.enableMobileOTPForm === true && this.verifyBioMobileOtp === true) {
       let reqObj = null;
+      this.showProgressBar = true;
       reqObj = {
         otp: this.generateMobileOTPForm.controls['mobileOtp'].value,
         txnId: this.txnId,
@@ -164,12 +196,26 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
         .verifyMobileOTPForAadhar(reqObj)
         .subscribe((res: any) => {
           if (res.statusCode === 200) {
-            this.dialogSucRef.close(res.data);
-          } else {
-            this.confirmationService.alert(res.errorMessage, 'error');
+            this.dialogSucRef.close(res.data.tnxId);
+          } else{
+            this.confirmationService.alert(res.errorMessage, "error");
           }
-        });
-    }
+        })
+      } else if(this.enableMobileOTPForm === true) {
+        let reqObj = null;
+        reqObj = {
+          "otp": this.generateMobileOTPForm.controls['mobileOtp'].value,
+          "txnId": this.txnId,
+        }
+        this.registrarService.verifyMobileOTPForAadhar(reqObj)
+        .subscribe((res: any) => {
+          if(res.statusCode ==  200) {
+            this.dialogSucRef.close(res.data);
+        } else{
+          this.confirmationService.alert(res.errorMessage, "error");
+        }
+      })
+      }
   }
 
   numberOnly(event: any): boolean {

@@ -53,3 +53,10 @@
   ::ng-deep.bs-datepicker.bs-datepicker-container {
     padding: 0 !important;
   }
+
+  mat-label {
+    font-size: 15px !important;
+    color: #999 !important;
+    font-weight: 600 !important;
+    letter-spacing: initial !important;
+  }

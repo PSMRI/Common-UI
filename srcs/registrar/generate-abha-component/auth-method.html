@@ -1,0 +1,33 @@
+<div class="title info">
+  <h4>ABHA Authmode Selection</h4>
+  <button
+    class="pull-right close-btn"
+    matDialogClose
+    (click)="closeDialogAuth()"
+    mat-icon-button
+  >
+    <mat-icon class="md-24">close</mat-icon>
+  </button>
+</div>
+<br />
+<div class="col-xs-12 col-sm-12" [formGroup]="abhaAuthMethodForm">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10">
+      <label class="control-label" for="modeofAuthMethod">Abha Authmode*</label>
+      <mat-radio-group
+        formControlName="modeofAuthMethod"
+        (change)="getAbhaAuthMethod()"
+      >
+        <mat-radio-button color="primary" value="AADHAAR_OTP"
+          >Aadhar</mat-radio-button
+        >
+        <mat-radio-button color="primary" value="AADHAAR_BIO"
+          >Biometric</mat-radio-button
+        >
+        <mat-radio-button color="primary" value="MOBILE_OTP"
+          >Mobile</mat-radio-button
+        >
+      </mat-radio-group>
+    </div>
+  </div>
+</div>
