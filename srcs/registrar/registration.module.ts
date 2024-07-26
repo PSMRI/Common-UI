@@ -22,7 +22,7 @@ import { BiometricAuthenticationComponent } from './biometric-authentication/bio
 import { FamilyTaggingDetailsComponent } from './family-tagging/family-tagging-details/family-tagging-details.component';
 import { CreateFamilyTaggingComponent } from './family-tagging/create-family-tagging/create-family-tagging.component';
 import { EditFamilyTaggingComponent } from './family-tagging/edit-family-tagging/edit-family-tagging.component';
-import { GenerateAbhaComponentComponent } from './generate-abha-component/generate-abha-component.component';
+import { GenerateAbhaComponentComponent, authMethodComponent } from './generate-abha-component/generate-abha-component.component';
 import { GenerateMobileOtpGenerationComponent } from './generate-mobile-otp-generation/generate-mobile-otp-generation.component';
 import { HealthIdDisplayModalComponent } from './health-id-display-modal/health-id-display-modal.component';
 import { HealthIdOtpGenerationComponent, HealthIdOtpSuccessComponent } from './health-id-otp-generation/health-id-otp-generation.component';
@@ -34,6 +34,7 @@ import { SetPasswordForAbhaComponent } from './set-password-for-abha/set-passwor
 import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
 import { FamilyTaggingService } from './services/familytagging.service';
 import { ConsentFormComponent } from './registration/consent-form/consent-form.component';
+import { RdDeviceService } from './services/rddevice.service';
 
 
 @NgModule({
@@ -60,7 +61,8 @@ import { ConsentFormComponent } from './registration/consent-form/consent-form.c
     BeneficiaryDetailsComponent,
     HealthIdValidateComponent,
     SetPasswordForAbhaComponent,
-    ConsentFormComponent
+    ConsentFormComponent,
+    authMethodComponent
   ],
   imports: [
     CommonModule,
@@ -97,8 +99,8 @@ import { ConsentFormComponent } from './registration/consent-form/consent-form.c
   providers: [
     RegistrarService,
     RegistrationService,
-    FamilyTaggingService
-    
+    FamilyTaggingService,
+    RdDeviceService
   ]
 })
 export class RegistrationModule { }

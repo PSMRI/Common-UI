@@ -84,6 +84,7 @@ export class GenerateAbhaComponentComponent implements OnInit {
           width: '500px',
           height: '320px',
           disableClose: true,
+          data: {aadharNumber: this.aadharNumber}
         });
       mdDialogRef.afterClosed().subscribe((res) => {});
     }
@@ -124,4 +125,42 @@ export class GenerateAbhaComponentComponent implements OnInit {
       }
     });
   }
+}
+
+@Component({
+  selector: 'auth-method',
+  templateUrl: './auth-method.html',
+  styleUrls: ['./generate-abha-component.component.css']
+})
+export class authMethodComponent implements OnInit {
+  authOption: boolean = false;
+  modeofAuthMethod: any;
+  abhaAuthMethodForm!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    public dialogRef: MatDialogRef<authMethodComponent>,
+    private registerService: RegistrarService,
+  ) {}
+
+ngOnInit(): void {
+  this.abhaAuthMethodForm = this.createAbhaAuthMethod();
+}
+
+createAbhaAuthMethod() {
+  return this.fb.group({
+    modeofAuthMethod: null,
+  });
+}
+
+closeDialogAuth() {
+  this.dialogRef.close();
+  this.modeofAuthMethod = null;
+}
+
+getAbhaAuthMethod(){
+  this.modeofAuthMethod=this.abhaAuthMethodForm.controls["modeofAuthMethod"].value;
+  this.dialogRef.close(this.modeofAuthMethod);
+  console.log("AUTH METHOD", this.modeofAuthMethod);
+}
 }

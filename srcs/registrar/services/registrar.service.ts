@@ -117,11 +117,6 @@ export class RegistrarService {
     return this.http.post(environment.identityQuickSearchUrl, searchTerm);
   }
 
-  // quickSearchByPhoneNO(searchTerm: any) {
-  //   return this.http.get(environment.quickSearchUrl, searchTerm)
-  //     .map((res) => res.data);
-  // }
-
   clearBeneficiaryEditDetails() {
     this.beneficiaryEditDetails.next(null);
   }
@@ -322,4 +317,17 @@ export class RegistrarService {
     this.consentGranted = grantValue;
     this.subject.next(grantValue);
   }
+
+  confirmAadhar(healthID: any) {
+    return this.http.post(environment.confirmAadharBio,healthID);
+  }
+
+  generateABHAForBiometric(aadhaarBio: any) {
+    return this.http.post(environment.generateABHAForBio,aadhaarBio);
+  }
+
+  generateABHAForBiometricMobileOTP(bioMobileOTP: any) {
+    return this.http.post(environment.generateABHAForBioMobileOTP,bioMobileOTP);
+  }
+  
 }

@@ -10,30 +10,23 @@
   </button>
 </div>
 <div class="col-xs-12 col-sm-12">
-  <div class="row" style="padding: 62px" *ngIf="!enableImage">
+  <div class="row" style="padding: 62px">
     <h4 class="textBio">
-      Please plug the device and click on proceed to connect device
+      Please plug the device and click on capture to capture the fingerprint
     </h4>
     <button
+      type="button"
+      style="margin: 5px"
       mat-raised-button
       color="primary"
-      class="pull-right m-t-8 f-s-18 mat_blue"
-      style="margin-top: 50px !important"
-      (click)="connectDevice()"
+      (click)="captureData()"
+      value="Capture"
+      class="btn btn-200 btn-primary"
     >
-      Proceed
-    </button>
-    <button
-      mat-raised-button
-      color="primary"
-      class="pull-right m-t-8 f-s-18 mat_blue"
-      style="margin: 10px; margin-top: 50px !important"
-      (click)="matDialogRef.close()"
-    >
-      Cancel
+      Capture
     </button>
   </div>
-  <div class="img row" *ngIf="enableImage">
+  <!-- <div class="img row" *ngIf="enableImage">
     <img
       class="bioImage"
       src="/assets/images/fingerprint-biometrics-scaled.jpg"
@@ -42,5 +35,5 @@
     <div class="text-container">
       <h2 style="font-size: 14px">{{ messageInfo }}</h2>
     </div>
-  </div>
+  </div> -->
 </div>
