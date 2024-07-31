@@ -156,7 +156,7 @@ export class AbhaInformationComponent {
   healthIdSearch() {
     const dialogRef = this.dialog.open(HealthIdValidateComponent, {
       height: '400px',
-      width: '450px',
+      width: '500px',
       disableClose: true,
       data: {
         healthId: 'NO',

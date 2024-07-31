@@ -105,6 +105,7 @@
         </div>
         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
           <mat-form-field [style.width]="'100%'">
+            <mat-label>{{ currentLanguageSet?.enterABHAOrNumber }}</mat-label>
             <input
               id="inpHealthID"
               defaultNull
@@ -112,7 +113,6 @@
               formControlName="searchHealth"
               matInput
               type="text"
-              placeholder="{{ currentLanguageSet?.enterABHAOrNumber }}"
               required
               (keydown.space)="$event.preventDefault()"
               minlength="4"
@@ -131,7 +131,7 @@
                 xx-xxxx-xxxx-xxxx
               </p>
             </div>
-            <div class="col-6" style="margin-left: 60px">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
               <button
                 id="searchHealthID"
                 (click)="getHealthIDDetails()"

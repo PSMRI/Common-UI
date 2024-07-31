@@ -1,6 +1,6 @@
-#searchDialog {
+/* #searchDialog {
     z-index: 998 !important;
-}
+} */
 
 .mat-dialog-content{
     overflow: hidden !important;
@@ -65,3 +65,17 @@
     box-sizing: border-box;
     border-top: 1px solid rgba(0, 0, 0, 0);
 }
+
+@media only screen and (max-width: 414px) and (max-height: 896px) {
+    .container-fluid {
+        width: 800px;
+        height: 300px;
+    }
+    }
+
+
+    @media only screen and (max-width: 412px) and (max-height: 915px) {
+        .container-fluid {
+            width: 600px;
+        }
+        }
