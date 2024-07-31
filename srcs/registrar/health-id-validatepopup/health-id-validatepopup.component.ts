@@ -200,6 +200,7 @@ export class HealthIdValidateComponent implements OnInit, DoCheck {
             width: '500px',
             height: '320px',
             disableClose: true,
+            data: {healthid: this.valhealthId}
           });
         matDialogRef.afterClosed().subscribe((res: any) => {});
       }

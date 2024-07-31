@@ -10,6 +10,9 @@ import { GenerateMobileOtpGenerationComponent } from '../generate-mobile-otp-gen
 import { HealthIdOtpSuccessComponent } from '../health-id-otp-generation/health-id-otp-generation.component';
 import { RdDeviceService } from '../services/rddevice.service';
 import { concatMap } from 'rxjs';
+import { ViewHealthIdCardComponent } from '../view-health-id-card/view-health-id-card.component';
+import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
+import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 
 @Component({
   selector: 'app-biometric-authentication',
@@ -21,22 +24,39 @@ export class BiometricAuthenticationComponent implements OnInit {
   aadharBioNum: any;
   captureres: any;
   capturePID: any;
+  healthDataNum: any;
+  pidRes: any;
+  healthIDCard: any;
   showProgressBar: boolean = false;
+  currentLanguageSet: any;
 
   constructor(
     public matDialogRef: MatDialogRef<BiometricAuthenticationComponent>,
+    public dialogSucRef: MatDialogRef<HealthIdOtpSuccessComponent>,
     private rddeviceService: RdDeviceService,
     private registrarService: RegistrarService,
     private dialog: MatDialog,
     private confirmationService: ConfirmationService,
+    public httpServiceService: HttpServiceService,
     @Inject(MAT_DIALOG_DATA) public data: any,
   ) {}
 
   ngOnInit() {
     console.log('success');
+    this.assignSelectedLanguage();
     this.aadharBioNum = this.data.aadharNumber;
+    this.healthDataNum = this.data.healthid;
   }
 
+  ngDoCheck() {
+    this.assignSelectedLanguage();
+  }
+  assignSelectedLanguage() {
+    const getLanguageJson = new SetLanguageComponent(this.httpServiceService);
+    getLanguageJson.setLanguage();
+    this.currentLanguageSet = getLanguageJson.currentLanguageObject;
+  }
+  
   captureData() {
     this.rddeviceService
       .discoverAvdm()
@@ -54,7 +74,7 @@ export class BiometricAuthenticationComponent implements OnInit {
             if (this.aadharBioNum != null && this.aadharBioNum != undefined) {
               this.showProgressBar = true;
               this.generateAbha(); // Call generateAbha after setting capturePID
-            } else {
+            } else if (this.healthDataNum != null && this.healthDataNum != undefined) {
               this.rddeviceService.capturePID = captureres;
             }
           }
@@ -168,6 +188,46 @@ export class BiometricAuthenticationComponent implements OnInit {
         );
       },
     );
+  }
+
+  downloadABHAForBio(txnId: any) {
+    this.rddeviceService.pidDetailDetails$.subscribe((piddata: any) => {
+      if(piddata != null && piddata != undefined) {
+        this.pidRes = piddata;
+      }
+    });
+    if(this.pidRes != null && this.pidRes !== undefined) {
+    let requestObj = {
+      pid: this.pidRes ? this.pidRes : null,
+      txnId: txnId,
+      authType: "FINGERSCAN",
+      bioType: "FMR",
+     }
+       this.registrarService.confirmAadhar(requestObj).subscribe((res: any)=> {
+        if(res.statusCode == 200 && res.data != null ){
+          this.healthIDCard = res.data;
+          this.dialog.open(ViewHealthIdCardComponent, {
+            height: "530px",
+            width: "800px",
+            data: {
+              imgBase64: this.healthIDCard,
+            },
+          });
+
+          this.dialogSucRef.close();
+        } else {
+          this.showProgressBar = false;
+          this.confirmationService.alert(
+            this.currentLanguageSet.aBHACardNotAvailable + " - " + res.errorMessage, "error" );
+         }
+      },
+      (err) => {
+        this.showProgressBar = false;
+        this.confirmationService.alert(err.errorMessage, "error");
+      }
+    );
+    }
+    this.rddeviceService.getpidDetail(null);
   }
 
   closeDialog() {
