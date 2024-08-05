@@ -469,24 +469,24 @@ export class PersonalInformationComponent {
 
         if (yob > 0) {
           this.personalInfoFormGroup.patchValue(
-            { age: yob, ageUnits: 'years' },
+            { age: yob},
             { emitEvent: false }
           );
         } else if (mob > 0) {
           this.personalInfoFormGroup.patchValue(
-            { age: mob, ageUnits: 'months' },
+            { age: mob},
             { emitEvent: false }
           );
         } else if (dob > 0) {
           this.personalInfoFormGroup.patchValue(
-            { age: dob, ageUnits: 'days' },
+            { age: dob },
             { emitEvent: false }
           );
         }
 
         if (date.setHours(0, 0, 0, 0) === this.today.setHours(0, 0, 0, 0)) {
           this.personalInfoFormGroup.patchValue(
-            { age: 1, ageUnits: 'days' },
+            { age: 1 },
             { emitEvent: false }
           );
         }
