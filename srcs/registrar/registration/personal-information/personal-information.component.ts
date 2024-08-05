@@ -451,7 +451,7 @@ export class PersonalInformationComponent {
 
   dobChangeByCalender() {
     const dobValue = this.personalInfoFormGroup.get('dOB')?.value;
-
+    let today = new Date();
     if (dobValue) {
       this.dateForCalendar = moment(dobValue);
       const date = new Date(this.dateForCalendar);
@@ -466,27 +466,26 @@ export class PersonalInformationComponent {
         const yob = Math.abs(age.getUTCFullYear() - 1970);
         const mob = Math.abs(age.getUTCMonth());
         const dob = Math.abs(age.getUTCDate() - 1);
-
         if (yob > 0) {
           this.personalInfoFormGroup.patchValue(
-            { age: yob},
+            { age: yob, ageUnits: 'Years' },
             { emitEvent: false }
           );
         } else if (mob > 0) {
           this.personalInfoFormGroup.patchValue(
-            { age: mob},
+            { age: mob, ageUnits: 'Months' },
             { emitEvent: false }
           );
         } else if (dob > 0) {
           this.personalInfoFormGroup.patchValue(
-            { age: dob },
+            { age: dob, ageUnits: 'Days' },
             { emitEvent: false }
           );
         }
 
-        if (date.setHours(0, 0, 0, 0) === this.today.setHours(0, 0, 0, 0)) {
+        if (date.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
           this.personalInfoFormGroup.patchValue(
-            { age: 1 },
+            { age: 1, ageUnits: 'Day' },
             { emitEvent: false }
           );
         }
