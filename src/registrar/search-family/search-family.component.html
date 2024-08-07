@@ -1,0 +1,156 @@
+<section id="searchDialog" class="container-fluid">
+  <div class="row title info">
+    <div class="col-6">
+      <h4>{{ currentLanguageSet?.familyTaggingSearch }}</h4>
+    </div>
+    <div class="col-6">
+      <mat-icon
+        class="md-24 pull-right close-btn"
+        style="overflow: visible; cursor: pointer"
+        (click)="onClose()"
+        mat-icon-button
+        >close</mat-icon
+      >
+    </div>
+  </div>
+
+  <div class="overlay" *ngIf="showProgressBar">
+    <div class="overlay-content">
+      <mat-spinner></mat-spinner>
+    </div>
+  </div>
+  <mat-dialog-content style="padding-top: 2%">
+    <form [formGroup]="familySearchForm">
+      <section class="row m-t-10">
+        <div class="col-xs-12 col-sm-6 box">
+          <div class="select-container">
+            <mat-form-field [style.width]="'100%'">
+              <mat-label>
+                {{ currentLanguageSet?.district }}
+              </mat-label>
+              <mat-select
+                [style.width]="'100%'"
+                required
+                (selectionChange)="onDistrictChange()"
+                name="districtID"
+                formControlName="districtID"
+              >
+                <mat-option
+                  *ngFor="let district of districtList"
+                  [value]="district.districtID"
+                  >{{ district.districtName | titlecase }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-6 box">
+          <div class="select-container">
+            <mat-form-field [style.width]="'100%'">
+              <mat-label>
+                {{ currentLanguageSet?.block }}
+              </mat-label>
+              <mat-select
+                required
+                [style.width]="'100%'"
+                (selectionChange)="onBlockChange()"
+                placeholder=""
+                name="blockID"
+                formControlName="blockID"
+              >
+                <mat-option
+                  *ngFor="let block of blockList"
+                  [value]="block.blockID"
+                  >{{ block.blockName | titlecase }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-6 box">
+          <div class="select-container">
+            <mat-form-field [style.width]="'100%'">
+              <mat-label>
+                {{ currentLanguageSet?.village }}
+              </mat-label>
+              <mat-select
+                required
+                [style.width]="'100%'"
+                (selectionChange)="onVillageChange()"
+                type="select"
+                name="villageID"
+                formControlName="villageID"
+              >
+                <mat-option
+                  *ngFor="let village of villageList"
+                  [value]="village.districtBranchID"
+                  >{{ village.villageName | titlecase }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-6 box">
+          <mat-form-field [style.width]="'100%'">
+            <mat-label>
+              {{ currentLanguageSet?.familyName }}
+            </mat-label>
+            <input
+              autocomplete="off"
+              matInput
+              allowText="alphaspace"
+              required
+              name="surname"
+              formControlName="surname"
+              minlength="2"
+              maxlength="50"
+            />
+            <mat-error
+              *ngIf="familySearchForm.controls['surname'].errors?.['required']"
+            >
+              {{ currentLanguageSet?.familyNameisrequired }}</mat-error
+            >
+            <mat-error
+              *ngIf="familySearchForm.controls['surname'].errors?.['minlength']"
+            >
+              {{
+                currentLanguageSet?.benDetailsAlert?.minCharRequired
+              }}</mat-error
+            >
+          </mat-form-field>
+        </div>
+
+        <div class="col-xs-12 col-sm-6 box">
+          <mat-form-field [style.width]="'100%'">
+            <mat-label>
+              {{ currentLanguageSet?.familyId }}
+            </mat-label>
+            <input
+              autocomplete="off"
+              matInput
+              allowText="alphanumeric"
+              name="familyId"
+              formControlName="familyId"
+              minlength="2"
+              maxlength="50"
+            />
+          </mat-form-field>
+        </div>
+      </section>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions class="padding15 margin15 pull-right">
+    <button
+      class="full-width-login background-overall button-overall-disabled"
+      type="button"
+      [disabled]="familySearchForm.invalid"
+      (click)="getFamilySearchMaster()"
+    >
+      {{ currentLanguageSet?.common?.search }}
+    </button>
+  </mat-dialog-actions>
+  <div class="clearfix"></div>
+</section>
