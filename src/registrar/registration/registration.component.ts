@@ -666,6 +666,10 @@ export class RegistrationComponent {
       changeInSelfDetails: true,
       changeInOtherDetails: true,
       changeInAssociations: true,
+      changeInAddress: true,
+      changeInContacts: true
+
+
     };
 
     return finalForm;

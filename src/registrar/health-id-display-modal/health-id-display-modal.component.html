@@ -311,7 +311,7 @@
 <!-- Entering OTP for Health ID Generation-->
 <div
   *ngIf="enablehealthIdOTPForm && !searchPopup"
-  class="col-xs-12 col-sm-12"
+  class="col-xs-12 col-sm-12 container-fluid"
   [formGroup]="healthIdOTPForm"
 >
   <div class="row">
@@ -334,16 +334,6 @@
     </div>
     <div class="col-sm-12 step-btn m-b-20" style="text-align: right">
       <button
-        id="cancelButton"
-        mat-raised-button
-        type="button"
-        color="primary"
-        class="pull-right mat_blue"
-        (click)="resendOtp()"
-      >
-        {{ currentLanguageSet?.resendOTP }}
-      </button>
-      <button
         id="submitButton"
         mat-raised-button
         class="pull-right mat_blue"
@@ -354,6 +344,18 @@
       >
         {{ currentLanguageSet?.common?.submit }}
       </button>
+      <button
+        id="cancelButton"
+        mat-raised-button
+        type="button"
+        style="margin-right: 3px;"
+        color="primary"
+        class="pull-right mat_blue"
+        (click)="resendOtp()"
+      >
+        {{ currentLanguageSet?.resendOTP }}
+      </button>
+      
     </div>
   </div>
 </div>
