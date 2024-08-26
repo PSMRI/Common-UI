@@ -123,10 +123,10 @@ table {
 .mat-mdc-form-field {
     display: flex !important;
 }
-.familyTagSelect >>> .mat-mdc-form-field-type-mat-select:not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper {
+.familyTagSelect ::ng-deep  .mat-mdc-form-field-type-mat-select:not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper {
     height: unset !important;
 }
 
-.familyTagSelect >>> .mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined) .mat-mdc-form-field-infix {
+.familyTagSelect ::ng-deep  .mat-mdc-text-field-wrapper:not(.mdc-text-field--outlined) .mat-mdc-form-field-infix {
     padding-top: 12px !important;
 }
