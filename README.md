@@ -16,66 +16,7 @@ This microservice is developed using Java and the Spring Boot framework, with My
 Ensure that the following prerequisites are met before building the MMU service:
 
 * JDK 17
-* Maven
-* NPM/YARN
-* Spring Boot v2
+* Maven 
+* Nodejs v18.10.0
 * MySQL
 
-### Installation
-
-To install the MMU module, please follow these steps:
-
-1. Clone the repository to your local machine.
-2. Install the dependencies and build the module:
-   - Run the command `npm install`.
-   - Run the command `npm run build`.
-   - Run the command `mvn clean install`.
-   - Run the command `npm start`.
-3. Open your browser and access `http://localhost:4200/#/login` to view the login page of module.
-
-### Building from source
-
-1. To build deployable war files
-```bash
-mvn -B package --file pom.xml -P <profile_name>
-```
-
-The available profiles include dev, local, test, and ci.
-Refer to `src/environments/environment.ci.template` file and ensure that the right environment variables are set for the build.
-
-Packing with `ci` profile calls `build-ci` script in `package.json`.
-It creates a `environment.ci.ts` file with all environment variables used in the generated build.
-
-## Usage
-
-All the features of the MMU service are exposed as REST endpoints. Please refer to the Swagger API specification for detailed information on how to utilize each feature.
-
-The MMU module offers comprehensive management capabilities for your application.
-
-### Initializing Submodule `Common-UI`
-
-To initialize the `Common-UI` submodule, follow these steps:
-
-To initialize the `Common-UI` submodule, follow these steps:
-
-1. Clone the `mmu-ui` project:
-   ```bash
-   git clone https://github.com/PSMRI/MMU-UI
-
-2. Navigate to the project directory and pull the latest changes from the develop branch
-   cd mmu-ui
-   git checkout develop
-   git pull origin develop
-
-3. Open the integrated terminal for the common-ui submodule and initialize it
-
-   cd Common-UI
-   git init
-   git remote add origin https://github.com/PSMRI/Common-UI
-   git submodule update --init --recursive
-
-4. Check the available branches and switch to the develop branch
-
-   git branch
-   git checkout develop
-   git pull origin develop
