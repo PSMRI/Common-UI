@@ -31,7 +31,11 @@ type="accent"
             </mat-card>
             <div class="row m-t-20">
               <div class="col-sm-12 step-btn m-b-40" style="margin-top: 15px;">
-                <button class="mat_blue" mat-raised-button matStepperNext>Next</button>
+                <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableLocationInfo">Next</button>
+                <button *ngIf="!patientRevisit && !enableLocationInfo && !enableOtherInfo && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
+                  [disabled]="!mainForm.valid">Submit</button>
+                  <button *ngIf="patientRevisit && !enableLocationInfo && !enableOtherInfo && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
+                  [disabled]="!mainForm.valid">Update</button>
               </div>
             </div>
           </mat-step>
@@ -50,6 +54,10 @@ type="accent"
             </mat-card>
             <div class="row m-t-20">
               <div class="col-sm-12 step-btn m-b-40" style="margin-top: 15px;">
+                <button *ngIf="!patientRevisit && !enableOtherInfo && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
+                  [disabled]="!mainForm.valid">Submit</button>
+                  <button *ngIf="patientRevisit && !enableOtherInfo && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
+                  [disabled]="!mainForm.valid">Update</button>
                 <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableOtherInfo">Next</button>
                 <button id="backButton" class="mat_blue" mat-raised-button matStepperPrevious
                   *ngIf="enablePersonalInfo">Back</button>
