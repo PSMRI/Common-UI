@@ -31,7 +31,7 @@ type="accent"
             </mat-card>
             <div class="row m-t-20">
               <div class="col-sm-12 step-btn m-b-40" style="margin-top: 15px;">
-                <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableLocationInfo">Next</button>
+                <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableLocationInfo || enableOtherInfo || enableAbhaInfo">Next</button>
                 <button *ngIf="!patientRevisit && !enableLocationInfo && !enableOtherInfo && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="submitBeneficiaryDetails()"
                   [disabled]="!mainForm.valid">Submit</button>
                   <button *ngIf="patientRevisit && !enableLocationInfo && !enableOtherInfo && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
