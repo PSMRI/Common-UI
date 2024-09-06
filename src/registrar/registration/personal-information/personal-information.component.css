@@ -1,9 +1,9 @@
 .mat-form-field {
     line-height: unset;
 }
-.row div:first-child{
+/* .row div:first-child{
     display: none;
-}
+} */
 .input-full-width {
   width: 100%;
 }

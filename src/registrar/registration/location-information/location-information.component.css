@@ -5,9 +5,9 @@
 .box {
     height: 60px;
 }
-.row div:first-child{
+/* .row div:first-child{
     display: none;
-}
+} */
 
 .input-full-width {
     width: 100%;

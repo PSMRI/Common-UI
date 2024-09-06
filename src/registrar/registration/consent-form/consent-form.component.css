@@ -1,9 +1,9 @@
 /* #searchDialog {
     z-index: 998 !important;
 } */
-.row div:first-child{
+/* .row div:first-child{
     display: none;
-}
+} */
 .mat-dialog-content{
     overflow: hidden !important;
 }
