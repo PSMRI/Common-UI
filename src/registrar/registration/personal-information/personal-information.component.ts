@@ -89,19 +89,22 @@ export class PersonalInformationComponent {
     private languageComponent: SetLanguageComponent
   ) {
     this.personalInfoSubscription =
-    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
-      console.log("responseMY", response);
-      const formattedDate = response.dob ? new Date(response.dob) : null;
-      console.log("formattedDate", formattedDate)
-      this.personalInfoFormGroup.patchValue({
-        firstName: response.firstName,
-        lastName: response.lastName,
-        phoneNo: response.phoneNo,
-        genderName: response.genderName,
-        dOB: formattedDate,
-        
-      });
-    });
+      this.registrarService.registrationABHADetails$.subscribe(
+        (response: any) => {
+          console.log('responseMY', response);
+          if (response) {
+            const formattedDate = response.dob ? new Date(response.dob) : null;
+            console.log('formattedDate', formattedDate);
+            this.personalInfoFormGroup.patchValue({
+              firstName: response.firstName,
+              lastName: response.lastName,
+              phoneNo: response.phoneNo,
+              genderName: response.genderName,
+              dOB: formattedDate,
+            });
+          }
+        }
+      );
   }
 
   ngOnInit() {
@@ -436,7 +439,7 @@ export class PersonalInformationComponent {
           this.personalInfoFormGroup.patchValue({ age: null });
         } else {
           const dob = moment().subtract(valueEntered, ageUnits).toDate();
-          let fromDate = moment(dob).toISOString();
+          const fromDate = moment(dob).toISOString();
           console.log('dob after conversion', fromDate);
           this.personalInfoFormGroup.patchValue(
             {
@@ -451,7 +454,7 @@ export class PersonalInformationComponent {
 
   dobChangeByCalender() {
     const dobValue = this.personalInfoFormGroup.get('dOB')?.value;
-    let today = new Date();
+    const today = new Date();
     if (dobValue) {
       this.dateForCalendar = moment(dobValue);
       const date = new Date(this.dateForCalendar);
