@@ -69,9 +69,6 @@ export class PersonalInformationComponent {
   @Input()
   revisitData: any;
 
-  @Input() max: any;
-  tomorrow = new Date();
-
   masterDataSubscription!: Subscription;
   masterData: any;
   revisitDataSubscription!: Subscription;
@@ -91,7 +88,6 @@ export class PersonalInformationComponent {
     private confirmationService: ConfirmationService,
     private languageComponent: SetLanguageComponent
   ) {
-    this.tomorrow.setDate(this.tomorrow.getDate());
     this.personalInfoSubscription =
       this.registrarService.registrationABHADetails$.subscribe(
         (response: any) => {
