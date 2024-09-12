@@ -49,13 +49,20 @@
                 Age at marriage must be less than or equal to age.
               </mat-error>
             </div>
-
-            <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'date'">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" (dateChange)="checkFieldValidations(item)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" readonly>
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
+<div>
+  <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'date' && item?.fieldName === 'dOB'">
+    <mat-label> {{ item.fieldTitle }}</mat-label>
+    <input matInput [matDatepicker]="picker"  formControlName="{{item.fieldName}}" (dateChange)="checkFieldValidations(item)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" readonly [max]="tomorrow">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+  <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'date' && item?.fieldName !== 'dOB'">
+                <mat-label> {{ item.fieldTitle }}</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" (dateChange)="checkFieldValidations(item)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" readonly >
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+            </div>
 
             <mat-form-field [style.width]="'100%'"  class="  backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
             <mat-label> {{ item.fieldTitle }}</mat-label>
