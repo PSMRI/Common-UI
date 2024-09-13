@@ -1,101 +1,194 @@
 <div class="m-t-10">
-    <form [formGroup]="personalInfoFormGroup" autocomplete="off">
-      <div id="image_row" class="col-md-2 order-md-last text-center">
-        <div class="row">
-          <div class="col-xs-12">
-            <div *ngIf="personalInfoFormGroup.value?.image === null">
-              <a>
-                <img
-                  src="assets/images/default-avatar.gif"
-                  class="img-circle thumbnail-120"
-                  alt="Upload Beneficiary Image" />
-              </a>
-            </div>
-            <div *ngIf="personalInfoFormGroup.value?.image !== null">
-              <a>
-                <img
-                  [src]="personalInfoFormGroup.value.image"
-                  class="img-circle thumbnail-120"
-                  alt="image" />
-              </a>
-            </div>
-            <button
-              mat-button
-              mat-raised-button
-              id="captureButton"
-              class="m-t-10 mat_captureButton"
-              (click)="captureImage()"
-              type="button">
-              Capture Photo
-            </button>
-          </div>
-        </div>
-      </div>
-      <div id="data_row" class="col-md-10 order-md-first">
+  <form [formGroup]="personalInfoFormGroup" autocomplete="off">
+    <div id="image_row" class="col-md-2 order-md-last text-center">
       <div class="row">
-        <div  class="col-xs-12 col-sm-6 col-md-4 col-lg-4" *ngFor="let item of formData">
-          <div>
-          <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'text'">
-          <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="input" (input)="onInputChanged($event, item.allowMax)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" (change)="checkFieldValidations(item)"
-             formControlName="{{item.fieldName}}"/>
-          </mat-form-field>
-          <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['required'] && personalInfoFormGroup.controls[item.fieldName].value?.dirty"> Field is Required</mat-error>
-            <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['minlength'] ">
-                Minimum length should be {{item.allowMin}} characters </mat-error>
-             <mat-error *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['maxlength']">
-              Maximum length can only be {{item.allowMax}} characters</mat-error>
-              <mat-error *ngIf="item.fieldName === 'ageAtMarriage'&&  personalInfoFormGroup.hasError('ageAtMarriageInvalid')">
-                Age at marriage must be less than or equal to age.
-              </mat-error>
-            </div>
-<div>
-  <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'date' && item?.fieldName === 'dOB'">
-    <mat-label> {{ item.fieldTitle }}</mat-label>
-    <input matInput [matDatepicker]="picker"  formControlName="{{item.fieldName}}" (dateChange)="checkFieldValidations(item)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" readonly [max]="tomorrow">
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-  </mat-form-field>
-  <mat-form-field [style.width]="'100%'"  *ngIf="item?.fieldType?.toLowerCase() === 'date' && item?.fieldName !== 'dOB'">
-                <mat-label> {{ item.fieldTitle }}</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="{{item.fieldName}}" (dateChange)="checkFieldValidations(item)" placeholder="{{ item.placeholder }}" [required]="item.isRequired || false" readonly >
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
-            </div>
-
-            <mat-form-field [style.width]="'100%'"  class="  backgroundWhite dropdownfontStyle" *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <mat-select matInput multiple  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}">
-              <mat-option *ngFor="let option of item.options" [value]="option">
-                {{ option }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <div *ngIf="item?.fieldType?.toLowerCase() === 'radio'" style="margin-top: 20px;">
-            <mat-label *ngIf="item.isRequired === true">{{ item.fieldTitle }}*</mat-label>
-            <mat-label *ngIf="item.isRequired !== true">{{ item.fieldTitle }}</mat-label>
-          <mat-radio-group  formControlName="{{item.fieldName}}" [required]="item.isRequired || false">
-            <mat-radio-button class="radioButtonFontStyle" style="margin-left: 5px;" *ngFor="let option of item.options" [value]="option">
-              {{option}}
-            </mat-radio-button>
-          </mat-radio-group>
-        </div>
-
-        <div *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
-            <mat-form-field [style.width]="'100%'"   class="backgroundWhite fieldForHRP dropdownfontStyle">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <mat-select matInput type="select" placeholder="{{ item.placeholder }}"  [required]="item.isRequired || false" formControlName="{{item.fieldName}}">
-              <mat-option *ngFor="let option of item.options" [value]="option">
-                {{ option }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
+        <div class="col-xs-12">
+          <div *ngIf="personalInfoFormGroup.value?.image === null">
+            <a>
+              <img
+                src="assets/images/default-avatar.gif"
+                class="img-circle thumbnail-120"
+                alt="Upload Beneficiary Image"
+              />
+            </a>
+          </div>
+          <div *ngIf="personalInfoFormGroup.value?.image !== null">
+            <a>
+              <img
+                [src]="personalInfoFormGroup.value.image"
+                class="img-circle thumbnail-120"
+                alt="image"
+              />
+            </a>
+          </div>
+          <button
+            mat-button
+            mat-raised-button
+            id="captureButton"
+            class="m-t-10 mat_captureButton"
+            (click)="captureImage()"
+            type="button"
+          >
+            Capture Photo
+          </button>
         </div>
       </div>
+    </div>
+    <div id="data_row" class="col-md-10 order-md-first">
+      <div class="row">
+        <ng-container *ngFor="let item of formData">
+          <!-- <div  class="col-xs-12 col-sm-6 col-md-4 col-lg-4" *ngFor="let item of formData"> -->
+
+          <div
+            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
+            *ngIf="item?.fieldType?.toLowerCase() === 'text'"
+          >
+            <mat-form-field [style.width]="'100%'">
+              <mat-label> {{ item.fieldTitle }}</mat-label>
+              <input
+                matInput
+                type="input"
+                (input)="onInputChanged($event, item.allowMax, item.fieldName)"
+                placeholder="{{ item.placeholder }}"
+                [required]="item.isRequired || false"
+                (change)="checkFieldValidations(item)"
+                formControlName="{{ item.fieldName }}"
+              />
+            </mat-form-field>
+            <mat-error
+              *ngIf="
+                personalInfoFormGroup.controls[item.fieldName].errors?.[
+                  'required'
+                ] && personalInfoFormGroup.controls[item.fieldName].value?.dirty
+              "
+            >
+              Field is Required</mat-error
+            >
+            <mat-error
+              *ngIf="
+                personalInfoFormGroup.controls[item.fieldName].errors?.[
+                  'minlength'
+                ]
+              "
+            >
+              Minimum length should be {{ item.allowMin }} characters
+            </mat-error>
+            <mat-error
+              *ngIf="
+                item.fieldName === 'ageAtMarriage' &&
+                personalInfoFormGroup.hasError('ageAtMarriageInvalid')
+              "
+            >
+              Age at marriage must be less than or equal to age.
+            </mat-error>
+          </div>
+
+          <div
+            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
+            *ngIf="item?.fieldType?.toLowerCase() === 'date'"
+          >
+            <mat-form-field [style.width]="'100%'">
+              <mat-label> {{ item.fieldTitle }}</mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                formControlName="{{ item.fieldName }}"
+                (dateChange)="checkFieldValidations(item)"
+                placeholder="{{ item.placeholder }}"
+                [required]="item.isRequired || false"
+                [min]="item?.fieldName?.toLowerCase() === 'dob' ? minDate : ''"
+                [max]="item?.fieldName?.toLowerCase() === 'dob' ? today : ''"
+                readonly
+              />
+              <mat-datepicker-toggle
+                matSuffix
+                [for]="picker"
+              ></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <div
+            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
+            *ngIf="item?.fieldType?.toLowerCase() === 'multiple'"
+          >
+            <mat-form-field
+              [style.width]="'100%'"
+              class="backgroundWhite dropdownfontStyle"
+            >
+              <mat-label> {{ item.fieldTitle }}</mat-label>
+              <mat-select
+                matInput
+                multiple
+                [required]="item.isRequired || false"
+                placeholder="{{ item.placeholder }}"
+                formControlName="{{ item.fieldName }}"
+              >
+                <mat-option
+                  *ngFor="let option of item.options"
+                  [value]="option"
+                >
+                  {{ option }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div
+            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
+            *ngIf="item?.fieldType?.toLowerCase() === 'radio'"
+            style="margin-top: 20px"
+          >
+            <mat-label *ngIf="item.isRequired === true"
+              >{{ item.fieldTitle }}*</mat-label
+            >
+            <mat-label *ngIf="item.isRequired !== true">{{
+              item.fieldTitle
+            }}</mat-label>
+            <mat-radio-group
+              formControlName="{{ item.fieldName }}"
+              [required]="item.isRequired || false"
+            >
+              <mat-radio-button
+                class="radioButtonFontStyle"
+                style="margin-left: 5px"
+                *ngFor="let option of item.options"
+                [value]="option"
+              >
+                {{ option }}
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <div
+            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
+            *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'"
+          >
+            <mat-form-field
+              [style.width]="'100%'"
+              class="backgroundWhite fieldForHRP dropdownfontStyle"
+            >
+              <mat-label> {{ item.fieldTitle }}</mat-label>
+              <mat-select
+                matInput
+                type="select"
+                placeholder="{{ item.placeholder }}"
+                [required]="item.isRequired || false"
+                formControlName="{{ item.fieldName }}"
+              >
+                <mat-option
+                  *ngFor="let option of item.options"
+                  [value]="option"
+                >
+                  {{ option }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- </div> -->
+        </ng-container>
       </div>
-    </form>
+    </div>
+  </form>
 </div>
