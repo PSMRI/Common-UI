@@ -378,6 +378,7 @@ export class RegistrationComponent {
           }
         this.mainForm.reset();
         this.disableGenerateOTP = false;
+        this.router.navigate(['/registrar/search/']);
         // this.confirmationService.alert(res.data.response, 'success');
         // this.mainForm.reset();
       } 
