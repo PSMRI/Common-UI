@@ -95,7 +95,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
     private registrarService: RegistrarService,
     private changeDetectorRef: ChangeDetectorRef,
     private familyTaggingService: FamilyTaggingService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
   ngOnInit() {
@@ -110,7 +110,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
           this.data.benSurname !== 'null' &&
           this.data.benSurname !== ''
           ? this.data.benSurname
-          : null,
+          : null
       );
       this.benDistrictId = parseInt(this.data.benDistrictId);
       this.benBlockId = parseInt(this.data.benBlockId);
@@ -197,8 +197,8 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
           this.emptyVillage();
         } else {
           this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.IssuesInFetchingLocationDetails,
-            'error',
+            this.currentLanguageSet.alerts.info.issuesinfetchingLocation,
+            'error'
           );
         }
       });
@@ -239,7 +239,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
   fetchBlockSelection() {
     console.log(
       'this.familySearchForm.value.districtID in 288',
-      this.familySearchForm.value,
+      this.familySearchForm.value
     );
     this.registrarService
       .getSubDistrictList(this.familySearchForm.value.districtID)
@@ -250,8 +250,8 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
           this.emptyVillage();
         } else {
           this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.IssuesInFetchingDemographics,
-            'error',
+            this.currentLanguageSet.alerts.info.issuesInFetchingDemographics,
+            'error'
           );
         }
       });
@@ -269,13 +269,13 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
         this.familySearchForm.controls['districtID'].setValue(
           this.benDistrictId !== undefined && this.benDistrictId !== null
             ? this.benDistrictId
-            : null,
+            : null
         );
         this.fetchBlockSelectionInitial();
       } else {
         this.confirmationService.alert(
-          this.currentLanguageSet.alerts.info.IssuesInFetchingDemographics,
-          'error',
+          this.currentLanguageSet.alerts.info.issuesInFetchingDemographics,
+          'error'
         );
       }
     });
@@ -284,7 +284,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
   fetchBlockSelectionInitial() {
     console.log(
       'this.familySearchForm.value.districtID in 330',
-      this.familySearchForm.value,
+      this.familySearchForm.value
     );
     this.registrarService
       .getSubDistrictList(this.familySearchForm.value.districtID)
@@ -296,13 +296,13 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
           this.familySearchForm.controls['blockID'].setValue(
             this.benBlockId !== undefined && this.benBlockId !== null
               ? this.benBlockId
-              : null,
+              : null
           );
           this.onBlockChangeInitial();
         } else {
           this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.IssuesInFetchingDemographics,
-            'error',
+            this.currentLanguageSet.alerts.info.issuesInFetchingDemographics,
+            'error'
           );
         }
       });
@@ -318,13 +318,13 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
           this.familySearchForm.controls['villageID'].setValue(
             this.benVillageId !== undefined && this.benVillageId !== null
               ? this.benVillageId
-              : null,
+              : null
           );
           this.showProgressBar = false;
         } else {
           this.confirmationService.alert(
-            this.currentLanguageSet.alerts.info.IssuesInFetchingLocationDetails,
-            'error',
+            this.currentLanguageSet.alerts.info.issuesinfetchingLocation,
+            'error'
           );
         }
       });
