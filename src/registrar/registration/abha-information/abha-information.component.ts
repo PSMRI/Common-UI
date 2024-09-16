@@ -42,14 +42,18 @@ export class AbhaInformationComponent {
     private confirmationService: ConfirmationService,
     private httpServiceService: HttpServiceService,
     private languageComponent: SetLanguageComponent
-  ){
+  ) {
     this.abhaInfoSubscription =
-    this.registrarService.registrationABHADetails$.subscribe((response: any) => {
-      console.log("responseABHACompoenet", response);
-      this.abhaInfoFormGroup.patchValue({
-        abha: response.healthIdNumber,
-      });
-    });
+      this.registrarService.registrationABHADetails$.subscribe(
+        (response: any) => {
+          console.log('responseABHACompoenet', response);
+          if (response) {
+            this.abhaInfoFormGroup.patchValue({
+              abha: response.healthIdNumber,
+            });
+          }
+        },
+      );
   }
 
   ngOnInit(){

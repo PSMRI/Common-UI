@@ -92,13 +92,13 @@ export class PersonalInformationComponent {
       this.registrarService.registrationABHADetails$.subscribe(
         (response: any) => {
           console.log('responseMY', response);
-          const formattedDate = response.dob ? new Date(response.dob) : null;
+          const formattedDate = response?.dob ? new Date(response?.dob) : null;
           console.log('formattedDate', formattedDate);
           this.personalInfoFormGroup.patchValue({
-            firstName: response.firstName,
-            lastName: response.lastName,
-            phoneNo: response.phoneNo,
-            genderName: response.genderName,
+            firstName: response?.firstName,
+            lastName: response?.lastName,
+            phoneNo: response?.phoneNo,
+            genderName: response?.genderName,
             dOB: formattedDate,
           });
         },
@@ -424,10 +424,12 @@ export class PersonalInformationComponent {
     const ageValue = this.personalInfoFormGroup.get('age')!.value;
     const ageUnits = this.personalInfoFormGroup.get('ageUnits')!.value;
 
-    if (ageValue && ageValue > 0 && ageUnits) {
-      this.calculateDOB();
-    } else {
+    const benAge = parseInt(ageValue);
+
+    if (benAge < 1) {
       this.personalInfoFormGroup.controls['age'].patchValue('');
+    } else if (ageValue && ageUnits) {
+      this.calculateDOB();
     }
   }
 
