@@ -424,8 +424,10 @@ export class PersonalInformationComponent {
     const ageValue = this.personalInfoFormGroup.get('age')!.value;
     const ageUnits = this.personalInfoFormGroup.get('ageUnits')!.value;
 
-    if (ageValue && ageUnits) {
+    if (ageValue && ageValue > 0 && ageUnits) {
       this.calculateDOB();
+    } else {
+      this.personalInfoFormGroup.controls['age'].patchValue('');
     }
   }
 
