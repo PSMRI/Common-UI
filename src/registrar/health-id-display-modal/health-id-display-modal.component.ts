@@ -88,6 +88,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   healthIdOTPForm!: FormGroup;
   showProgressBar = false;
   searchPopup = false;
+  abdmFacilityName = null;
+  abdmFacilityId = null;
 
   displayedColumns: any = [
     'sno',
@@ -130,21 +132,21 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   }
 
   ngOnInit() {
-    console.log("this.input",this.input);
+    console.log("this.input", this.input);
     this.searchDetails.data = [];
     this.selectedHealthID = null;
     this.searchPopup = false;
     this.assignSelectedLanguage();
+    this.getMappedAbdmFacility();
     this.searchPopup =
       this.input.search !== undefined ? this.input.search : false;
     this.healthIDMapping = this.input.healthIDMapping;
-    console.log("this.healthIDMapping",this.healthIDMapping);
+    console.log("this.healthIDMapping", this.healthIDMapping);
     if (
       this.input.dataList !== undefined &&
       this.input.search === true
-    )
-    {
-      let tempVal : any =  this.input.dataList.otherFields;
+    ) {
+      let tempVal: any = this.input.dataList.otherFields;
       this.benDetails = this.input.dataList.otherFields;
       let tempCreatDate: any = this.input.dataList.createdDate;
       console.log("tempVal", tempVal);
@@ -159,11 +161,11 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         //   );
         // }
         this.searchDetails.data.push(tempDataList);
-        console.log("this.searchDetails.data%%",this.searchDetails.data)
+        console.log("this.searchDetails.data%%", this.searchDetails.data)
       }
-   
+
     }
-      // this.searchDetails = this.input.dataList;
+    // this.searchDetails = this.input.dataList;
     // if (
     //   this.input.dataList !== undefined &&
     //   this.input.dataList.data !== undefined &&
@@ -202,7 +204,38 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       });
     }
   }
- 
+
+  getMappedAbdmFacility() {
+    let locationData: any = localStorage.getItem('loginDataResponse');
+    let jsonLoccationData = JSON.parse(locationData);
+    let workLocationId: any;
+    if(jsonLoccationData?.previlegeObj[0]?.roles){
+      let roles = jsonLoccationData?.previlegeObj[0]?.roles;
+      roles.find((item:any) => {
+        (item.RoleName.toLowerCase() === "doctor")
+          workLocationId = item.workingLocationID;
+      });
+    }
+    console.log("workLocationId", workLocationId);
+    this.registrarService.getMappedFacility(workLocationId).subscribe((res: any) => {
+      if (res.statusCode === 200 && res.data != null) {
+        let data = res.data;
+        if (data.abdmFacilityID && data.abdmFacilityName) {
+          this.abdmFacilityId = data.abdmFacilityID;
+          this.abdmFacilityName = data.abdmFacilityName;
+        }
+      } else {
+        this.confirmationService.confirm(res.errorMessage, 'info');
+        this.abdmFacilityId = null;
+        this.abdmFacilityName = null;
+      }
+    },
+      (err) => {
+        this.confirmationService.alert(err.errorMessage, 'error');
+      },
+    );
+  }
+
   onRadioChange(data: any) {
     this.selectedHealthID = data;
   }
@@ -216,6 +249,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         ? this.selectedHealthID.healthIdNumber
         : null,
       authenticationMode: this.selectedHealthID.authenticationMode,
+      abdmFacilityName: this.abdmFacilityName,
+      abdmFacilityId: this.abdmFacilityId
     };
     this.registrarService.generateOtpForMappingCareContext(reqObj).subscribe(
       (receivedOtpResponse: any) => {
@@ -291,6 +326,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         localStorage.getItem('visiCategoryANC') === 'General OPD (QC)'
           ? 'Emergency'
           : localStorage.getItem('visiCategoryANC'),
+      abdmFacilityName: this.abdmFacilityName,
+      abdmFacilityId: this.abdmFacilityId
     };
     this.registrarService
       .verifyOtpForMappingCarecontext(verifyOtpData)

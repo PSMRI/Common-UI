@@ -220,6 +220,11 @@ export class RegistrarService {
   getHealthIdDetails(reqObj: any) {
     return this.http.post(environment.gethealthIdDetailsUrl, reqObj);
   }
+
+  getMappedFacility(reqObj: any) {
+    return this.http.get(environment.getAbdmMappedFacility + reqObj);
+  }
+
   generateOtpForMappingCareContext(reqObjForMapping: any) {
     return this.http.post(
       environment.careContextGenerateOtpUrl,
