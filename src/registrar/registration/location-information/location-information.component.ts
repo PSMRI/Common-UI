@@ -43,7 +43,7 @@ export class LocationInformationComponent {
 
   constructor(
     private fb: FormBuilder,
-    private registrarService: RegistrarService
+    private registrarService: RegistrarService,
   ) {}
 
   ngOnInit() {
@@ -55,12 +55,12 @@ export class LocationInformationComponent {
             Validators.pattern(this.allowTextValidator(item.allowText)),
             Validators.minLength(parseInt(item?.allowMin)),
             Validators.maxLength(parseInt(item?.allowMax)),
-          ])
+          ]),
         );
       } else {
         this.locationInfoFormGroup.addControl(
           item.fieldName,
-          new FormControl(null)
+          new FormControl(null),
         );
       }
     });
@@ -69,7 +69,7 @@ export class LocationInformationComponent {
     this.locationInfoFormGroup.addControl('blockID', new FormControl());
     this.locationInfoFormGroup.addControl(
       'districtBranchID',
-      new FormControl()
+      new FormControl(),
     );
     this.locationInfoFormGroup.addControl('zoneID', new FormControl());
     this.locationInfoFormGroup.addControl('parkingPlaceID', new FormControl());
@@ -84,7 +84,6 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue(this.locationPatchDetails);
     }
     this.loadLocationFromStorage();
-    this.loadLocalMasterForDemographic();
     console.log('location Form Data', this.formData);
   }
 
@@ -147,12 +146,84 @@ export class LocationInformationComponent {
   // Calling all data masters separately
   loadLocalMasterForDemographic() {
     this.loadState();
-    // this.loadDistrict();
-    // this.loadSubDistrict();
-    // this.loadVillage();
-    // this.loadZone();
-    // this.loadParkingPlace();
-    // this.loadServicePoint();
+  }
+
+  onChangeLocation(fieldNamevalue: any, selectedValue: any) {
+    if (fieldNamevalue === 'stateName') {
+      const stateDetails = this.statesList.find((value: any) => {
+        return value.stateName === selectedValue;
+      });
+      this.locationInfoFormGroup.patchValue({
+        stateID: stateDetails?.stateID,
+        stateName: stateDetails?.stateName,
+      });
+      this.resetDistrict();
+      this.resetBlock();
+      this.resetVillage();
+      this.loadDistrict(true);
+    } else if (fieldNamevalue === 'districtName') {
+      const districtDetails = this.districtList.find((value: any) => {
+        return value.districtName === selectedValue;
+      });
+      this.locationInfoFormGroup.patchValue({
+        districtID: districtDetails?.districtID,
+        districtName: districtDetails?.districtName,
+      });
+      this.resetBlock();
+      this.resetVillage();
+      this.loadSubDistrict(true);
+    } else if (fieldNamevalue === 'blockName') {
+      const blockDetails = this.subDistrictList.find((value: any) => {
+        return value.blockName === selectedValue;
+      });
+      this.locationInfoFormGroup.patchValue({
+        blockID: blockDetails?.blockID,
+        blockName: blockDetails?.blockName,
+      });
+      this.resetVillage();
+      this.loadVillage(true);
+    } else if (fieldNamevalue === 'districtBranchName') {
+      const villageDetails = this.villageList.find((value: any) => {
+        return value.villageName === selectedValue;
+      });
+      this.locationInfoFormGroup.patchValue({
+        districtBranchID: villageDetails?.districtBranchID,
+        districtBranchName: villageDetails?.villageName,
+      });
+    }
+  }
+
+  resetDistrict() {
+    this.locationInfoFormGroup.patchValue({
+      districtID: null,
+      districtName: null,
+    });
+
+    this.formData.forEach((element: any) => {
+      if (element.fieldName === 'districtName') element.options = [];
+    });
+  }
+
+  resetBlock() {
+    this.locationInfoFormGroup.patchValue({
+      blockID: null,
+      blockName: null,
+    });
+
+    this.formData.forEach((element: any) => {
+      if (element.fieldName === 'blockName') element.options = [];
+    });
+  }
+
+  resetVillage() {
+    this.locationInfoFormGroup.patchValue({
+      districtBranchID: null,
+      districtBranchName: null,
+    });
+
+    this.formData.forEach((element: any) => {
+      if (element.fieldName === 'districtBranchName') element.options = [];
+    });
   }
 
   /**
@@ -176,39 +247,39 @@ export class LocationInformationComponent {
         stateName: this.locationDetails.stateName,
       });
     }
-    this.locationInfoFormGroup.get('stateName')?.disable();
-    this.loadDistrict();
+    this.loadDistrict(false);
   }
 
-  loadDistrict() {
-    const districtList: any = [];
+  loadDistrict(isLocationSelected: any) {
+    const districtsList: any = [];
     this.registrarService
       .getDistrictList(this.locationInfoFormGroup.value.stateID)
       .subscribe((res: any) => {
         if (res && res.statusCode === 200) {
           this.districtList = res.data;
           this.districtList.forEach((item: any) =>
-            districtList.push(item.districtName)
+            districtsList.push(item.districtName),
           );
 
           this.formData.forEach((element: any) => {
             if (element.fieldName === 'districtName')
-              element.options = districtList;
+              element.options = districtsList;
           });
 
-          if (this.patientRevisit) {
-            this.locationInfoFormGroup.patchValue({
-              districtID: this.locationPatchDetails.districtID,
-              districtName: this.locationPatchDetails.districtName,
-            });
-          } else {
-            this.locationInfoFormGroup.patchValue({
-              districtID: this.locationDetails.districtID,
-              districtName: this.locationDetails.districtName,
-            });
+          if (!isLocationSelected) {
+            if (this.patientRevisit) {
+              this.locationInfoFormGroup.patchValue({
+                districtID: this.locationPatchDetails.districtID,
+                districtName: this.locationPatchDetails.districtName,
+              });
+            } else {
+              this.locationInfoFormGroup.patchValue({
+                districtID: this.locationDetails.districtID,
+                districtName: this.locationDetails.districtName,
+              });
+            }
+            this.loadSubDistrict(isLocationSelected);
           }
-          this.locationInfoFormGroup.get('districtName')?.disable();
-          this.loadSubDistrict();
         }
       });
   }
@@ -216,70 +287,70 @@ export class LocationInformationComponent {
   /**
    * Load Sub Districts  for New Patient
    */
-  loadSubDistrict() {
-    const subDistrictList: any = [];
+  loadSubDistrict(isLocationSelected: any) {
+    const subDistrictsList: any = [];
     this.registrarService
       .getSubDistrictList(this.locationInfoFormGroup.value.districtID)
       .subscribe((res: any) => {
         if (res && res.statusCode === 200) {
           this.subDistrictList = res.data;
           this.subDistrictList.forEach((item: any) =>
-            subDistrictList.push(item.blockName)
+            subDistrictsList.push(item.blockName),
           );
 
           this.formData.forEach((element: any) => {
             if (element.fieldName === 'blockName')
-              element.options = subDistrictList;
+              element.options = subDistrictsList;
           });
-          this.subDistrictList = [
-            {
-              blockID: this.locationDetails.blockID,
-              blockName: this.locationDetails.blockName,
-            },
-          ];
-          if (this.patientRevisit) {
-            this.locationInfoFormGroup.patchValue({
-              blockID: this.locationPatchDetails.blockID,
-              blockName: this.locationPatchDetails.blockName,
-            });
-          } else {
-            this.locationInfoFormGroup.patchValue({
-              blockID: this.locationDetails.blockID,
-              blockName: this.locationDetails.blockName,
-            });
+
+          if (!isLocationSelected) {
+            if (this.patientRevisit) {
+              this.locationInfoFormGroup.patchValue({
+                blockID: this.locationPatchDetails.blockID,
+                blockName: this.locationPatchDetails.blockName,
+              });
+            } else {
+              this.locationInfoFormGroup.patchValue({
+                blockID: this.locationDetails.blockID,
+                blockName: this.locationDetails.blockName,
+              });
+            }
+            this.loadVillage(isLocationSelected);
           }
-          this.locationInfoFormGroup.get('blockName')?.disable();
-          this.loadVillage();
         }
       });
   }
 
-  loadVillage() {
-    const villageList: any = [];
+  loadVillage(isLocationSelected: any) {
+    const villagesList: any = [];
     this.registrarService
       .getVillageList(this.locationInfoFormGroup.value.blockID)
       .subscribe((res: any) => {
         if (res && res.statusCode === 200) {
           this.villageList = res.data;
           this.villageList.forEach((item: any) =>
-            villageList.push(item.villageName)
+            villagesList.push(item.villageName),
           );
           this.formData.forEach((element: any) => {
             if (element.fieldName === 'districtBranchName')
-              element.options = villageList;
+              element.options = villagesList;
           });
-          if (this.patientRevisit) {
-            this.locationInfoFormGroup.patchValue({
-              districtBranchID: this.locationPatchDetails.districtBranchID,
-              districtBranchName: this.locationPatchDetails.districtBranchName,
-            });
-          } else {
-            this.locationInfoFormGroup.patchValue({
-              districtBranchID: this.locationDetails.subDistrictID,
-              districtBranchName: this.locationDetails.villageName,
-            });
+
+          if (!isLocationSelected) {
+            if (this.patientRevisit) {
+              this.locationInfoFormGroup.patchValue({
+                districtBranchID: this.locationPatchDetails.districtBranchID,
+                districtBranchName:
+                  this.locationPatchDetails.districtBranchName,
+              });
+            } else {
+              this.locationInfoFormGroup.patchValue({
+                districtBranchID: this.locationDetails.subDistrictID,
+                districtBranchName: this.locationDetails.villageName,
+              });
+            }
+            this.loadZone();
           }
-          this.loadZone();
         }
       });
     // this.villageList = this.demographicsMaster.villageMaster;
