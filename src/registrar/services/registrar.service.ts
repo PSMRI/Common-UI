@@ -334,5 +334,9 @@ export class RegistrarService {
   generateABHAForBiometricMobileOTP(bioMobileOTP: any) {
     return this.http.post(environment.generateABHAForBioMobileOTP,bioMobileOTP);
   }
+
+  saveAbdmFacilityForVisit(reqObj: any){
+    return this.http.post(environment.saveAbdmFacilityIdForVisit, reqObj);
+  }
   
 }
