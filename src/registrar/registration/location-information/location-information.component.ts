@@ -127,19 +127,27 @@ export class LocationInformationComponent {
         break;
       default:
         regex = /^[a-zA-Z0-9 ]*$/;
-        break; // Add break statement here
+        break;
     }
 
-    return regex; // Move this line outside the switch block
+    return regex;
   }
 
-  onInputChanged(event: Event, maxLength: any) {
+  onInputChanged(event: Event, maxLength: any, fieldName: any) {
     const inputElement = event.target as HTMLInputElement;
     const inputValue = inputElement.value;
 
     if (maxLength && inputValue.length >= parseInt(maxLength)) {
       // Add 'A' character when the input length exceeds the limit
       inputElement.value = inputValue.slice(0, maxLength);
+      this.locationInfoFormGroup.controls[fieldName].patchValue(
+        inputElement.value
+      );
+      const currentErrors =
+        this.locationInfoFormGroup.controls[fieldName].errors;
+      if (currentErrors && currentErrors['maxlength']) {
+        delete currentErrors['maxlength'];
+      }
     }
   }
 

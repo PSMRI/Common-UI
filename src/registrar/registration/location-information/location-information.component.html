@@ -11,11 +11,10 @@
             <input
               matInput
               type="input"
-              (input)="onInputChanged($event, item.allowMax)"
+              (input)="onInputChanged($event, item.allowMax, item.fieldName)"
               placeholder="{{ item.placeholder }}"
               [required]="item.isRequired || false"
-              formControlName="{{ item.fieldName }}"
-            />
+              formControlName="{{ item.fieldName }}" />
           </mat-form-field>
           <mat-error
             *ngIf="

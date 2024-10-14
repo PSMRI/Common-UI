@@ -177,10 +177,10 @@ export class PersonalInformationComponent {
         break;
       default:
         regex = /^[a-zA-Z0-9 ]*$/;
-        break; // Add break statement here
+        break;
     }
 
-    return regex; // Move this line outside the switch block
+    return regex;
   }
 
   onInputChanged(event: Event, maxLength: any, fieldName: any) {
