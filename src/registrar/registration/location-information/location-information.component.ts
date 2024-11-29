@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { RegistrarService } from '../../services/registrar.service';
 import { Subscription } from 'rxjs';
+import { SessionStorageService } from '../../services/session-storage.service';
 
 @Component({
   selector: 'app-location-information',
@@ -44,6 +45,7 @@ export class LocationInformationComponent {
   constructor(
     private fb: FormBuilder,
     private registrarService: RegistrarService,
+    private sessionstorage:SessionStorageService,
   ) {}
 
   ngOnInit() {
@@ -76,7 +78,7 @@ export class LocationInformationComponent {
     this.locationInfoFormGroup.addControl('servicePointID', new FormControl());
     console.log('location Data', this.locationInfoFormGroup);
 
-    const locationData: any = localStorage.getItem('locationData');
+    const locationData: any = this.sessionstorage.getItem('locationData');
     this.locationDetails = JSON.parse(locationData);
     if (this.patientRevisit) {
       this.locationInfoFormGroup.patchValue(this.revisitData);
@@ -88,11 +90,11 @@ export class LocationInformationComponent {
   }
 
   loadLocationFromStorage() {
-    const locationData: any = localStorage.getItem('location');
+    const locationData: any = this.sessionstorage.getItem('location');
     const location = JSON.parse(locationData);
     this.demographicsMaster = Object.assign({}, location, {
-      servicePointID: localStorage.getItem('servicePointID'),
-      servicePointName: localStorage.getItem('servicePointName'),
+      servicePointID: this.sessionstorage.getItem('servicePointID'),
+      servicePointName: this.sessionstorage.getItem('servicePointName'),
     });
 
     if (

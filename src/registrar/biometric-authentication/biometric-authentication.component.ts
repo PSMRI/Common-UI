@@ -13,6 +13,7 @@ import { concatMap } from 'rxjs';
 import { ViewHealthIdCardComponent } from '../view-health-id-card/view-health-id-card.component';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { SessionStorageService } from '../services/session-storage.service';
 
 @Component({
   selector: 'app-biometric-authentication',
@@ -39,6 +40,7 @@ export class BiometricAuthenticationComponent implements OnInit {
     private confirmationService: ConfirmationService,
     public httpServiceService: HttpServiceService,
     @Inject(MAT_DIALOG_DATA) public data: any,
+    private sessionstorage:SessionStorageService,
   ) {}
 
   ngOnInit() {
@@ -131,8 +133,8 @@ export class BiometricAuthenticationComponent implements OnInit {
       txnId: this.transactionId,
       profilePhoto: this.data.profilePhoto,
       healthId: this.data.healthId,
-      createdBy: localStorage.getItem('userName'),
-      providerServiceMapID: localStorage.getItem('providerServiceID'),
+      createdBy: this.sessionstorage.getItem('userName'),
+      providerServiceMapID: this.sessionstorage.getItem('providerServiceID'),
     };
     console.log(reqObj, "MY ABHA REQUEST OBJ");
     this.registrarService.generateHealthIdWithUID(reqObj).subscribe(
