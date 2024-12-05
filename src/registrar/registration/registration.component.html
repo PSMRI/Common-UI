@@ -58,7 +58,7 @@ type="accent"
                   [disabled]="!mainForm.valid">Submit</button>
                   <button *ngIf="patientRevisit && !enableOtherInfo && !enableAbhaInfo" id="submitButton" class="mat_blue" mat-raised-button (click)="updateBeneficiaryDetails()"
                   [disabled]="!mainForm.valid">Update</button>
-                <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableOtherInfo">Next</button>
+                <button class="mat_blue" mat-raised-button matStepperNext *ngIf="enableOtherInfo || enableAbhaInfo">Next</button>
                 <button id="backButton" class="mat_blue" mat-raised-button matStepperPrevious
                   *ngIf="enablePersonalInfo">Back</button>
               </div>
