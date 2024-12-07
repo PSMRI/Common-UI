@@ -130,7 +130,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   }
 
   ngOnInit() {
-    console.log("this.input",this.input);
+    console.log("this.input", this.input);
     this.searchDetails.data = [];
     this.selectedHealthID = null;
     this.searchPopup = false;
@@ -138,13 +138,12 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     this.searchPopup =
       this.input.search !== undefined ? this.input.search : false;
     this.healthIDMapping = this.input.healthIDMapping;
-    console.log("this.healthIDMapping",this.healthIDMapping);
+    console.log("this.healthIDMapping", this.healthIDMapping);
     if (
       this.input.dataList !== undefined &&
       this.input.search === true
-    )
-    {
-      let tempVal : any =  this.input.dataList.otherFields;
+    ) {
+      let tempVal: any = this.input.dataList.otherFields;
       this.benDetails = this.input.dataList.otherFields;
       let tempCreatDate: any = this.input.dataList.createdDate;
       console.log("tempVal", tempVal);
@@ -159,11 +158,11 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         //   );
         // }
         this.searchDetails.data.push(tempDataList);
-        console.log("this.searchDetails.data%%",this.searchDetails.data)
+        console.log("this.searchDetails.data%%", this.searchDetails.data)
       }
-   
+
     }
-      // this.searchDetails = this.input.dataList;
+    // this.searchDetails = this.input.dataList;
     // if (
     //   this.input.dataList !== undefined &&
     //   this.input.dataList.data !== undefined &&
@@ -202,7 +201,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       });
     }
   }
- 
+
   onRadioChange(data: any) {
     this.selectedHealthID = data;
   }
