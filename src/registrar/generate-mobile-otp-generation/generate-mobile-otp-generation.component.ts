@@ -42,9 +42,12 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
   currentLanguageSet: any;
   showProgressBar = false;
   txnId: any;
+  loginId: any;
   enableMobileOTPForm = false;
   bioVal: boolean = false;
   verifyBioMobileOtp: boolean = false;
+  enableAbhaLinkedMobileNumberForm = false;
+  enableMobileVerifyButton = false;
 
   constructor(
     private fb: FormBuilder,
@@ -60,6 +63,17 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
   ngOnInit() {
     this.assignSelectedLanguage();
     this.txnId = this.data.transactionId;
+    if(this.data.loginId != undefined && this.data.loginId != null){
+      this.loginId = this.data.loginId;
+      this.enableAbhaLinkedMobileNumberForm = true;
+      this.enableMobileOTPForm = false;
+      this.enableMobileVerifyButton = false;
+    }
+    if(this.data.mobileVerifyTnxId != undefined && this.data.mobileVerifyTnxId != null){
+      this.enableMobileOTPForm = true;
+      this.enableAbhaLinkedMobileNumberForm = false;
+      this.enableMobileVerifyButton = true;
+    }
     this.bioVal = this.data.bioValue;
     this.generateMobileOTPForm = this.createmobileOTPValidationForm();
   }
@@ -84,6 +98,26 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
     this.dialogSucRef.close();
   }
 
+  verifyMobileAuthAfterAbhaCreation(){
+    this.dialogSucRef.close();
+    let reqObj = null;
+    this.showProgressBar = true;
+    reqObj = {
+      loginId: this.generateMobileOTPForm.controls['mobileOtp'].value,
+      txnId: this.data.mobileVerifyTnxId,
+      loginMethod: "aadhaar",
+    };
+    this.registrarService.verifyMobileForAbhaAuth(reqObj).subscribe((res: any) => {
+      if(res.statusCode === 200 && res.data != null){
+        this.confirmationService.alert("Mobile number Linked successfully to aadhaar", 'success');
+      } else {
+        this.confirmationService.alert(res.errorMessage, 'error');
+      }
+    }, (err) => {
+      this.confirmationService.alert(err.errorMessage, 'error');
+    } )
+  }
+
   //while clicking on submit after entering the mobile number
   onSubmitOfMobileNo() {
     if (
@@ -92,36 +126,51 @@ export class GenerateMobileOtpGenerationComponent implements OnInit, DoCheck {
     ) {
       this.showProgressBar = true;
       let reqObj = {
-        mobile: this.generateMobileOTPForm.controls['mobileNo'].value,
-        txnId: this.txnId,
+        loginMethod: "aadhaar",
+        loginId: this.loginId,
+        mobileNumber: this.generateMobileOTPForm.controls['mobileNo'].value,
+        tnxId: this.txnId,
+        createdBy: localStorage.getItem('userName'),
+        providerServiceMapId: localStorage.getItem('providerServiceID')
       };
-      this.registrarService.checkAndGenerateMobileOTPHealthId(reqObj).subscribe(
-        (res: any) => {
-          if (res.statusCode == 200 && res.data) {
-            this.showProgressBar = false;
-            if (
-              res.data.mobileLinked === false ||
-              res.data.mobileLinked === 'false'
-            ) {
-              this.confirmationService
-                .confirm('info', this.currentLanguageSet.enterOTPToVerify)
-                .subscribe((responseData) => {
-                  if (responseData === false) {
-                    this.enableMobileOTPForm = false;
-                    this.verifyBioMobileOtp = false;
-                  } else {
-                    this.enableMobileOTPForm = true;
-                    this.verifyBioMobileOtp = false;
-                  }
-                });
-            } else {
-              this.dialogSucRef.close(res.data);
-            }
-          } else {
-            this.showProgressBar = false;
-            this.confirmationService.alert(res.errorMessage, 'error');
-          }
-        },
+      this.registrarService.enrollAbhaByAadhaar(reqObj).subscribe((res: any) => {
+        if(res.statusCode == 200 && res.data){
+          this.showProgressBar = false;
+          this.verifyBioMobileOtp = false;
+          this.enableMobileOTPForm = false;
+          this.dialogSucRef.close(res.data);
+        } else {
+          this.showProgressBar = false;
+          this.confirmationService.alert(res.errorMessage, 'error');
+        }
+      },
+      // this.registrarService.checkAndGenerateMobileOTPHealthId(reqObj).subscribe(
+      //   (res: any) => {
+      //     if (res.statusCode == 200 && res.data) {
+      //       this.showProgressBar = false;
+      //       if (
+      //         res.data.mobileLinked === false ||
+      //         res.data.mobileLinked === 'false'
+      //       ) {
+      //         this.confirmationService
+      //           .confirm('info', this.currentLanguageSet.enterOTPToVerify)
+      //           .subscribe((responseData) => {
+      //             if (responseData === false) {
+      //               this.enableMobileOTPForm = false;
+      //               this.verifyBioMobileOtp = false;
+      //             } else {
+      //               this.enableMobileOTPForm = true;
+      //               this.verifyBioMobileOtp = false;
+      //             }
+      //           });
+      //       } else {
+      //         this.dialogSucRef.close(res.data);
+      //       }
+      //     } else {
+      //       this.showProgressBar = false;
+      //       this.confirmationService.alert(res.errorMessage, 'error');
+      //     }
+        // },
         (err) => {
           this.showProgressBar = false;
           this.confirmationService.alert(

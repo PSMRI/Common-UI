@@ -5,12 +5,12 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
-import { RegistrarService } from '../services/registrar.service';
-import { GenerateMobileOtpGenerationComponent } from '../generate-mobile-otp-generation/generate-mobile-otp-generation.component';
-import { HealthIdOtpSuccessComponent } from '../health-id-otp-generation/health-id-otp-generation.component';
-import { RdDeviceService } from '../services/rddevice.service';
+import { RegistrarService } from '../../services/registrar.service';
+import { GenerateMobileOtpGenerationComponent } from '../../generate-mobile-otp-generation/generate-mobile-otp-generation.component';
+import { HealthIdOtpSuccessComponent } from '../../health-id-otp-generation/health-id-otp-generation.component';
+import { RdDeviceService } from '../../services/rddevice.service';
 import { concatMap } from 'rxjs';
-import { ViewHealthIdCardComponent } from '../view-health-id-card/view-health-id-card.component';
+import { ViewHealthIdCardComponent } from '../../view-health-id-card/view-health-id-card.component';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 
@@ -70,13 +70,14 @@ export class BiometricAuthenticationComponent implements OnInit {
           if (captureres != null) {
             // Assign captureres to capturePID
             this.rddeviceService.capturePID = captureres;
-            this.matDialogRef.close(captureres);
-            if (this.aadharBioNum != null && this.aadharBioNum != undefined) {
-              this.showProgressBar = true;
-              this.generateAbha(); // Call generateAbha after setting capturePID
-            } else if (this.healthDataNum != null && this.healthDataNum != undefined) {
-              this.rddeviceService.capturePID = captureres;
-            }
+            console.log("rdservice captures:", this.rddeviceService.capturePID)
+            this.matDialogRef.close(this.rddeviceService.capturePID);
+            // if (this.aadharBioNum != null && this.aadharBioNum != undefined) {
+            //   this.showProgressBar = true;
+            //   this.generateAbha(); // Call generateAbha after setting capturePID
+            // } else if (this.healthDataNum != null && this.healthDataNum != undefined) {
+            //   this.rddeviceService.capturePID = captureres;
+            // }
           }
         },
         (error) => {

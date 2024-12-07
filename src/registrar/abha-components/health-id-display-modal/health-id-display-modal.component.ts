@@ -31,8 +31,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { RegistrarService } from '../services/registrar.service';
-import { HealthIdValidateComponent } from '../health-id-validatepopup/health-id-validatepopup.component';
+import { RegistrarService } from '../../services/registrar.service';
+import { HealthIdValidateComponent } from '../../health-id-validatepopup/health-id-validatepopup.component';
 import {
   DateAdapter,
   MAT_DATE_FORMATS,

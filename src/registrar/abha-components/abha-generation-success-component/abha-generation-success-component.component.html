@@ -1,0 +1,102 @@
+<div *ngIf="!verify">
+    <h3 class="title success">{{ currentLanguageSet?.common?.info }}</h3>
+    <div class="message">
+      <p *ngIf="abhaProfileData.isNew">{{ currentLanguageSet?.aBHAGeneratedSuccessfully }}</p>
+      <p *ngIf="!abhaProfileData.isNew">{{ currentLanguageSet?.abhaCardAlreadyExists }}</p>
+      <br />
+      <p>
+        <strong>{{ currentLanguageSet?.abhaAddress }}:</strong> {{ abhaProfileData.ABHAProfile.healthId }}
+      </p>
+      <p>
+        <strong>{{ currentLanguageSet?.aBHANumber }}:</strong>
+        {{ abhaProfileData.ABHAProfile.healthIdNumber }}
+      </p>
+      <br />
+      <p class="userConsent" *ngIf="!enableMobileOtpMessage">
+        {{ currentLanguageSet?.doYouWantToDownloadABHACard }}
+      </p>
+      <p class="userConsent" *ngIf="enableMobileOtpMessage">
+        {{ currentLanguageSet?.doYouWantToVerifyMobileOtpForAbha }}
+      </p>
+    </div>
+    <div class="overlay" *ngIf="showProgressBar">
+      <div class="overlay-content">
+        <mat-spinner></mat-spinner>
+      </div>
+    </div>
+    <br />
+    <div style="text-align: end">
+      <button
+        style="
+          margin-right: 10px;
+          border: 1px solid lightgray;
+          min-width: 88px !important;
+          line-height: 36px !important;
+          background-color: white !important;
+        "
+        mat-dialog-close
+      >
+        {{ currentLanguageSet?.common?.no }}
+      </button>
+      <button *ngIf="enableMobileOtpMessage"
+      mat-button
+      style="
+        border: 1px solid lightgray;
+        min-width: 88px !important;
+        line-height: 36px !important;
+        background-color: white !important;
+        margin-right: 10px;
+      "
+      class="background-primary"
+      cdkFocusInitial
+      (click)="GivePageToMobileEnterOtp()"
+    >
+      {{ currentLanguageSet?.common?.yes }}
+    </button> 
+    <!-- (click)="fetchOtp(abhaProfileData.x-token)" -->
+
+      <button *ngIf="!enableMobileOtpMessage"
+        mat-button
+        style="
+          border: 1px solid lightgray;
+          min-width: 88px !important;
+          line-height: 36px !important;
+          background-color: white !important;
+          margin-right: 10px;
+        "
+        class="background-primary"
+        cdkFocusInitial
+        (click)="downloadPngCard()"
+      >
+        {{ currentLanguageSet?.common?.yes }}
+      </button>
+    </div>
+  </div>
+  <div *ngIf="verify">
+    <h3 class="title success">{{ currentLanguageSet?.common?.info }}</h3>
+    <div class="messageotp">
+      <p>{{ currentLanguageSet?.aBHAValidatedSuccessfully }}</p>
+      <br />
+      <p>
+        <strong>{{ currentLanguageSet?.aBHA }}:</strong
+        >{{ succdata.Auth.Patient.Id }}
+      </p>
+      <br />
+      <p>
+        <strong>{{ currentLanguageSet?.casesheet?.name }}:</strong>
+        {{ succdata.Auth.Patient.Name }}
+      </p>
+      <br />
+      <p>
+        <strong>{{ currentLanguageSet?.bendetails?.gender }}:</strong>
+        {{ genderName }}
+      </p>
+      <br /><br />
+      <div class="action">
+        <button mat-button mat-dialog-close>
+          {{ currentLanguageSet?.common?.ok }}
+        </button>
+      </div>
+    </div>
+  </div>
+  

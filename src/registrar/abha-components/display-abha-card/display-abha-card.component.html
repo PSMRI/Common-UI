@@ -1,0 +1,21 @@
+<div class="title info">
+    <h4 class="title">ABHA Card</h4>
+    <mat-icon class="md-24 pull-right close-btn" style="margin-top: 12px;" matDialogClose (click)="closeDialog()"
+        mat-icon-button>close</mat-icon>
+</div>
+<div class="overlay" *ngIf="showProgressBar">
+    <div class="overlay-content">
+        <mat-spinner></mat-spinner>
+    </div>
+</div>
+<br />
+
+<div>
+    <img [src]="blobUrl" style="width: 800px;" alt="abha Image" class="popup-image" />
+    <div class="col-sm-12 step-btn m-b-20" style="text-align: center">
+        <button id="cancelButton" mat-raised-button type="button" style="margin-right: 10px" color="primary"
+            class="mat_blue" (click)="downloadImage()">
+            Download
+        </button>
+    </div>
+</div>
