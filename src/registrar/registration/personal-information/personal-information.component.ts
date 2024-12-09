@@ -25,6 +25,7 @@ import {
   MomentDateAdapter,
   MAT_MOMENT_DATE_ADAPTER_OPTIONS,
 } from '@angular/material-moment-adapter';
+import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 
 @Component({
   selector: 'app-personal-information',
@@ -87,6 +88,7 @@ export class PersonalInformationComponent {
     private beneficiaryDetailsService: BeneficiaryDetailsService,
     private confirmationService: ConfirmationService,
     private languageComponent: SetLanguageComponent,
+    private httpServiceService: HttpServiceService
   ) {
     this.personalInfoSubscription =
       this.registrarService.registrationABHADetails$.subscribe(
@@ -105,11 +107,12 @@ export class PersonalInformationComponent {
               dOB: formattedDate,
             });
           }
-        },
+        }
       );
   }
 
   ngOnInit() {
+    this.fetchLanguageResponse();
     this.formData.forEach((item: any) => {
       if (item.fieldName && item.allowText) {
         this.personalInfoFormGroup.addControl(
@@ -118,12 +121,12 @@ export class PersonalInformationComponent {
             Validators.pattern(this.allowTextValidator(item.allowText)),
             Validators.minLength(parseInt(item?.allowMin)),
             Validators.maxLength(parseInt(item?.allowMax)),
-          ]),
+          ])
         );
       } else {
         this.personalInfoFormGroup.addControl(
           item.fieldName,
-          new FormControl(null),
+          new FormControl(null)
         );
       }
     });
@@ -132,7 +135,7 @@ export class PersonalInformationComponent {
     if (this.patientRevisit) {
       this.personalInfoFormGroup.addControl(
         'beneficiaryRegID',
-        new FormControl(),
+        new FormControl()
       );
       this.personalInfoFormGroup.addControl('beneficiaryID', new FormControl());
       this.personalInfoFormGroup.patchValue(this.revisitData);
@@ -174,10 +177,10 @@ export class PersonalInformationComponent {
         break;
       default:
         regex = /^[a-zA-Z0-9 ]*$/;
-        break; // Add break statement here
+        break;
     }
 
-    return regex; // Move this line outside the switch block
+    return regex;
   }
 
   onInputChanged(event: Event, maxLength: any, fieldName: any) {
@@ -188,7 +191,7 @@ export class PersonalInformationComponent {
       // Add 'A' character when the input length exceeds the limit
       inputElement.value = inputValue.slice(0, maxLength);
       this.personalInfoFormGroup.controls[fieldName].patchValue(
-        inputElement.value,
+        inputElement.value
       );
       const currentErrors =
         this.personalInfoFormGroup.controls[fieldName].errors;
@@ -217,7 +220,7 @@ export class PersonalInformationComponent {
    */
   loadMasterDataObservable() {
     this.masterDataSubscription =
-      this.registrarService.registrationMasterDetails$.subscribe((res) => {
+      this.registrarService.registrationMasterDetails$.subscribe(res => {
         // console.log('res personal', res)
         if (res !== null) {
           this.masterData = res;
@@ -236,7 +239,7 @@ export class PersonalInformationComponent {
    */
   loadPersonalDataForEditing() {
     this.revisitDataSubscription =
-      this.registrarService.beneficiaryEditDetails$.subscribe((res) => {
+      this.registrarService.beneficiaryEditDetails$.subscribe(res => {
         if (res && res.beneficiaryID) {
           this.revisitData = Object.assign({}, res);
           this.validateMaritalStatusMaster(this.revisitData);
@@ -258,14 +261,14 @@ export class PersonalInformationComponent {
     console.log(
       'this.masterData',
       genderMaster,
-      this.masterData.maritalStatusMaster,
+      this.masterData.maritalStatusMaster
     );
 
     if (this.personalInfoFormGroup.value.gender === 3) {
       this.confirmationService
         .confirm('info', 'You have selected Transgender, please confirm')
         .subscribe(
-          (res) => {
+          res => {
             if (!res) {
               this.personalInfoFormGroup.patchValue({
                 gender: null,
@@ -275,7 +278,7 @@ export class PersonalInformationComponent {
               this.maritalStatusMaster = this.masterData.maritalStatusMaster;
             }
           },
-          (err) => {},
+          err => {}
         );
     } else {
       this.maritalStatusMaster = this.masterData.maritalStatusMaster.filter(
@@ -292,7 +295,7 @@ export class PersonalInformationComponent {
           ) {
             return maritalStatus;
           }
-        },
+        }
       );
     }
   }
@@ -315,7 +318,7 @@ export class PersonalInformationComponent {
           ) {
             return maritalStatus;
           }
-        },
+        }
       );
     }
   }
@@ -328,7 +331,7 @@ export class PersonalInformationComponent {
       // this.personalInfoFormGroup.controls['educationQualification'].clearValidators();
       console.log(
         this.personalInfoFormGroup.controls['educationQualification'],
-        'controls',
+        'controls'
       );
     } else {
       this.personalInfoFormGroup.controls['educationQualification'].reset();
@@ -356,7 +359,7 @@ export class PersonalInformationComponent {
           ) {
             console.log(
               'ta d ad a d a',
-              JSON.stringify(beneficiaryList, null, 4),
+              JSON.stringify(beneficiaryList, null, 4)
             );
             this.personalInfoFormGroup.patchValue({
               parentRegID: beneficiaryList[0].benPhoneMaps[0].parentBenRegID,
@@ -378,14 +381,14 @@ export class PersonalInformationComponent {
             }
           }
         },
-        (error) => {
+        error => {
           this.confirmationService.alert(error, 'error');
           this.personalInfoFormGroup.patchValue({
             parentRegID: null,
             parentRelation: 1,
             phoneNo: null,
           });
-        },
+        }
       );
     } else {
       if (this.patientRevisit) {
@@ -450,7 +453,7 @@ export class PersonalInformationComponent {
         ) {
           this.confirmationService.alert(
             'Age can only be set between Today to 120 Years',
-            'info',
+            'info'
           );
           this.personalInfoFormGroup.patchValue({ age: null });
         } else {
@@ -461,8 +464,9 @@ export class PersonalInformationComponent {
             {
               dOB: fromDate,
             },
-            { emitEvent: false },
-          ); // Prevent emitting the event to avoid circular updates
+            { emitEvent: false }
+          );
+          this.checkAgeAtMarriage();
         }
       }
     }
@@ -488,24 +492,24 @@ export class PersonalInformationComponent {
         if (yob > 0) {
           this.personalInfoFormGroup.patchValue(
             { age: yob, ageUnits: 'Years' },
-            { emitEvent: false },
+            { emitEvent: false }
           );
         } else if (mob > 0) {
           this.personalInfoFormGroup.patchValue(
             { age: mob, ageUnits: 'Months' },
-            { emitEvent: false },
+            { emitEvent: false }
           );
         } else if (dob > 0) {
           this.personalInfoFormGroup.patchValue(
             { age: dob, ageUnits: 'Days' },
-            { emitEvent: false },
+            { emitEvent: false }
           );
         }
 
         if (date.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
           this.personalInfoFormGroup.patchValue(
             { age: 1, ageUnits: 'Days' },
-            { emitEvent: false },
+            { emitEvent: false }
           );
         }
 
@@ -515,7 +519,7 @@ export class PersonalInformationComponent {
         this.dateForCalendar = null;
         this.confirmationService.alert(
           this.currentLanguageSet.alerts.info.invalidData,
-          'info',
+          'info'
         );
       } else {
         this.personalInfoFormGroup.patchValue({ age: null });
@@ -524,10 +528,11 @@ export class PersonalInformationComponent {
   }
 
   checkFieldValidations(field: any) {
-    if (field.fieldName === 'age') this.onAgeOrUnitEntered();
-    else if (field.fieldName === 'ageUnits') this.onAgeOrUnitEntered();
-    else if (field.fieldName.toLowerCase() === 'dob')
+    if (field?.fieldName === 'age') this.onAgeOrUnitEntered();
+    else if (field?.fieldName === 'ageUnits') this.onAgeOrUnitEntered();
+    else if (field?.fieldName?.toLowerCase() === 'dob')
       this.dobChangeByCalender();
+    else if (field?.fieldName === 'ageAtMarriage') this.checkAgeAtMarriage();
   }
 
   /**
@@ -599,14 +604,15 @@ export class PersonalInformationComponent {
    * check for validity of Age At Marriage with other Details
    */
   checkAgeAtMarriage() {
-    if (this.personalInfoFormGroup.value.ageAtMarriage !== null) {
+    if (this.personalInfoFormGroup.value?.ageAtMarriage !== null) {
       if (this.personalInfoFormGroup.value.age === null) {
         this.confirmationService.alert(
-          this.currentLanguageSet.alerts.info.pleaseenterBeneficiaryagefirst,
-          'info',
+          this.currentLanguageSet.common.pleaseenterBeneficiaryagefirst,
+          'info'
         );
         this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
       } else if (
+        this.personalInfoFormGroup.value.ageUnits &&
         this.personalInfoFormGroup.value.ageUnits.toLowerCase() !== 'years'
       ) {
         this.confirmationService.alert(
@@ -615,7 +621,7 @@ export class PersonalInformationComponent {
             this.ageforMarriage +
             ' ' +
             this.currentLanguageSet.alerts.info.years,
-          'info',
+          'info'
         );
         this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
       } else if (this.personalInfoFormGroup.value.age < this.ageforMarriage) {
@@ -625,7 +631,7 @@ export class PersonalInformationComponent {
             this.ageforMarriage +
             ' ' +
             this.currentLanguageSet.alerts.info.years,
-          'info',
+          'info'
         );
         this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
       } else if (
@@ -637,7 +643,7 @@ export class PersonalInformationComponent {
             this.ageforMarriage +
             ' ' +
             this.currentLanguageSet.alerts.info.years,
-          'info',
+          'info'
         );
         this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
       } else if (
@@ -647,7 +653,7 @@ export class PersonalInformationComponent {
       ) {
         this.confirmationService.alert(
           this.currentLanguageSet.common.marriageatageismorethantheactualage,
-          'info',
+          'info'
         );
         this.personalInfoFormGroup.patchValue({ ageAtMarriage: null });
       }
@@ -837,6 +843,16 @@ export class PersonalInformationComponent {
     if (this.personalInfoSubscription) {
       this.personalInfoSubscription.unsubscribe();
     }
+  }
+
+  ngDoCheck() {
+    this.fetchLanguageResponse();
+  }
+
+  fetchLanguageResponse() {
+    this.languageComponent = new SetLanguageComponent(this.httpServiceService);
+    this.languageComponent.setLanguage();
+    this.currentLanguageSet = this.languageComponent.currentLanguageObject;
   }
 }
 

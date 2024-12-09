@@ -69,26 +69,33 @@ export class OtherInformationComponent {
         regex = /^[a-zA-Z]*$/;
         break;
       case 'numeric':
-        regex = /^[0-9\-]*$/;
+        regex = /^[0-9]*$/;
         break;
       case 'alphaNumeric':
-        regex = /^[0-9a-zA-Z_.]+@[a-zA-Z_]+?\.\b(org|com|in|co.in|ORG|COM|IN|CO.IN)\b$/;
+        regex = /^[a-zA-Z0-9]*$/;
         break;
       default:
         regex = /^[a-zA-Z0-9 ]*$/;
-        break; // Add break statement here
+        break;
     }
 
-    return regex; // Move this line outside the switch block
+    return regex;
   }
 
-  onInputChanged(event: Event, maxLength: any) {
+  onInputChanged(event: Event, maxLength: any, fieldName: any) {
     const inputElement = event.target as HTMLInputElement;
     const inputValue = inputElement.value;
 
     if (maxLength && inputValue.length >= parseInt(maxLength)) {
       // Add 'A' character when the input length exceeds the limit
       inputElement.value = inputValue.slice(0, maxLength);
+      this.otherInfoFormGroup.controls[fieldName].patchValue(
+        inputElement.value
+      );
+      const currentErrors = this.otherInfoFormGroup.controls[fieldName].errors;
+      if (currentErrors && currentErrors['maxlength']) {
+        delete currentErrors['maxlength'];
+      }
     }
   }
 
