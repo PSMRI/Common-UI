@@ -88,12 +88,14 @@ export class AbhaEnterMobileOtpComponentComponent {
       loginMethod: "mobile",
     };
     this.registrarService.verifyMobileForAbhaAuth(reqObj).subscribe((res: any) => {
+      this.showProgressBar = false;
       if(res.statusCode === 200 && res.data != null){
         this.confirmationService.alert(res.data.message, 'success');
       } else {
         this.confirmationService.alert(res.errorMessage, 'error');
       }
     }, (err) => {
+      this.showProgressBar = false;
       this.confirmationService.alert(err.errorMessage, 'error');
     } )
   }
