@@ -20,6 +20,8 @@ export class DownloadSearchAbhaComponent {
   enterAuthIdLabel = null;
   abhaSuffix = environment.abhaExtension;
   enableAuthIdField = false;
+  healthId: any;
+  enableOnlyAuthMode = false;
 
   constructor(
     public dialogRef: MatDialogRef<DownloadSearchAbhaComponent>,
@@ -35,6 +37,13 @@ export class DownloadSearchAbhaComponent {
 
   ngOnInit(): void {
     this.abhaAuthMethodForm = this.createAbhaAuthMethod();
+    this.enableOnlyAuthMode = false;
+    if(this.data.healthId){
+      this.healthId = this.data.healthId;
+      this.enableOnlyAuthMode = true;
+    } else {
+      this.enableOnlyAuthMode = false;
+    }
   }
   
   createAbhaAuthMethod() {
@@ -63,12 +72,22 @@ export class DownloadSearchAbhaComponent {
 
   getAbhaAuthMethod(){
     const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
-    if(authMode === "AADHAAR"){
+    if(authMode === "AADHAAR" && !this.enableOnlyAuthMode){
       this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumberOrAadhar;
       this.enableAuthIdField = true;
-    } else if(authMode === "MOBILE") {
-      this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumberOrAadhar;
+    } else if(authMode === "MOBILE" && !this.enableOnlyAuthMode) {
+      this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumberOrMobile;
       this.enableAuthIdField = true;
+    } else if (authMode === "MOBILE" && this.enableOnlyAuthMode){
+      const loginMethod = "mobile";
+      const loginHint = "abha"
+      const loginId = this.healthId;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod ,loginId)
+    } else if (authMode === "AADHAAR" && this.enableOnlyAuthMode){
+      const loginMethod = "aadhaar";
+      const loginHint = "abha"
+      const loginId = this.healthId;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod ,loginId)
     }
   }
 
@@ -77,32 +96,47 @@ export class DownloadSearchAbhaComponent {
     const abhaAuthId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
     let loginHint = null;
     let loginMethod: any = null;
-    if(authMode === "AADHAAR" && (abhaAuthId.length === 14 || abhaAuthId.length === 17)){
-      loginHint = "abha";
+    let loginId = null;
+    if (authMode === "MOBILE" && (abhaAuthId.endsWith('@sbx') || abhaAuthId.endsWith('@abdm'))){
+      loginHint = "abha-address";
+      loginMethod = "mobile";
+      loginId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod, loginId);
+    } else if (authMode === "AADHAAR" && (abhaAuthId.endsWith('@sbx') || abhaAuthId.endsWith('@abdm'))){
+      loginHint = "abha-address";
       loginMethod = "aadhaar";
-      this.requestOtpForAbhaLogin(loginHint, loginMethod);
+      loginId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod, loginId);
+    } else if(authMode === "AADHAAR" && abhaAuthId.length === 17){
+      loginHint = "abha-number";
+      loginMethod = "aadhaar";
+      loginId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod, loginId);
+    } else if(authMode === "MOBILE" && abhaAuthId.length === 17){
+      loginHint = "abha-number";
+      loginMethod = "mobile";
+      loginId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod, loginId);
     } else if(authMode === "AADHAAR" && abhaAuthId.length === 12){
       loginHint = "aadhaar";
       loginMethod = "aadhaar";
-      this.requestOtpForAbhaLogin(loginHint, loginMethod);
-    }  else if(authMode === "MOBILE" && (abhaAuthId.length === 14 || abhaAuthId.length === 17)){
-      loginHint = "abha";
-      loginMethod = "mobile";
-      this.requestOtpForAbhaLogin(loginHint, loginMethod);
+      loginId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod, loginId);
     } else if(authMode === "MOBILE" && abhaAuthId.length === 10) {
       loginHint = "mobile";
       loginMethod = "mobile";
-      this.requestOtpForAbhaLogin(loginHint, loginMethod);
+      loginId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+      this.requestOtpForAbhaLogin(loginHint, loginMethod, loginId);
     } else {
       this.confirmationValService.alert(this.currentLanguageSet.enterCorrectAuthIdForAuthMode, 'error');
     }
   }
 
-  requestOtpForAbhaLogin(loginHint: any, loginMethod: any){
+  requestOtpForAbhaLogin(loginHint: any, loginMethod: any, loginId: any){
     let reqObj = {
       loginHint: loginHint,
       loginMethod: loginMethod,
-      loginId: this.abhaAuthMethodForm.controls['abhaAuthId'].value
+      loginId: loginId
     }
     this.registrarService.requestOtpForAbhaLogin(reqObj).subscribe((res:any) => {
       if(res.statusCode === 200 && res.data){
@@ -143,8 +177,9 @@ export class DownloadSearchAbhaComponent {
       return true; 
     }  else if (healthidval.length === 10 && /^\d{10}$/.test(healthidval)) {
       return true; 
-    } else if (healthidval.length === 14 && /^\d{14}$/.test(healthidval)) {
-      return true; // Valid Health ID without hyphens
+    // } 
+    // else if (healthidval.length === 14 && /^\d{14}$/.test(healthidval)) {
+    //   return true; // Valid Health ID without hyphens
     } else if (healthidval.length === 17 && /^(\d{2})-(\d{4})-(\d{4})-(\d{4})$/.test(healthidval)) {
       return true; // Valid Health ID with hyphens
     }

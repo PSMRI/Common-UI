@@ -32,7 +32,6 @@ import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-la
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
-import { HealthIdValidateComponent } from '../../health-id-validatepopup/health-id-validatepopup.component';
 import {
   DateAdapter,
   MAT_DATE_FORMATS,
@@ -42,6 +41,7 @@ import {
   MomentDateAdapter,
   MAT_MOMENT_DATE_ADAPTER_OPTIONS,
 } from '@angular/material-moment-adapter';
+import { DownloadSearchAbhaComponent } from '../download-search-abha/download-search-abha.component';
 
 @Component({
   selector: 'app-health-id-display-modal',
@@ -151,23 +151,11 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       if (typeof tempVal === 'string') {
         tempDataList = JSON.parse(tempVal);
         console.log("tempDataList", tempDataList);
-        // if (tempDataList) {
-        //   tempDataList.tempCreatDate = this.datePipe.transform(
-        //     tempDataList.tempCreatDate,
-        //     'yyyy-MM-dd hh:mm:ss a'
-        //   );
-        // }
         this.searchDetails.data.push(tempDataList);
         console.log("this.searchDetails.data%%", this.searchDetails.data)
       }
 
     }
-    // this.searchDetails = this.input.dataList;
-    // if (
-    //   this.input.dataList !== undefined &&
-    //   this.input.dataList.data !== undefined &&
-    //   this.input.dataList.data.BenHealthDetails !== undefined
-    // )
     if (this.input.dataList !== undefined &&
       this.input.dataList.data.BenHealthDetails !== undefined
     ){
@@ -325,94 +313,14 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     this.dialogRef.close();
   }
 
-  openDialogForprintHealthIDCard(data: any, txnId: any) {
-    const dialogRefValue = this.dialogMd.open(HealthIdValidateComponent, {
+  printHealthIDCard(data: any) {
+    const dialogRefValue = this.dialogMd.open(DownloadSearchAbhaComponent, {
       height: '250px',
       width: '420px',
       disableClose: true,
       data: {
-        healthId: data.healthId,
-        authenticationMode: data.authenticationMode,
-        generateHealthIDCard: true,
-        healthIDDetailsTxnID: txnId,
-      },
+        healthId: data.healthId
+      }
     });
-
-    dialogRefValue.afterClosed().subscribe((result) => {
-      console.log('result', result);
-    });
-  }
-
-  printHealthIDCard(data: any) {
-    let healthMode: any = null;
-    if (
-      data.authenticationMode !== undefined &&
-      data.authenticationMode !== null &&
-      data.authenticationMode === 'AADHAR'
-    )
-      healthMode = 'AADHAAR';
-    else if (
-      data.authenticationMode !== undefined &&
-      data.authenticationMode !== null &&
-      data.authenticationMode === 'MOBILE'
-    )
-      healthMode = 'MOBILE';
-
-    this.showProgressBar = true;
-    const reqObj = {
-      authMethod:
-        healthMode !== null && healthMode !== undefined
-          ? healthMode + '_OTP'
-          : null,
-      healthid: data.healthId,
-      healthIdNumber: data.healthIdNumber,
-    };
-    this.registrarService.generateHealthIDCard(reqObj).subscribe(
-      (res: any) => {
-        if (res.statusCode === 200 && Object.keys(res.data).length > 0) {
-          this.dialogRef.close();
-          this.dialogRef.afterClosed().subscribe((result) => {
-            this.transactionId = res.data.txnId;
-            if (healthMode === 'MOBILE') {
-              this.confirmationService
-                .confirmHealthId(
-                  'success',
-                  this.currentLanguageSet.OTPSentToRegMobNo,
-                )
-                .subscribe((result) => {
-                  if (result) {
-                    this.openDialogForprintHealthIDCard(
-                      data,
-                      this.transactionId,
-                    );
-                  }
-                });
-            } else if (healthMode === 'AADHAAR') {
-              this.confirmationService
-                .confirmHealthId(
-                  'success',
-                  this.currentLanguageSet.OTPSentToAadharLinkedNo,
-                )
-                .subscribe((result) => {
-                  if (result) {
-                    this.openDialogForprintHealthIDCard(
-                      data,
-                      this.transactionId,
-                    );
-                  }
-                });
-            }
-          });
-          this.showProgressBar = false;
-        } else {
-          this.showProgressBar = false;
-          this.confirmationService.alert(res.status, 'error');
-        }
-      },
-      (err) => {
-        this.showProgressBar = false;
-        this.confirmationService.alert(err.errorMessage, 'error');
-      },
-    );
   }
 }

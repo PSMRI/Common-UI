@@ -6,6 +6,7 @@ import { RegistrarService } from '../../services/registrar.service';
 import { AbhaEnterOtpComponentComponent } from '../abha-enter-otp-component/abha-enter-otp-component.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { DisplayAbhaCardComponent } from '../display-abha-card/display-abha-card.component';
+import { AbhaEnterMobileOtpComponentComponent } from '../abha-enter-mobile-otp-component/abha-enter-mobile-otp-component.component';
 
 @Component({
   selector: 'app-abha-generation-success-component',
@@ -20,6 +21,7 @@ export class AbhaGenerationSuccessComponentComponent {
   verify = false;
   genderName: any;
   showProgressBar= false;
+  mobileNumber: any;
 
   constructor(
     public dialogSucRef: MatDialogRef<AbhaGenerationSuccessComponentComponent>,
@@ -39,9 +41,10 @@ export class AbhaGenerationSuccessComponentComponent {
     if (this.succdata.newAbhaResponse) {
       this.abhaProfileData = this.succdata.newAbhaResponse;
       console.log("abha mobile number -", this.abhaProfileData?.ABHAProfile?.mobile)
-      if (this.abhaProfileData?.ABHAProfile?.mobile != null && this.abhaProfileData?.ABHAProfile?.mobile != undefined) {
+      if (this.abhaProfileData?.ABHAProfile?.mobile !== null && this.abhaProfileData?.ABHAProfile?.mobile !== undefined) {
         this.enableMobileOtpMessage = false;
       } else {
+        this.mobileNumber = this.abhaProfileData?.ABHAProfile?.mobile;
         this.enableMobileOtpMessage = true;
       }
     }
@@ -69,12 +72,12 @@ export class AbhaGenerationSuccessComponentComponent {
 
   GivePageToMobileEnterOtp(){
     this.dialogSucRef.close();
-    let dialogRef = this.dialog.open(AbhaEnterOtpComponentComponent, {
+    let dialogRef = this.dialog.open(AbhaEnterMobileOtpComponentComponent, {
       height: '250px',
       width: '420px',
-      data: this.data.txnId
+      data: {txnId: this.data.txnId, mobileNumber: this.mobileNumber }
     });
-    dialogRef.close();
+    // dialogRef.close();
   }
 
   closeSuccessDialog() {

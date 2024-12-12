@@ -198,7 +198,7 @@ export class RegistrarService {
     }
   }
 
-  RequestOtpForAbhaEnroll(reqObj: any){
+  requestOtpForAbhaEnroll(reqObj: any){
     return this.http.post(environment.requestOtpForAbhaEnroll, reqObj);
   }
 

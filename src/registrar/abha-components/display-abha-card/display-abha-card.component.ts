@@ -1,7 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
+import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
+import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 
 @Component({
   selector: 'app-display-abha-card',
@@ -14,10 +16,12 @@ export class DisplayAbhaCardComponent {
   showProgressBar = false;
   base64Png: any;
   blobUrl: any;
+  currentLanguageSet: any;
 
   constructor(
     public dialogRef: MatDialogRef<DisplayAbhaCardComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
+    public httpServiceService: HttpServiceService,
     private dialog: MatDialog,
     public sanitizer: DomSanitizer,
     private confirmationService: ConfirmationService,
@@ -25,6 +29,7 @@ export class DisplayAbhaCardComponent {
   }
 
   ngOnInit(): void {
+    this.assignSelectedLanguage();
     this.showProgressBar = true;
     if (this.data && this.data.png) {
       const escapedPngData = this.data.png;
@@ -34,6 +39,17 @@ export class DisplayAbhaCardComponent {
     }
     this.showProgressBar = false;
   }
+
+  ngDoCheck() {
+    this.assignSelectedLanguage();
+  }
+  assignSelectedLanguage() {
+    const getLanguageJson = new SetLanguageComponent(this.httpServiceService);
+    getLanguageJson.setLanguage();
+    this.currentLanguageSet = getLanguageJson.currentLanguageObject;
+  }
+
+
   convertEscapedPngToBase64(escapedString: string): void {
     try {
       // Decode the escaped Unicode string into binary
@@ -51,32 +67,6 @@ export class DisplayAbhaCardComponent {
       this.blobUrl = null;
     }
   }
-  // convertEscapedPngToBase64(escapedString: string): string {
-  //   const binaryString = escapedString
-  //     .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
-  //     .replace(/\\n/g, '\n')
-  //     .replace(/\\r/g, '\r')
-  //     .replace(/\\t/g, '\t');
-  //   // Convert binary string to a Uint8Array
-  //   console.log("escaped string length", escapedString.length);
-  //   console.log("binary string length", binaryString.length);
-  //   const binaryData = new Uint8Array(binaryString.split('').map(char => char.charCodeAt(0)));
-  //   // Create a Blob and use URL.createObjectURL
-  //   const blob = new Blob([binaryData], { type: 'image/png' });
-  //   return URL.createObjectURL(blob); // Use this URL as the src for <img>
-  //  }
-
-  // convertEscapedPngToBase64(escapedString: string): string {
-  //   // Step 1: Decode the escaped Unicode string into a binary string
-  //   const binaryString = escapedString
-  //     .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
-  //     .replace(/\\n/g, '\n')
-  //     .replace(/\\r/g, '\r')
-  //     .replace(/\\t/g, '\t');
-  //   // Step 2: Encode the binary string into Base64
-  //   const base64String = btoa(binaryString);
-  //   return `data:image/png;base64,${base64String}`;
-  //  }
 
   transform() {
     const imgBaseUrl = 'data:image/png;base64, ' + this.data.png;

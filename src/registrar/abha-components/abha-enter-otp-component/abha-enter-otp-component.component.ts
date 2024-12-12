@@ -192,7 +192,7 @@ export class AbhaEnterOtpComponentComponent {
       loginId: this.aadharNumber,
       loginMethod: "aadhaar"
     }; 
-    this.registrarService.RequestOtpForAbhaEnroll(reqObj).subscribe((res: any) => {
+    this.registrarService.requestOtpForAbhaEnroll(reqObj).subscribe((res: any) => {
       if(res.data && res.statusCode === 200){
         this.transactionId = res.data.txnId;
         this.confirmationService.alert(res.data.message, "success"); 
