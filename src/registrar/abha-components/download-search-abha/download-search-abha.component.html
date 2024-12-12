@@ -40,7 +40,7 @@
             type="text"
             required
             (keydown.space)="$event.preventDefault()"
-            minlength="10"
+            minlength="5"
             maxlength="32"
           />
         </mat-form-field>
@@ -49,7 +49,10 @@
         <div class="row">
           <div class="col-6" style="margin-left: 15px">
             <p class="align-Para">
-              Note*: {{ currentLanguageSet?.aBHANumber }} - xxxxxxxxxxxxxx, xx-xxxx-xxxx-xxxx
+              Note*: {{ currentLanguageSet?.aBHA }}- xxx{{ abhaSuffix }},
+              xxx.xx{{ abhaSuffix }}
+              <br />
+              {{ currentLanguageSet?.aBHANumber }} - xx-xxxx-xxxx-xxxx
             </p>
           </div>
           <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">

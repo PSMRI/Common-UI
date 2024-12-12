@@ -72,7 +72,7 @@ export class GenerateAbhaComponentComponent {
       loginId: this.aadharNumber,
       loginMethod: "aadhaar"
     }; 
-    this.registrarService.RequestOtpForAbhaEnroll(reqObj).subscribe((res: any) => {
+    this.registrarService.requestOtpForAbhaEnroll(reqObj).subscribe((res: any) => {
       if(res.data && res.statusCode === 200){
         let txnId = res.data.txnId;
         this.dialogRef.close();
@@ -115,7 +115,7 @@ export class GenerateAbhaComponentComponent {
       data: {aadharNumber: this.aadharNumber}
     });
   matDialogRef.afterClosed().subscribe((res) => {
-    console.log("mat ialog close response: ", res)
+    console.log("mat dialog close response: ", res)
     if(res){
       this.mobileNumberCapturePage(res);
     }

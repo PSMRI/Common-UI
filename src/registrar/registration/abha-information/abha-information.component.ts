@@ -6,7 +6,6 @@ import { HealthIdDisplayModalComponent } from '../../abha-components/health-id-d
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { HealthIdValidateComponent } from '../../health-id-validatepopup/health-id-validatepopup.component';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { GenerateAbhaComponentComponent } from '../../abha-components/generate-abha-component/generate-abha-component.component';
@@ -174,10 +173,6 @@ export class AbhaInformationComponent {
       height: '330px',
       width: '500px',
       disableClose: true,
-      data: {
-        healthId: 'NO',
-        generateHealthIDCard: this.genrateHealthIDCard,
-      },
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
