@@ -66,6 +66,7 @@ export class AbhaEnterMobileOtpComponentComponent {
         loginMethod: "mobile",
       };
       this.registrarService.requestOtpForAbhaEnroll(reqObj).subscribe((res: any) => {
+        this.showProgressBar = false;
         if(res.statusCode === 200 && res.data != null){
           this.txnId = this.data.txnId
           this.confirmationService.alert(res.data.message, 'success');
@@ -73,6 +74,7 @@ export class AbhaEnterMobileOtpComponentComponent {
           this.confirmationService.alert(res.errorMessage, 'error');
         }
       }, (err) => {
+        this.showProgressBar = false;
         this.confirmationService.alert(err.errorMessage, 'error');
       });
   }
