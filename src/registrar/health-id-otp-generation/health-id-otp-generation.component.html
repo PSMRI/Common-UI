@@ -126,7 +126,7 @@
       >
         {{ currentLanguageSet?.resendOTP }}
       </button>
-      <button
+      <button *ngIf="!enableNextForToBeLinkedMobileNumber"
         id="submitButton"
         mat-raised-button
         class="mat_green"
@@ -136,6 +136,16 @@
       >
         {{ currentLanguageSet?.common?.submit }}
       </button>
+      <button *ngIf="enableNextForToBeLinkedMobileNumber"
+      id="submitButton"
+      mat-raised-button
+      class="mat_green"
+      style="margin-right: 10px"
+      [disabled]="!healthIdOTPForm.valid || !checkOTP()"
+      (click)="askMobileNumberForAbha()"
+    >
+      {{ currentLanguageSet?.common?.next }}
+    </button>
     </div>
   </div>
 </div>

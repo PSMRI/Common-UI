@@ -1,0 +1,85 @@
+<div class="title info">
+    <h4 *ngIf="!enableSubmitForVerify">{{ currentLanguageSet?.generateABHA }}</h4>
+    <h4 *ngIf="enableSubmitForVerify">{{ currentLanguageSet?.verifyAbha }}</h4>
+    <mat-icon
+      class="md-24 pull-right close-btn"
+      matDialogClose
+      (click)="closeDialog()"
+      mat-icon-button
+      >close</mat-icon
+    >
+  </div>
+  <div class="overlay" *ngIf="showProgressBar">
+    <div class="overlay-content">
+      <mat-spinner></mat-spinner>
+    </div>
+  </div>
+  <br />
+
+  <!-- Entering OTP for Health ID Generation-->
+<div
+class="col-xs-12 col-sm-12"
+[formGroup]="healthIdOTPForm"
+>
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="margin-left: 20px;">
+    <mat-form-field [style.width]="'90%'">
+      <mat-label>
+        {{ currentLanguageSet?.enterOTP }}
+      </mat-label>
+      <input
+        defaultNull
+        autocomplete="off"
+        required
+        matInput
+        type="text"
+        formControlName="otp"
+        minlength="6"
+        maxlength="6"
+        (keypress)="numberOnly($event)"
+      />
+    </mat-form-field>
+  </div>
+
+  <div class="col-sm-12 step-btn m-b-20" style="text-align: right"> 
+    <button *ngIf="!enableSubmitForVerify"
+      id="cancelButton"
+      mat-raised-button
+      type="button"
+      style="margin-right: 10px"
+      color="primary"
+      class="mat_blue"
+      (click)="resendOtp()"
+    >
+      {{ currentLanguageSet?.resendOTP }}
+    </button>
+    <button *ngIf="enableSubmitForVerify"
+    id="cancelButton"
+    mat-raised-button
+    type="button"
+    style="margin-right: 10px"
+    color="primary"
+    class="mat_blue"
+    (click)="resendOtpForVerify()"
+  >
+    {{ currentLanguageSet?.resendOTP }}
+  </button>
+    <button *ngIf="!enableSubmitForVerify"
+    id="nextButton"
+    mat-raised-button
+    class="mat_green"
+    style="margin-right: 10px"
+    [disabled]="!healthIdOTPForm.valid || !checkOTP()"
+    (click)="askMobileNumberForAbha()"
+  >
+    {{ currentLanguageSet?.common?.next }}
+  </button>
+    <button *ngIf="enableSubmitForVerify" id="submitButton" mat-raised-button type="accent" color="accent"
+        class="mat_green" [disabled]="!healthIdOTPForm.valid"
+        style="margin-right: 10px"
+        (click)="verifyAbhaLogin()">
+        {{ currentLanguageSet?.common?.submit }}
+    </button>
+  </div>
+</div>
+</div>

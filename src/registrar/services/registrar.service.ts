@@ -73,6 +73,10 @@ export class RegistrarService {
   registrationABHADet = new BehaviorSubject<any>(this.registrationABHA);
   registrationABHADetails$ = this.registrationABHADet.asObservable();
 
+  abhaLocationDetails: any = null;
+  abhaLocationDetailsDet = new BehaviorSubject<any>(this.abhaLocationDetails);
+  abhaLocationDetails$ = this.abhaLocationDetailsDet.asObservable();
+
   constructor(private http: HttpClient) {}
 
   getRegistrationMaster(servicePointID: any) {
@@ -194,6 +198,30 @@ export class RegistrarService {
     }
   }
 
+  RequestOtpForAbhaEnroll(reqObj: any){
+    return this.http.post(environment.requestOtpForAbhaEnroll, reqObj);
+  }
+
+  enrollAbhaByAadhaar(reqObj: any){
+    return this.http.post(environment.abhaEnrollmentByAadhaar, reqObj);
+  }
+
+  verifyMobileForAbhaAuth(reqObj: any){
+    return this.http.post(environment.verifyMobileForAbhaAuth, reqObj);
+  }
+
+  requestOtpForAbhaLogin(reqObj: any){
+    return this.http.post(environment.requestOtpForLogin, reqObj);
+  }
+
+  verifyAbhaLogin(reqObj: any){
+    return this.http.post(environment.verifyOtpForLogin, reqObj);
+  }
+
+  printPngCard(reqObj: any){
+    return this.http.post(environment.printPngCard, reqObj);
+  }
+
   generateHealthId(reqObj: any) {
     return this.http.post(environment.healthIdGenerationUrl, reqObj);
   }
@@ -300,6 +328,11 @@ export class RegistrarService {
   getRegistrarAbhaDetail(registrationABHADetails: any) {
     this.registrationABHA = registrationABHADetails;
     this.registrationABHADet.next(this.registrationABHA);
+  }
+
+  setAbhaLocationDetailsonFetch(locationDetails: any) {
+    this.abhaLocationDetails = locationDetails;
+    this.abhaLocationDetailsDet.next(this.abhaLocationDetails);
   }
 
   districtMainList = new BehaviorSubject<any[]>([]);

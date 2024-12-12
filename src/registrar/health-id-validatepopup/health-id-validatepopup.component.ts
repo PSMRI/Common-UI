@@ -6,7 +6,7 @@ import { ConfirmationService } from "src/app/app-modules/core/services";
 import { HttpServiceService } from "src/app/app-modules/core/services/http-service.service";
 import { environment } from "src/environments/environment";
 import { RegistrarService } from "../services/registrar.service";
-import { BiometricAuthenticationComponent } from "../biometric-authentication/biometric-authentication.component";
+import { BiometricAuthenticationComponent } from "../abha-components/biometric-authentication/biometric-authentication.component";
 import { ViewHealthIdCardComponent } from "../view-health-id-card/view-health-id-card.component";
 import { HealthIdOtpSuccessComponent } from "../health-id-otp-generation/health-id-otp-generation.component";
 

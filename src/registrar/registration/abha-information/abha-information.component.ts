@@ -2,14 +2,15 @@ import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { RegistrarService } from '../../services/registrar.service';
 import { MatDialog } from '@angular/material/dialog';
-import { HealthIdDisplayModalComponent } from '../../health-id-display-modal/health-id-display-modal.component';
+import { HealthIdDisplayModalComponent } from '../../abha-components/health-id-display-modal/health-id-display-modal.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { HealthIdValidateComponent } from '../../health-id-validatepopup/health-id-validatepopup.component';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { GenerateAbhaComponentComponent } from '../../generate-abha-component/generate-abha-component.component';
 import { Subscription } from 'rxjs';
+import { GenerateAbhaComponentComponent } from '../../abha-components/generate-abha-component/generate-abha-component.component';
+import { DownloadSearchAbhaComponent } from '../../abha-components/download-search-abha/download-search-abha.component';
 
 @Component({
   selector: 'app-abha-information',
@@ -49,8 +50,9 @@ export class AbhaInformationComponent {
           console.log('responseABHACompoenet', response);
           if (response) {
             this.abhaInfoFormGroup.patchValue({
-              abha: response.healthIdNumber,
+              healthIdNumber: response.healthIdNumber,
             });
+            this.abhaInfoFormGroup.controls['healthIdNumber'].disable();
           }
         },
       );
@@ -69,6 +71,11 @@ export class AbhaInformationComponent {
             Validators.maxLength(parseInt(item?.allowMax)),
           ])
         );
+        if (item.isEditable === false) {
+          this.abhaInfoFormGroup.get(item.fieldName)?.disable();
+        } else {
+          this.abhaInfoFormGroup.get(item.fieldName)?.enable();
+        }
       } else {
         this.abhaInfoFormGroup.addControl(
           item.fieldName,
@@ -163,8 +170,8 @@ export class AbhaInformationComponent {
   }
 
   healthIdSearch() {
-    const dialogRef = this.dialog.open(HealthIdValidateComponent, {
-      height: '400px',
+    const dialogRef = this.dialog.open(DownloadSearchAbhaComponent, {
+      height: '330px',
       width: '500px',
       disableClose: true,
       data: {
@@ -180,11 +187,11 @@ export class AbhaInformationComponent {
         } else {
             this.abhaInfoFormGroup.patchValue({ healthId: result.healthIdNumber });
             this.abhaInfoFormGroup.patchValue({ healthIdMode: result.healthIdMode });
-            this.abhaInfoFormGroup.controls['healthId'].disable();
+            this.abhaInfoFormGroup.controls['healthIdNumber'].disable();
             this.abhaInfoFormGroup.markAsDirty();
           this.registrarService.changePersonalDetailsData(result);
           this.disableGenerateOTP = true;
-        }
+        }   
       }
     });
   }
@@ -199,7 +206,7 @@ export class AbhaInformationComponent {
       height: '290px',
       width: '470px',
       disableClose: true,
-    });
+    }); 
   }
 
 }

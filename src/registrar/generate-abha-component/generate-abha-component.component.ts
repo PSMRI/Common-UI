@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { HealthIdOtpGenerationComponent } from '../health-id-otp-generation/health-id-otp-generation.component';
-import { BiometricAuthenticationComponent } from '../biometric-authentication/biometric-authentication.component';
+import { BiometricAuthenticationComponent } from '../abha-components/biometric-authentication/biometric-authentication.component';
 import { RegistrationUtils } from '../utility/registration-utility';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -110,7 +110,7 @@ export class GenerateAbhaComponentComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       console.log('resultGoldy', result);
-      if (result) {
+      if (result) { 
         (<FormGroup>(
           this.abhaGenerateForm.controls['otherDetailsForm']
         )).patchValue({ healthId: result.healthId });
