@@ -8,7 +8,9 @@ md2-pagination {
 }
 
 .info {
-    background: #336CFB;
+    background: #336CFB !important;
+    font-weight: bold;
+    letter-spacing: 0.05em;
 }
 
 
@@ -51,7 +53,7 @@ md2-pagination {
     padding: 8px;
     width: 100%;
     text-align: right;
-    border-top: 1px solid lightgrey;
+    border-top: 1px solid #52575C;
 }
 
 .action button {
@@ -92,3 +94,14 @@ md2-pagination {
     padding: 0px;
   }
   
+  .full-width-login {
+    width: 25%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    height: 35px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}

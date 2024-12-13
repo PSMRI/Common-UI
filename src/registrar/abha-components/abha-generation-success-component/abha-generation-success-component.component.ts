@@ -38,13 +38,14 @@ export class AbhaGenerationSuccessComponentComponent {
 
   ngOnInit() {
     this.assignSelectedLanguage();
+    console.log("success generation popup data -", this.succdata)
     if (this.succdata.newAbhaResponse) {
-      this.abhaProfileData = this.succdata.newAbhaResponse;
-      console.log("abha mobile number -", this.abhaProfileData?.ABHAProfile?.mobile)
+      this.abhaProfileData = this.succdata.newAbhaResponse;      
       if (this.abhaProfileData?.ABHAProfile?.mobile !== null && this.abhaProfileData?.ABHAProfile?.mobile !== undefined) {
         this.enableMobileOtpMessage = false;
       } else {
-        this.mobileNumber = this.abhaProfileData?.ABHAProfile?.mobile;
+        this.mobileNumber = this.succdata.mobileNumber;
+        this.txnId = this.abhaProfileData.txnId
         this.enableMobileOtpMessage = true;
       }
     }
@@ -75,7 +76,7 @@ export class AbhaGenerationSuccessComponentComponent {
     let dialogRef = this.dialog.open(AbhaEnterMobileOtpComponentComponent, {
       height: '250px',
       width: '420px',
-      data: {txnId: this.data.txnId, mobileNumber: this.mobileNumber }
+      data: {txnId: this.txnId, mobileNumber: this.mobileNumber }
     });
     // dialogRef.close();
   }

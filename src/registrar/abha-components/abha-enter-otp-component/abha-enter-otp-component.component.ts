@@ -23,6 +23,7 @@ export class AbhaEnterOtpComponentComponent {
   enableSubmitForVerify = false;
   abhaGenerateForm!: FormGroup;
   xToken: any;
+  mobileNumber: any;
 
   constructor(
     private fb: FormBuilder,
@@ -116,9 +117,10 @@ export class AbhaEnterOtpComponentComponent {
     dialogRefMobile.afterClosed().subscribe((response) => {
       if (response) {
         console.log("after mobile number success response", response);
-        this.transactionId = response.txnId;
-        this.xToken = response.xToken;
-        this.displayAbhaNumberOnSuccess(response);
+        this.transactionId = response.data.txnId;
+        this.xToken = response.data.xToken;
+        this.mobileNumber = (response.mobileNumber != null && response.mobileNumber != undefined)  ? response.mobileNumber : null;
+        this.displayAbhaNumberOnSuccess(response.data);
       }
     });
   }
@@ -131,7 +133,7 @@ export class AbhaEnterOtpComponentComponent {
         height: '365px',
         width: '480px',
         disableClose: true,
-        data: { newAbhaResponse: data, xToken:  data.xToken}
+        data: { newAbhaResponse: data, xToken:  data.xToken, mobileNumber: this.mobileNumber}
       },
     );
     this.showProgressBar = false;
@@ -172,7 +174,7 @@ export class AbhaEnterOtpComponentComponent {
     let reqObj = {
       loginMethod: this.loginMethod,
       loginId: this.healthIdOTPForm.controls['otp'].value,
-      tnxId: this.transactionId
+      txnId: this.transactionId
     }
     this.registrarService.verifyAbhaLogin(reqObj).subscribe((res: any) => {
       if(res.statusCode === 200 && res.data){

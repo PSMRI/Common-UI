@@ -38,7 +38,7 @@ export class DownloadSearchAbhaComponent {
   ngOnInit(): void {
     this.abhaAuthMethodForm = this.createAbhaAuthMethod();
     this.enableOnlyAuthMode = false;
-    if(this.data.healthId){
+    if(this.data?.healthId){
       this.healthId = this.data.healthId;
       this.enableOnlyAuthMode = true;
     } else {
@@ -157,6 +157,11 @@ export class DownloadSearchAbhaComponent {
   }
 
   routeToEnterOtpPage(txnId: any, loginMethod:any, loginHint: any){
+    if(loginHint === "abha-address" && loginMethod === "aadhaar"){
+      loginMethod = "abha-aadhaar"
+    } else if (loginHint === "abha-address" && loginMethod === "mobile") {
+      loginMethod = "abha-mobile"
+    }
     const dialogRef = this.dialog.open(AbhaEnterOtpComponentComponent, {
       height: '250px',
       width: '420px',

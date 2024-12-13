@@ -90,6 +90,7 @@ export class AbhaEnterMobileOtpComponentComponent {
     this.registrarService.verifyMobileForAbhaAuth(reqObj).subscribe((res: any) => {
       this.showProgressBar = false;
       if(res.statusCode === 200 && res.data != null){
+        this.dialogSucRef.close(true);
         this.confirmationService.alert(res.data.message, 'success');
       } else {
         this.confirmationService.alert(res.errorMessage, 'error');

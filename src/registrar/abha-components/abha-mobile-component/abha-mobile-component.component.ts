@@ -77,7 +77,7 @@ export class AbhaMobileComponentComponent {
         loginId: this.aadhaarNumber, 
         pId: this.data.pId,
         mobileNumber: this.generateMobileOTPForm.controls['mobileNo'].value,
-        tnxId: this.txnId,
+        txnId: this.txnId,
         createdBy: localStorage.getItem('userName'),
         providerServiceMapId: localStorage.getItem('providerServiceID')
       };
@@ -87,7 +87,7 @@ export class AbhaMobileComponentComponent {
         loginMethod: "aadhaar",
         loginId: this.otp,
         mobileNumber: this.generateMobileOTPForm.controls['mobileNo'].value,
-        tnxId: this.txnId,
+        txnId: this.txnId,
         createdBy: localStorage.getItem('userName'),
         providerServiceMapId: localStorage.getItem('providerServiceID')
       };
@@ -100,7 +100,11 @@ export class AbhaMobileComponentComponent {
       this.registrarService.enrollAbhaByAadhaar(reqObj).subscribe((res: any) => {
         if(res.statusCode == 200 && res.data){
           this.showProgressBar = false;
-          this.dialogSucRef.close(res.data);
+          let data = {
+            mobileNumber: this.generateMobileOTPForm.controls['mobileNo'].value,
+            data: res.data
+          }
+          this.dialogSucRef.close(data);
         } else {
           this.showProgressBar = false;
           this.confirmationService.alert(res.errorMessage, 'error');
