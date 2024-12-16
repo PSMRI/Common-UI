@@ -230,7 +230,7 @@ export class AbhaEnterOtpComponentComponent {
     const dialogRefSuccess = this.dialog.open(
       AbhaVerifySuccessComponentComponent,
       {
-        height: '365px',
+        height: '370px',
         width: '480px',
         disableClose: true,
         data: { abhaResponse: abhaDetails, xToken: token }

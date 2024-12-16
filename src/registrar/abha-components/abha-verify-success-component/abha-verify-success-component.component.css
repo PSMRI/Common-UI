@@ -20,7 +20,7 @@ md2-pagination {
 }
 
 .message {
-    padding: 24px 24px 24px;
+    padding: 24px 24px 15px;
     box-sizing: border-box;
     overflow-y: auto;
     border-top: none;
