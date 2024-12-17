@@ -5,14 +5,15 @@
       <br />
       <p>
         <strong>{{ currentLanguageSet?.casesheet?.name }}:</strong>
-        {{ abhaDetails.name }}
+        {{ (abhaDetails.name !== undefined && abhaDetails.name !== null) ? abhaDetails.name : abhaDetails?.fullName }}
       </p>
       <p>
-        <strong>{{ currentLanguageSet?.abhaAddress }}:</strong> {{ abhaDetails.preferredAbhaAddress }}
+        <strong>{{ currentLanguageSet?.abhaAddress }}:</strong> 
+        {{ (abhaDetails.preferredAbhaAddress !== undefined && abhaDetails.preferredAbhaAddress !== null) ? abhaDetails.preferredAbhaAddress : abhaDetails?.abhaAddress }}
       </p>
       <p>
         <strong>{{ currentLanguageSet?.aBHANumber }}:</strong>
-        {{ abhaDetails.ABHANumber }}
+        {{ (abhaDetails.ABHANumber !== undefined && abhaDetails.ABHANumber !== null) ? abhaDetails.ABHANumber : abhaDetails?.abhaNumber}}
       </p>
       <div class="overlay" *ngIf="showProgressBar">
         <div class="overlay-content">
