@@ -596,7 +596,7 @@ export class RegistrationComponent {
         addressLine1: demographicsForm.controls['addressLine1']?.value || null,
         addressLine2: demographicsForm.controls['addressLine2']?.value || null,
         addressLine3: demographicsForm.controls['addressLine3']?.value || null,
-        religionName: othersForm.controls['religionOther']?.value || null,
+        religionName: othersForm.controls['religionName']?.value || null,
       },
       abha: abhaForm.controls['healthIdNumber']?.value || null,
       genderID: (() => {
