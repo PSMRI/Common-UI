@@ -18,24 +18,25 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { RegistrarService } from './services/registrar.service';
 import { RegistrationService } from './services/registration.service';
-import { BiometricAuthenticationComponent } from './biometric-authentication/biometric-authentication.component';
+import { BiometricAuthenticationComponent } from './abha-components/biometric-authentication/biometric-authentication.component';
 import { FamilyTaggingDetailsComponent } from './family-tagging/family-tagging-details/family-tagging-details.component';
 import { CreateFamilyTaggingComponent } from './family-tagging/create-family-tagging/create-family-tagging.component';
 import { EditFamilyTaggingComponent } from './family-tagging/edit-family-tagging/edit-family-tagging.component';
-import { GenerateAbhaComponentComponent, authMethodComponent } from './generate-abha-component/generate-abha-component.component';
-import { GenerateMobileOtpGenerationComponent } from './generate-mobile-otp-generation/generate-mobile-otp-generation.component';
-import { HealthIdDisplayModalComponent } from './health-id-display-modal/health-id-display-modal.component';
-import { HealthIdOtpGenerationComponent, HealthIdOtpSuccessComponent } from './health-id-otp-generation/health-id-otp-generation.component';
-import { ViewHealthIdCardComponent } from './view-health-id-card/view-health-id-card.component';
+import { HealthIdDisplayModalComponent } from './abha-components/health-id-display-modal/health-id-display-modal.component';
 import { SearchFamilyComponent } from './search-family/search-family.component';
 import { BeneficiaryDetailsComponent } from './beneficiary-details/beneficiary-details.component';
-import { HealthIdValidateComponent } from './health-id-validatepopup/health-id-validatepopup.component';
-import { SetPasswordForAbhaComponent } from './set-password-for-abha/set-password-for-abha.component';
 import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
 import { FamilyTaggingService } from './services/familytagging.service';
 import { ConsentFormComponent } from './registration/consent-form/consent-form.component';
 import { RdDeviceService } from './services/rddevice.service';
-
+import { AbhaEnterOtpComponentComponent } from './abha-components/abha-enter-otp-component/abha-enter-otp-component.component';
+import { AbhaMobileComponentComponent } from './abha-components/abha-mobile-component/abha-mobile-component.component';
+import { AbhaGenerationSuccessComponentComponent } from './abha-components/abha-generation-success-component/abha-generation-success-component.component';
+import { GenerateAbhaComponentComponent } from './abha-components/generate-abha-component/generate-abha-component.component';
+import { DownloadSearchAbhaComponent } from './abha-components/download-search-abha/download-search-abha.component';
+import { DisplayAbhaCardComponent } from './abha-components/display-abha-card/display-abha-card.component';
+import { AbhaVerifySuccessComponentComponent } from './abha-components/abha-verify-success-component/abha-verify-success-component.component';
+import { AbhaEnterMobileOtpComponentComponent } from './abha-components/abha-enter-mobile-otp-component/abha-enter-mobile-otp-component.component';
 
 @NgModule({
   declarations: [
@@ -52,17 +53,17 @@ import { RdDeviceService } from './services/rddevice.service';
     CreateFamilyTaggingComponent,
     EditFamilyTaggingComponent,
     GenerateAbhaComponentComponent,
-    GenerateMobileOtpGenerationComponent,
     HealthIdDisplayModalComponent,
-    HealthIdOtpGenerationComponent,
-    HealthIdOtpSuccessComponent,
-    ViewHealthIdCardComponent,
     SearchFamilyComponent,
     BeneficiaryDetailsComponent,
-    HealthIdValidateComponent,
-    SetPasswordForAbhaComponent,
     ConsentFormComponent,
-    authMethodComponent
+    AbhaEnterOtpComponentComponent,
+    AbhaMobileComponentComponent,
+    AbhaGenerationSuccessComponentComponent,
+    DownloadSearchAbhaComponent,
+    DisplayAbhaCardComponent,
+    AbhaVerifySuccessComponentComponent,
+    AbhaEnterMobileOtpComponentComponent,
   ],
   imports: [
     CommonModule,
@@ -89,12 +90,8 @@ import { RdDeviceService } from './services/rddevice.service';
     CreateFamilyTaggingComponent,
     EditFamilyTaggingComponent,
     GenerateAbhaComponentComponent,
-    GenerateMobileOtpGenerationComponent,
     HealthIdDisplayModalComponent,
-    HealthIdOtpGenerationComponent,
     BeneficiaryDetailsComponent,
-    HealthIdValidateComponent,
-    SetPasswordForAbhaComponent
   ],
   providers: [
     RegistrarService,

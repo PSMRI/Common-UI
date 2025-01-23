@@ -38,6 +38,7 @@ export class RegistrationComponent {
   serviceLine: any;
   consentGranted: any;
   disableGenerateOTP = false;
+  today = new Date();
 
 
   constructor(
@@ -69,6 +70,13 @@ export class RegistrationComponent {
     this.fetchLanguageResponse();
     this.getRegistrationData();
     this.checkPatientRevisit();
+    this.registrarService.healthIdMobVerificationCheck$.subscribe(
+      (responseMob) => {
+        if (responseMob !== null && responseMob !== undefined) {
+          this.setHealthIdAfterGeneration(responseMob);
+        }
+      },
+    );
     }
 
     minValidator(min: number): ValidatorFn {
@@ -277,46 +285,6 @@ export class RegistrationComponent {
     // this.personalInfoFormValues = data;
   }
 
-  // submitBeneficiaryDetails() {
-  //   console.log('registration data', this.mainForm);
-  //   const newDate = this.dateFormatChange();
-  //   const valueToSend = this.mainForm.value;
-  //   valueToSend.personalInfoForm.dob = newDate;
-  //   const iEMRForm: any = this.iEMRForm();
-  //   const phoneMaps = iEMRForm.benPhoneMaps;
-
-  //   // createdBy, vanID, servicePointID
-  //   const serviceLineDetails: any = this.sessionstorage.getItem('serviceLineDetails');
-  //   const servicePointDetails = JSON.parse(serviceLineDetails);
-  //   iEMRForm['vanID'] = servicePointDetails.vanID;
-  //   iEMRForm['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
-  //   iEMRForm['createdBy'] = this.sessionstorage.getItem('userName');
-  //   iEMRForm['providerServiceMapID'] = this.sessionstorage.getItem('providerServiceID');
-  //   iEMRForm['providerServiceMapId'] = this.sessionstorage.getItem('providerServiceID');
-  //   phoneMaps[0]['vanID'] = servicePointDetails.vanID;
-  //   phoneMaps[0]['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
-  //   phoneMaps[0]['createdBy'] = this.sessionstorage.getItem('userName');
-  //   console.log('iemrform', iEMRForm);
-  //   const mainForm = this.mainFormData();
-  //   console.log('mainForm', mainForm);
-  //   const remaingData = this.findMissingKeys(iEMRForm, mainForm)
-  //   let finalRqObj = {
-  //     ...remaingData,
-  //     ...iEMRForm
-  //   }
-  //   console.log('finalRqObj', finalRqObj);
-  //   this.registrarService.submitBeneficiary(finalRqObj).subscribe((res: any) => {
-  //     if (res.statusCode === 200) {
-  //       this.confirmationService.alert(res.data.response, 'success');
-  //       this.mainForm.reset();
-  //     } else {
-  //       this.confirmationService.alert(
-  //         'issue in saving the data',
-  //         'error'
-  //       );
-  //     }
-  //   });
-  // }
 
   submitBeneficiaryDetails() {
     console.log('registration data', this.mainForm);
@@ -357,15 +325,15 @@ export class RegistrationComponent {
           const reqObj = {
             beneficiaryRegID: null,
             beneficiaryID: numb,
-            healthId: this.mainForm.controls['abhaInfoForm'].value['abha'],
-            healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['abha'],
+            healthId: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
+            healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
             providerServiceMapId: this.sessionstorage.getItem('providerServiceID'),
             authenticationMode: null,
             createdBy: this.sessionstorage.getItem('userName'),
           };
           if 
-            (this.mainForm.controls['abhaInfoForm'].value['abha'] !== undefined &&
-            this.mainForm.controls['abhaInfoForm'].value['abha'] !== null)  {
+            (this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'] !== undefined &&
+            this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'] !== null)  {
             this.registrarService.mapHealthId(reqObj).subscribe((res: any) => {
               if (res.statusCode === 200) {
                 // this.confirmationService.alert(res.data.response, 'success');
@@ -453,7 +421,7 @@ export class RegistrationComponent {
         addressLine3: demographicsForm.controls['addressLine3']?.value || null,
         religionName: othersForm.controls['religionName']?.value || null,
       },
-      abha: abhaForm.controls['abha']?.value || null,
+      abha: abhaForm.controls['healthIdNumber']?.value || null,
       genderID: (() => {
         const genderName = personalForm.controls['genderName']?.value;
         if (genderName === 'Female') {
@@ -533,8 +501,8 @@ export class RegistrationComponent {
               const reqObj = {
                 beneficiaryRegID: null,
                 beneficiaryID: personalForm.beneficiaryID,
-                healthId: this.mainForm.controls['abhaInfoForm'].value['abha'],
-                healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['abha'],
+                healthId: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
+                healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
                 authenticationMode: null,
                 providerServiceMapId: this.sessionstorage.getItem('providerServiceID'),
                 createdBy: this.sessionstorage.getItem('userName'),
@@ -631,9 +599,9 @@ export class RegistrationComponent {
         addressLine1: demographicsForm.controls['addressLine1']?.value || null,
         addressLine2: demographicsForm.controls['addressLine2']?.value || null,
         addressLine3: demographicsForm.controls['addressLine3']?.value || null,
-        religionName: othersForm.controls['religionOther']?.value || null,
+        religionName: othersForm.controls['religionName']?.value || null,
       },
-      abha: abhaForm.controls['abha']?.value || null,
+      abha: abhaForm.controls['healthIdNumber']?.value || null,
       genderID: (() => {
         const genderName = personalForm.controls['genderName']?.value;
         if (genderName === 'Female') {
@@ -764,6 +732,98 @@ export class RegistrationComponent {
       beneficiaryId: this.revisitData.beneficiaryID,
     };
     this.router.navigate(['/registrar/familyTagging', reqObj]);
+  }
+
+  setHealthIdAfterGeneration(result: any) {
+    (<FormGroup>(
+      this.mainForm.controls['otherInfoForm']
+    )).patchValue({ healthId: result.healthIdNumber });
+    (<FormGroup>(
+      this.mainForm.controls['otherInfoForm']
+    )).patchValue({ healthIdNumber: result.healthIdNumber });
+    (<FormGroup>(
+      this.mainForm.controls['personalInfoForm']
+    )).patchValue({ firstName: result.firstName });
+    (<FormGroup>(
+      this.mainForm.controls['personalInfoForm']
+    )).patchValue({ lastName: result.lastName });
+    (<FormGroup>(
+      this.mainForm.controls['personalInfoForm']
+    )).patchValue({ phoneNo: result.phoneNo });
+    (<FormGroup>(
+      this.mainForm.controls['personalInfoForm']
+    )).patchValue({ gender: result.gender });
+    (<FormGroup>(
+      this.mainForm.controls['personalInfoForm']
+    )).patchValue({ genderName: result.genderName });
+    (<FormGroup>(
+      this.mainForm.controls['locationInfoForm']
+    )).patchValue({ stateID: result.stateID });
+    (<FormGroup>(
+      this.mainForm.controls['locationInfoForm']
+    )).patchValue({ stateName: result.stateName });
+    (<FormGroup>(
+      this.mainForm.controls['locationInfoForm']
+    )).patchValue({ districtID: result.districtID });
+    (<FormGroup>(
+      this.mainForm.controls['locationInfoForm']
+    )).patchValue({ districtName: result.districtName });
+    console.log("location data after patching abha details", this.mainForm.controls['locationInfoForm'].value);
+    this.registrarService.setAbhaLocationDetailsonFetch(this.mainForm.controls['locationInfoForm'].value);
+
+    const parts = result.dob.split('/');
+    const parsedDate = new Date(
+      parseInt(parts[2]),
+      parseInt(parts[1]) - 1,
+      parseInt(parts[0]),
+    );
+    (<FormGroup>(
+      this.mainForm.controls['personalInfoForm']
+    )).patchValue({ dob: parsedDate });
+
+    if (
+      result.dob &&
+      (<FormGroup>(
+        this.mainForm.controls['personalInfoForm']
+      )).controls['dOB'].valid
+    ) {
+      const dateDiff = Date.now() - parsedDate.getTime();
+      const age = new Date(dateDiff);
+      const yob = Math.abs(age.getFullYear() - 1970);
+      const mob = Math.abs(age.getMonth());
+      const dob = Math.abs(age.getDate() - 1);
+      this.today = new Date();
+      if (yob > 0) {
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ age: yob });
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ ageUnit: 'Years' });
+      } else if (mob > 0) {
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ age: mob });
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ ageUnit: 'Months' });
+      } else if (dob > 0) {
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ age: dob });
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ ageUnit: 'Days' });
+      }
+      if (parsedDate.setHours(0, 0, 0, 0) === this.today.setHours(0, 0, 0, 0)) {
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ age: 1 });
+        (<FormGroup>(
+          this.mainForm.controls['personalInfoForm']
+        )).patchValue({ ageUnit: 'Day' });
+      }
+    }
   }
 
 }

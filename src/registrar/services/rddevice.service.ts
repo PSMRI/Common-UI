@@ -128,8 +128,9 @@ export class RdDeviceService {
         success: (data: any) => {
           this.httpStaus = true;
           const res = { httpStaus: this.httpStaus, data: data };
+          console.log("unecripted data - ", data)
           const encodedPIDRes = btoa(data);
-          console.log(encodedPIDRes);
+          console.log("encrypted data", encodedPIDRes);
           $('#txtPidData').val(encodedPIDRes);
           $('#txtPidOptions').val(encodedPIDRes);
           this.getpidDetail(encodedPIDRes);

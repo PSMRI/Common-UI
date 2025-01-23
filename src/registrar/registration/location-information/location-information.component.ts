@@ -41,6 +41,8 @@ export class LocationInformationComponent {
   villageList: any;
   servicePointList: any = [];
   locationPatchDetails: any;
+  patchAbhaLocationDetails = false;
+  patchAbhaBenLocationDetails: any;
 
   constructor(
     private fb: FormBuilder,
@@ -251,6 +253,19 @@ export class LocationInformationComponent {
         stateID: this.locationPatchDetails.stateID,
         stateName: this.locationPatchDetails.stateName,
       });
+    } else if(this.patchAbhaLocationDetails){
+      let localStateId;
+      let localStateName;
+      this.statesList.find((item: any) => {
+        if(item.govtLGDStateID === parseInt(this.patchAbhaBenLocationDetails.stateID)){
+          localStateId = item.stateID;
+          localStateName = item.stateName;
+        } 
+    });
+      this.locationInfoFormGroup.patchValue({
+        stateID: localStateId,
+        stateName: localStateName,
+      });
     } else {
       this.locationInfoFormGroup.patchValue({
         stateID: this.locationDetails.stateID,
@@ -281,6 +296,19 @@ export class LocationInformationComponent {
               this.locationInfoFormGroup.patchValue({
                 districtID: this.locationPatchDetails.districtID,
                 districtName: this.locationPatchDetails.districtName,
+              });
+            } else if(this.patchAbhaLocationDetails){
+              let localDistrictId;
+              let localDistrictName;
+              this.districtList.find((item: any) => {
+                if(item.govtLGDDistrictID === parseInt(this.patchAbhaBenLocationDetails.districtID)){
+                  localDistrictId = item.districtID;
+                  localDistrictName = item.districtName;
+                } 
+            });
+              this.locationInfoFormGroup.patchValue({
+                districtID: localDistrictId,
+                districtName: localDistrictName,
               });
             } else {
               this.locationInfoFormGroup.patchValue({
