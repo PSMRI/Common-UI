@@ -135,6 +135,9 @@ export class LocationInformationComponent {
       case 'alphaNumeric':
         regex = /^[a-zA-Z0-9]*$/;
         break;
+      case 'alphaWithSpace':
+        regex = /^[a-zA-Z ]*$/;
+        break;
       default:
         regex = /^[a-zA-Z0-9 ]*$/;
         break;

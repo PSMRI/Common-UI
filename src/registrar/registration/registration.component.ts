@@ -93,30 +93,33 @@ export class RegistrationComponent {
       };
     }
 
-    allowTextValidator(allowText: string): ValidatorFn {
-      return (control: AbstractControl): { [key: string]: any } | null => {
-        if (!control.value) return null;
-     
-        const value = control.value;
-        let regex: RegExp;
-     
-        switch (allowText) {
-          case 'alpha':
-            regex = /^[a-zA-Z]*$/;
-            break;
-          case 'numeric':
-            regex = /^[0-9]*$/;
-            break;
-          case 'alphaNumeric':
-            regex = /^[a-zA-Z0-9]*$/;
-            break;
-          default:
-            return null;
-        }
-     
-        return regex.test(value) ? null : { allowText: { value: control.value } };
-      };
-    }
+  allowTextValidator(allowText: string): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } | null => {
+      if (!control.value) return null;
+
+      const value = control.value;
+      let regex: RegExp;
+
+      switch (allowText) {
+        case 'alpha':
+          regex = /^[a-zA-Z]*$/;
+          break;
+        case 'numeric':
+          regex = /^[0-9]*$/;
+          break;
+        case 'alphaNumeric':
+          regex = /^[a-zA-Z0-9]*$/;
+          break;
+        case 'alphaWithSpace':
+          regex = /^[a-zA-Z ]*$/;
+          break;
+        default:
+          return null;
+      }
+
+      return regex.test(value) ? null : { allowText: { value: control.value } };
+    };
+  }
 
   get personalInfoFormGroup(): FormGroup{
     return this.mainForm.get('personalInfoForm') as FormGroup;
