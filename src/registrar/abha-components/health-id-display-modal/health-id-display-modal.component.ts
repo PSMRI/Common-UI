@@ -41,6 +41,7 @@ import {
   MomentDateAdapter,
   MAT_MOMENT_DATE_ADAPTER_OPTIONS,
 } from '@angular/material-moment-adapter';
+import { SessionStorageService } from '../../services/session-storage.service';
 import { DownloadSearchAbhaComponent } from '../download-search-abha/download-search-abha.component';
 
 @Component({
@@ -125,6 +126,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     private confirmationService: ConfirmationService,
     private datePipe: DatePipe,
     private dialogMd: MatDialog,
+    private sessionstorage:SessionStorageService,
   ) {
     dialogRef.disableClose = true;
   }
@@ -275,9 +277,9 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         : null,
       visitCode: this.input.visitCode,
       visitCategory:
-        localStorage.getItem('visiCategoryANC') === 'General OPD (QC)'
+        this.sessionstorage.getItem('visiCategoryANC') === 'General OPD (QC)'
           ? 'Emergency'
-          : localStorage.getItem('visiCategoryANC'),
+          : this.sessionstorage.getItem('visiCategoryANC'),
     };
     this.registrarService
       .verifyOtpForMappingCarecontext(verifyOtpData)

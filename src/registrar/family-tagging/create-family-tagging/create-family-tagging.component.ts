@@ -26,6 +26,7 @@ import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-la
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { FamilyTaggingService } from '../../services/familytagging.service';
+import { SessionStorageService } from '../../services/session-storage.service';
 
 @Component({
   selector: 'app-create-family-tagging',
@@ -62,6 +63,7 @@ export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
     private familyTaggingService: FamilyTaggingService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
+    private sessionstorage:SessionStorageService,
     @Inject(MAT_DIALOG_DATA) public data: any,
   ) {}
 
@@ -109,7 +111,7 @@ export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
     const typeOfRelation = this.relationShipType.filter((item) => {
       if (item.benRelationshipID === this.relationWithHeadOfFamily) return item;
     });
-    const serviceLineDetails: any = localStorage.getItem('serviceLineDetails');
+    const serviceLineDetails: any = this.sessionstorage.getItem('serviceLineDetails');
     const vanID = JSON.parse(serviceLineDetails).vanID;
     const parkingPlaceID = JSON.parse(serviceLineDetails).parkingPlaceID;
     const reqObject = {
@@ -123,7 +125,7 @@ export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
       villageId: parseInt(this.benVillageId),
       vanID: vanID,
       parkingPlaceID: parkingPlaceID,
-      createdBy: localStorage.getItem('userName'),
+      createdBy: this.sessionstorage.getItem('userName'),
     };
     console.log('Details to be saved', reqObject);
     this.familyTaggingService.createFamilyTagging(reqObject).subscribe(

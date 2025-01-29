@@ -43,7 +43,8 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { RegistrarService } from 'Common-UI/src/registrar/services/registrar.service';
 import * as moment from 'moment';
 import { environment } from 'src/environments/environment';
-import { HealthIdDisplayModalComponent } from '../abha-components/health-id-display-modal/health-id-display-modal.component';
+import { HealthIdDisplayModalComponent } from '../health-id-display-modal/health-id-display-modal.component';
+import { SessionStorageService } from '../services/session-storage.service';
 
 export interface Consent {
   consentGranted: string;
@@ -93,6 +94,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked {
     private registrarService: RegistrarService,
     private cameraService: CameraService,
     private router: Router,
+    private sessionstorage:SessionStorageService,
     private beneficiaryDetailsService: BeneficiaryDetailsService,
   ) {}
 
@@ -298,10 +300,10 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked {
       const action = false;
       console.log(JSON.stringify(benObject, null, 4), 'benObject');
       const serviceLineDetails: any =
-        localStorage.getItem('serviceLineDetails');
+        this.sessionstorage.getItem('serviceLineDetails');
       const vanID = JSON.parse(serviceLineDetails).vanID;
       benObject['providerServiceMapId'] =
-        localStorage.getItem('providerServiceID');
+        this.sessionstorage.getItem('providerServiceID');
       benObject['vanID'] = vanID;
 
       this.confirmationService

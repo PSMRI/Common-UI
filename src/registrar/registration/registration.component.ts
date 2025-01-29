@@ -10,6 +10,7 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import * as moment from 'moment';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConsentFormComponent } from './consent-form/consent-form.component';
+import { SessionStorageService } from '../services/session-storage.service';
 
 @Component({
   selector: 'app-registration',
@@ -48,6 +49,7 @@ export class RegistrationComponent {
     private route: ActivatedRoute,
     private languageComponent: SetLanguageComponent,
     private httpServiceService: HttpServiceService,
+    private sessionstorage:SessionStorageService,
     private router: Router,
     private dialog: MatDialog, ){
     this.mainForm = this.fb.group({
@@ -64,7 +66,7 @@ export class RegistrationComponent {
   }
 
   ngOnInit(){
-    this.serviceLine =  localStorage.getItem('serviceName');
+    this.serviceLine =  this.sessionstorage.getItem('serviceName');
     this.fetchLanguageResponse();
     this.getRegistrationData();
     this.checkPatientRevisit();
@@ -207,14 +209,14 @@ export class RegistrationComponent {
   
 
   getRegistrationData(){
-    let location: any = localStorage.getItem('locationData');
+    let location: any = this.sessionstorage.getItem('locationData');
     let locationData = JSON.parse(location);
-    let services: any = localStorage.getItem('services');
+    let services: any = this.sessionstorage.getItem('services');
     let servicesData = JSON.parse(services);
     console.log('servicesData', servicesData);
     let reqObj = {
-      serviceLine: localStorage.getItem('serviceName'),
-      serviceLineId: localStorage.getItem('serviceID'),
+      serviceLine: this.sessionstorage.getItem('serviceName'),
+      serviceLineId: this.sessionstorage.getItem('serviceID'),
       stateId: locationData.stateID,
       districtId: locationData.districtID,
       blockId: locationData.blockID,
@@ -286,6 +288,7 @@ export class RegistrationComponent {
     // this.personalInfoFormValues = data;
   }
 
+
   submitBeneficiaryDetails() {
     console.log('registration data', this.mainForm);
     const newDate = this.dateFormatChange();
@@ -295,16 +298,16 @@ export class RegistrationComponent {
     const phoneMaps = iEMRForm.benPhoneMaps;
 
     // createdBy, vanID, servicePointID
-    const serviceLineDetails: any = localStorage.getItem('serviceLineDetails');
+    const serviceLineDetails: any = this.sessionstorage.getItem('serviceLineDetails');
     const servicePointDetails = JSON.parse(serviceLineDetails);
     iEMRForm['vanID'] = servicePointDetails.vanID;
     iEMRForm['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
-    iEMRForm['createdBy'] = localStorage.getItem('userName');
-    iEMRForm['providerServiceMapID'] = localStorage.getItem('providerServiceID');
-    iEMRForm['providerServiceMapId'] = localStorage.getItem('providerServiceID');
+    iEMRForm['createdBy'] = this.sessionstorage.getItem('userName');
+    iEMRForm['providerServiceMapID'] = this.sessionstorage.getItem('providerServiceID');
+    iEMRForm['providerServiceMapId'] = this.sessionstorage.getItem('providerServiceID');
     phoneMaps[0]['vanID'] = servicePointDetails.vanID;
     phoneMaps[0]['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
-    phoneMaps[0]['createdBy'] = localStorage.getItem('userName');
+    phoneMaps[0]['createdBy'] = this.sessionstorage.getItem('userName');
     console.log('iemrform', iEMRForm);
     const mainForm = this.mainFormData();
     console.log('mainForm', mainForm);
@@ -327,9 +330,9 @@ export class RegistrationComponent {
             beneficiaryID: numb,
             healthId: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
             healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
-            providerServiceMapId: localStorage.getItem('providerServiceID'),
+            providerServiceMapId: this.sessionstorage.getItem('providerServiceID'),
             authenticationMode: null,
-            createdBy: localStorage.getItem('userName'),
+            createdBy: this.sessionstorage.getItem('userName'),
           };
           if 
             (this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'] !== undefined &&
@@ -412,8 +415,8 @@ export class RegistrationComponent {
         zoneName: demographicsForm.controls['zoneName']?.value || null,
         // parkingPlaceID: demographicsForm.controls['parkingPlace']?.value || null,
         parkingPlaceName: demographicsForm.controls['parkingPlaceName']?.value || null,
-        servicePointID: localStorage.getItem('servicePointID') || null,
-        servicePointName: localStorage.getItem('servicePointName') || null,
+        servicePointID: this.sessionstorage.getItem('servicePointID') || null,
+        servicePointName: this.sessionstorage.getItem('servicePointName') || null,
         habitation: demographicsForm.controls['habitation']?.value || null,
         pinCode: demographicsForm.controls['pinCode']?.value || null,
         addressLine1: demographicsForm.controls['addressLine1']?.value || null,
@@ -504,8 +507,8 @@ export class RegistrationComponent {
                 healthId: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
                 healthIdNumber: this.mainForm.controls['abhaInfoForm'].value['healthIdNumber'],
                 authenticationMode: null,
-                providerServiceMapId: localStorage.getItem('providerServiceID'),
-                createdBy: localStorage.getItem('userName'),
+                providerServiceMapId: this.sessionstorage.getItem('providerServiceID'),
+                createdBy: this.sessionstorage.getItem('userName'),
               };
               this.router.navigate(['/registrar/search/']);
             } 
@@ -523,15 +526,15 @@ export class RegistrationComponent {
     const iEMRForm: any = this.iEMRFormUpdate();
     const phoneMaps = iEMRForm.benPhoneMaps;
 
-    const serviceLineDetails: any = localStorage.getItem('serviceLineDetails');
+    const serviceLineDetails: any = this.sessionstorage.getItem('serviceLineDetails');
     const servicePointDetails = JSON.parse(serviceLineDetails);
 
     iEMRForm['vanID'] = servicePointDetails.vanID;
     iEMRForm['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
-    iEMRForm['createdBy'] = localStorage.getItem('userName');
+    iEMRForm['createdBy'] = this.sessionstorage.getItem('userName');
     // phoneMaps[0]['vanID'] = servicePointDetails.vanID;
     // phoneMaps[0]['parkingPlaceID'] = servicePointDetails.parkingPlaceID;
-    // phoneMaps[0]['modifiedBy'] = localStorage.getItem('userName');
+    // phoneMaps[0]['modifiedBy'] = this.sessionstorage.getItem('userName');
     const mainForm = this.mainFormData();
     console.log('mainForm', mainForm);
     const remaingData = this.findMissingKeys(iEMRForm, mainForm)
@@ -559,7 +562,7 @@ export class RegistrationComponent {
       {},
       this.mainForm.get('abhaInfoForm') as FormGroup
     );
-    const serviceLineDetails: any = localStorage.getItem('serviceLineDetails');
+    const serviceLineDetails: any = this.sessionstorage.getItem('serviceLineDetails');
     const servicePointDetails = JSON.parse(serviceLineDetails);
     const finalForm = {
       beneficiaryRegID: personalForm.controls['beneficiaryRegID']?.value || null,
@@ -592,8 +595,8 @@ export class RegistrationComponent {
         zoneName: demographicsForm.controls['zoneName']?.value || null,
         // parkingPlaceID: demographicsForm.controls['parkingPlace']?.value || null,
         parkingPlaceName: demographicsForm.controls['parkingPlaceName']?.value || null,
-        servicePointID: localStorage.getItem('servicePointID') || null,
-        servicePointName: localStorage.getItem('servicePointName') || null,
+        servicePointID: this.sessionstorage.getItem('servicePointID') || null,
+        servicePointName: this.sessionstorage.getItem('servicePointName') || null,
         habitation: demographicsForm.controls['habitation']?.value || null,
         pinCode: demographicsForm.controls['pincode']?.value || null,
         addressLine1: demographicsForm.controls['addressLine1']?.value || null,
@@ -630,7 +633,7 @@ export class RegistrationComponent {
           phoneNo: personalForm.controls['phoneNo']?.value,
           vanID: servicePointDetails.vanID,
           parkingPlaceID: servicePointDetails.parkingPlaceID,
-          modifiedBy: localStorage.getItem('userName'), 
+          modifiedBy: this.sessionstorage.getItem('userName'), 
         },
       ],
       beneficiaryID: personalForm.controls['beneficiaryID']?.value || null,
