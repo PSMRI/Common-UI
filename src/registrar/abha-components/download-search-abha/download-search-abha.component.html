@@ -1,126 +1,82 @@
 <div class="title info">
   <h4>{{ currentLanguageSet.searchAndDownloadAbha }}</h4>
-  <button
-    class="pull-right close-btn"
-    style="border: unset !important;background-color: unset !important; color: white;"
-    matDialogClose
-    (click)="closeDialogAuth()"
-    mat-icon-button
-  >
+  <button class="pull-right close-btn"
+    style="border: unset !important;background-color: unset !important; color: white;" matDialogClose
+    (click)="closeDialogAuth()" mat-icon-button>
     <mat-icon class="md-24">close</mat-icon>
   </button>
 </div>
 <br />
 <div class="col-xs-12 col-sm-12 container-fluid" [formGroup]="abhaAuthMethodForm">
-  <div class="row"> 
+  <div class="row">
     <div *ngIf='!enableAuthIdField' class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10">
       <label class="control-label" for="modeofAuthMethod">{{ currentLanguageSet.abhaSearchMode}}</label>
-      <mat-radio-group
-        formControlName="modeofAuthMethod"
-        (change)="getAbhaAuthMethod()"
-        class="horizontal-radio-buttons"
-      >
-        <mat-radio-button color="primary" value="AADHAAR"
-          >Aadhar</mat-radio-button
-        >
-        <mat-radio-button color="primary" value="MOBILE"
-          >Mobile</mat-radio-button
-        >
-        <mat-radio-button color="primary" value="ABHANUMBER"
-        >Abha Number</mat-radio-button
-        >
-        <mat-radio-button color="primary" value="ABHAADDRESS"
-        >Abha Address</mat-radio-button
-        >
+      <mat-radio-group formControlName="modeofAuthMethod" (change)="getAbhaAuthMethod()"
+        class="horizontal-radio-buttons">
+        <mat-radio-button color="primary" value="AADHAAR">Aadhar</mat-radio-button>
+        <mat-radio-button color="primary" value="MOBILE">Mobile</mat-radio-button>
+        <mat-radio-button color="primary" value="ABHANUMBER">Abha Number</mat-radio-button>
+        <mat-radio-button color="primary" value="ABHAADDRESS">Abha Address</mat-radio-button>
       </mat-radio-group>
     </div>
-    <div *ngIf ="enableAuthIdField && abhaAuthMethodForm.controls['modeofAuthMethod']?.value !== 'AADHAAR'">
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
+    <div *ngIf="enableAuthIdField && abhaAuthMethodForm.controls['modeofAuthMethod']?.value !== 'AADHAAR'">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
         <mat-form-field [style.width]="'100%'">
           <mat-label> {{ enterAuthIdLabel }} </mat-label>
-          <input
-            id="abhaAuthId"
-            defaultNull
-            autocomplete="off"
-            formControlName="abhaAuthId"
-            matInput
-            type="text"
-            required
-            (keydown.space)="$event.preventDefault()"
-            minlength="5"
-            maxlength="32"
-          />
+          <input id="abhaAuthId" defaultNull autocomplete="off" formControlName="abhaAuthId" matInput type="text"
+            required (keydown.space)="$event.preventDefault()" minlength="5" maxlength="32" />
         </mat-form-field>
       </div>
     </div>
 
-      <div *ngIf ="enableAuthIdField && abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'AADHAAR'">
-        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
-            <mat-form-field [style.width]="'100%'">
-              <mat-label>{{ enterAuthIdLabel }}</mat-label>
-              <input
-                defaultNull
-                autocomplete="off"
-                matInput
-                type="text"
-                required
-                formControlName="abhaAuthId"
-                myMobileNumber
-                [type]="hide ? 'password' : 'text'"
-                minlength="12"
-                maxlength="12"
-              />
-                <mat-icon mat-icon-button matSuffix [attr.aria-pressed]="hide" (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>    
-            </mat-form-field>
-          </div>
+    <div *ngIf="enableAuthIdField && abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'AADHAAR'">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
+        <mat-form-field [style.width]="'100%'">
+          <mat-label>{{ enterAuthIdLabel }}</mat-label>
+          <input defaultNull autocomplete="off" matInput type="text" required formControlName="abhaAuthId"
+            myMobileNumber [type]="hide ? 'password' : 'text'" minlength="12" maxlength="12" />
+          <mat-icon mat-icon-button matSuffix [attr.aria-pressed]="hide" (click)="hide = !hide">{{hide ?
+            'visibility_off' : 'visibility'}}</mat-icon>
+        </mat-form-field>
       </div>
+    </div>
 
-      <div class="col-12">
-        <div *ngIf='enableAuthMethodForAbha' class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10">
-          <label class="control-label" for="authMethodForAbha">ABHA AUTH Mode*</label>
-          <mat-radio-group
-            formControlName="authMethodForAbha"
-          >
-            <mat-radio-button color="primary" value="AUTH_AADHAAR"
-              >Aadhar</mat-radio-button
-            >
-            <mat-radio-button color="primary" value="AUTH_MOBILE"
-              >Mobile</mat-radio-button
-            >
-          </mat-radio-group>
+    <div class="col-12">
+      <div *ngIf='enableAuthMethodForAbha' class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10">
+        <label class="control-label" for="authMethodForAbha">ABHA AUTH Mode*</label>
+        <mat-radio-group formControlName="authMethodForAbha">
+          <mat-radio-button color="primary" value="AUTH_AADHAAR">Aadhar</mat-radio-button>
+          <mat-radio-button color="primary" value="AUTH_MOBILE">Mobile</mat-radio-button>
+        </mat-radio-group>
+      </div>
+      <div class="row">
+        <div
+          *ngIf="abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHANUMBER' ||  abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHAADDRESS'"
+          class="col-6" style="margin-left: 15px">
+          <p class="align-Para">
+            Note*: {{ currentLanguageSet?.aBHA }}- xxx{{ abhaSuffix }},
+            xxx.xx{{ abhaSuffix }}
+            <br />
+            {{ currentLanguageSet?.aBHANumber }} - xx-xxxx-xxxx-xxxx
+          </p>
         </div>
-        <div class="row">
-          <div *ngIf="abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHANUMBER' ||  abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHAADDRESS'" class="col-6" style="margin-left: 15px">
-            <p class="align-Para">
-              Note*: {{ currentLanguageSet?.aBHA }}- xxx{{ abhaSuffix }},
-              xxx.xx{{ abhaSuffix }}
-              <br />
-              {{ currentLanguageSet?.aBHANumber }} - xx-xxxx-xxxx-xxxx
-            </p>
-          </div>
-          <div *ngIf='enableAuthIdField' class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-            <button
-              id="searchHealthID"
-              (click)="checkAbhaIdType()"
-              class="pull-right font-regular f-s-18 m-t-8 full-width-search-box background-overall button-overall-disabled"
-              [disabled]="
+        <div *ngIf='enableAuthIdField' class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+          <button id="searchHealthID" (click)="checkAbhaIdType()"
+            class="pull-right font-regular f-s-18 m-t-8 full-width-search-box background-overall button-overall-disabled"
+            [disabled]="
                 !abhaAuthMethodForm.controls['abhaAuthId'].value ||
                 !checkValidHealthID() ||
                 !this.abhaAuthMethodForm.controls['modeofAuthMethod'].value || (enableAuthMethodForAbha &&  
                 !this.abhaAuthMethodForm.controls['authMethodForAbha'].value)
-              "
-            >
-              {{ currentLanguageSet?.common?.search }}
-            </button>
-            <button
-            id="back"
-            (click)="goBackToOptions()"
-            class="pull-right font-regular f-s-18 m-t-8 full-width-search-box background-overall button-overall-disabled"
-            >
-              {{ currentLanguageSet?.common?.back }}
-            </button>
-          </div>
+              ">
+            {{ currentLanguageSet?.common?.search }}
+          </button>
+          <button id="back" (click)="goBackToOptions()"
+            class="pull-right font-regular f-s-18 m-t-8 full-width-search-box background-overall button-overall-disabled">
+            {{ currentLanguageSet?.common?.back }}
+          </button>
         </div>
       </div>
     </div>
   </div>
+</div>
