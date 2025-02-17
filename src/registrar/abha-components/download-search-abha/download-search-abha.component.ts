@@ -104,16 +104,6 @@ export class DownloadSearchAbhaComponent {
     }
   }
 
-  checkAbhaIdTypeMode(){
-    const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
-    const abhaAuthId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
-    const abhaAuthMethod = this.abhaAuthMethodForm.controls['authMethodForAbha'].value;
-    let loginHint = null;
-    let loginMethod: any = null;
-    let loginId = null;
-    
-  }
-
   checkAbhaIdType(){
     const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
     const abhaAuthId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
