@@ -20,6 +20,7 @@ export class GenerateAbhaComponentComponent {
   currentLanguageSet: any;
   modeofAbhaHealthID: any;
   aadharNumber: any;
+  hide = true;
 
   constructor(
     public dialogRef: MatDialogRef<GenerateAbhaComponentComponent>,

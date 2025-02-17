@@ -10,6 +10,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { GenerateAbhaComponentComponent } from '../../abha-components/generate-abha-component/generate-abha-component.component';
 import { DownloadSearchAbhaComponent } from '../../abha-components/download-search-abha/download-search-abha.component';
+import { AbhaConsentFormComponent } from '../../abha-components/abha-consent-form/abha-consent-form.component';
 
 @Component({
   selector: 'app-abha-information',
@@ -57,7 +58,7 @@ export class AbhaInformationComponent {
       );
   }
 
-  ngOnInit(){
+  ngOnInit() {
     console.log("INSIDE ABHA COMPOENENT")
     this.fetchLanguageResponse();
     this.formData.forEach((item: any) => {
@@ -82,11 +83,11 @@ export class AbhaInformationComponent {
         );
       }
     });
-    console.log("formDataABHA",this.formData);
+    console.log("formDataABHA", this.formData);
     console.log('abhaInfoFormGroup Data', this.abhaInfoFormGroup);
-    if (this.patientRevisit){
+    if (this.patientRevisit) {
       this.abhaInfoFormGroup.patchValue(this.revisitData);
-    console.log('other Form Data', this.formData);
+      console.log('other Form Data', this.formData);
     }
   }
 
@@ -172,24 +173,34 @@ export class AbhaInformationComponent {
   }
 
   healthIdSearch() {
-    const dialogRef = this.dialog.open(DownloadSearchAbhaComponent, {
-      height: '330px',
-      width: '500px',
-      disableClose: true,
+    const dialog = this.dialog.open(AbhaConsentFormComponent, {
+      height: '550px',
+      width: '850px',
+      disableClose: true
     });
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        if (result.clearHealthID === true) {
-            this.abhaInfoFormGroup.controls['healthId'].patchValue(null);
-            this.abhaInfoFormGroup.controls['healthIdMode'].patchValue(null);
-        } else {
-            this.abhaInfoFormGroup.patchValue({ healthId: result.healthIdNumber });
-            this.abhaInfoFormGroup.patchValue({ healthIdMode: result.healthIdMode });
-            this.abhaInfoFormGroup.controls['healthIdNumber'].disable();
-            this.abhaInfoFormGroup.markAsDirty();
-          this.registrarService.changePersonalDetailsData(result);
-          this.disableGenerateOTP = true;
-        }   
+    dialog.afterClosed().subscribe(res => {
+      console.log("download consent after response -", res);
+      if (res) {
+        const dialogRef = this.dialog.open(DownloadSearchAbhaComponent, {
+          height: '330px',
+          width: '500px',
+          disableClose: true,
+        });
+        dialogRef.afterClosed().subscribe((result) => {
+          if (result) {
+            if (result.clearHealthID === true) {
+              this.abhaInfoFormGroup.controls['healthId'].patchValue(null);
+              this.abhaInfoFormGroup.controls['healthIdMode'].patchValue(null);
+            } else {
+              this.abhaInfoFormGroup.patchValue({ healthId: result.healthIdNumber });
+              this.abhaInfoFormGroup.patchValue({ healthIdMode: result.healthIdMode });
+              this.abhaInfoFormGroup.controls['healthIdNumber'].disable();
+              this.abhaInfoFormGroup.markAsDirty();
+              this.registrarService.changePersonalDetailsData(result);
+              this.disableGenerateOTP = true;
+            }
+          }
+        });
       }
     });
   }
@@ -200,11 +211,21 @@ export class AbhaInformationComponent {
   }
 
   generateAbhaCard() {
-    this.dialog.open(GenerateAbhaComponentComponent, {
-      height: '290px',
-      width: '470px',
-      disableClose: true,
-    }); 
+    const dialogRef = this.dialog.open(AbhaConsentFormComponent, {
+      height: '550px',
+      width: '850px',
+      disableClose: true
+    });
+    dialogRef.afterClosed().subscribe(res => {
+      console.log("consent after response -", res);
+      if (res) {
+        this.dialog.open(GenerateAbhaComponentComponent, {
+          height: '290px',
+          width: '470px',
+          disableClose: true,
+        });
+      }
+    });
   }
 
 }

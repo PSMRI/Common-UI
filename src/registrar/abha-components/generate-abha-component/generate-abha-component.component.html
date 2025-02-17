@@ -39,9 +39,11 @@
             required
             formControlName="aadharNumber"
             myMobileNumber
+            [type]="hide ? 'password' : 'text'"
             minlength="12"
             maxlength="12"
           />
+            <mat-icon mat-icon-button matSuffix [attr.aria-pressed]="hide" (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
         </mat-form-field>
       </div>
   
