@@ -70,8 +70,7 @@ export class AbhaConsentFormComponent {
   }
 
   submitConsent() {
-    if (this.consent1.value && this.consent2.value && this.consent3.value && 
-        this.consent4.value && this.consent5.value && this.consent5one.value && this.consent5two.value) {
+    if (this.allConsentsChecked()) {
       console.log("Consent Submitted Successfully!");
       this.dialogRef.close(true);
     } else {

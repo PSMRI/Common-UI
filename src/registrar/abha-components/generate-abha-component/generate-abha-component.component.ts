@@ -136,4 +136,9 @@ export class GenerateAbhaComponentComponent {
     dialogRef.afterClosed().subscribe((result) => {
     });
   }
+
+  ngOnDestroy(){
+    this.aadharNumber = null;
+    this.abhaGenerateForm.controls['aadharNumber'].reset();
+  }
 }

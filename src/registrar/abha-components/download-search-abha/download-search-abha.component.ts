@@ -76,21 +76,19 @@ export class DownloadSearchAbhaComponent {
   getAbhaAuthMethod(){
     const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
     if(authMode === "AADHAAR" && !this.enableOnlyAuthMode){
-      // this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumberOrAadhar;
-      this.enterAuthIdLabel = "Please Enter Aadhaar Number";
+      this.enterAuthIdLabel = this.currentLanguageSet.enterAadhaarNumber;
       this.enableAuthIdField = true;
       this.enableAuthMethodForAbha = false;
     } else if(authMode === "MOBILE" && !this.enableOnlyAuthMode) {
-      // this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumberOrMobile;
-      this.enterAuthIdLabel = "Please Enter Mobile number";
+      this.enterAuthIdLabel = this.currentLanguageSet.enterMobileNumber;
       this.enableAuthIdField = true;
       this.enableAuthMethodForAbha = false;
     } else if(authMode === "ABHAADDRESS" && !this.enableOnlyAuthMode) {
-      this.enterAuthIdLabel = "Please enter ABHA Address";
+      this.enterAuthIdLabel = this.currentLanguageSet.enterABHAAddress;
       this.enableAuthIdField = true;
       this.enableAuthMethodForAbha = true;
     } else if(authMode === "ABHANUMBER" && !this.enableOnlyAuthMode) {
-      this.enterAuthIdLabel = "Please enter ABHA Number";
+      this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumber;
       this.enableAuthIdField = true;
       this.enableAuthMethodForAbha = true;
     } else if (authMode === "MOBILE" && this.enableOnlyAuthMode){
