@@ -227,11 +227,11 @@ export class DownloadSearchAbhaComponent {
     }
     const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
   
-    if (authMode === "AADHAAR" && healthidval.length === 12 && /^\d{12}$/.test(healthidval)) {
+    if (authMode === "AADHAAR" && healthidval?.length === 12 && /^\d{12}$/.test(healthidval)) {
       return true; 
-    }  else if (authMode === "MOBILE" && healthidval.length === 10 && /^\d{10}$/.test(healthidval)) {
+    }  else if (authMode === "MOBILE" && healthidval?.length === 10 && /^\d{10}$/.test(healthidval)) {
       return true; 
-    } else if (authMode === "ABHANUMBER" && healthidval.length === 17 && /^(\d{2})-(\d{4})-(\d{4})-(\d{4})$/.test(healthidval)) {
+    } else if (authMode === "ABHANUMBER" && healthidval?.length === 17 && /^(\d{2})-(\d{4})-(\d{4})-(\d{4})$/.test(healthidval)) {
       return true; // Valid Health ID with hyphens
     }
     let healthIDPattern;

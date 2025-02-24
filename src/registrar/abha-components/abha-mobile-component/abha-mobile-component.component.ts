@@ -5,6 +5,7 @@ import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-la
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
+import { SessionStorageService } from '../../services/session-storage.service';
 
 @Component({
   selector: 'app-abha-mobile-component',
@@ -27,6 +28,7 @@ export class AbhaMobileComponentComponent {
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
+    private sessionstorage:SessionStorageService,
   ) {
     dialogSucRef.disableClose = true;
   }
@@ -78,8 +80,8 @@ export class AbhaMobileComponentComponent {
         pId: this.data.pId,
         mobileNumber: this.generateMobileOTPForm.controls['mobileNo'].value,
         txnId: this.txnId,
-        createdBy: localStorage.getItem('userName'),
-        providerServiceMapId: localStorage.getItem('providerServiceID')
+        createdBy: this.sessionstorage.getItem('userName'),
+        providerServiceMapId: this.sessionstorage.getItem('providerServiceID')
       };
       this.enrollmentWithAadhaar(reqObj);
     } else {
@@ -88,8 +90,8 @@ export class AbhaMobileComponentComponent {
         loginId: this.otp,
         mobileNumber: this.generateMobileOTPForm.controls['mobileNo'].value,
         txnId: this.txnId,
-        createdBy: localStorage.getItem('userName'),
-        providerServiceMapId: localStorage.getItem('providerServiceID')
+        createdBy: this.sessionstorage.getItem('userName'),
+        providerServiceMapId: this.sessionstorage.getItem('providerServiceID')
       };
       this.enrollmentWithAadhaar(reqObj);
     }
