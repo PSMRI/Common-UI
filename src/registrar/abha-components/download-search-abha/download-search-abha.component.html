@@ -30,14 +30,41 @@
     </div>
 
     <div *ngIf="enableAuthIdField && abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'AADHAAR'">
-      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
-        <mat-form-field [style.width]="'100%'">
-          <mat-label>{{ enterAuthIdLabel }}</mat-label>
-          <input defaultNull autocomplete="off" matInput type="text" required formControlName="abhaAuthId"
-            myMobileNumber [type]="hide ? 'password' : 'text'" minlength="12" maxlength="12" />
-          <mat-icon mat-icon-button matSuffix [attr.aria-pressed]="hide" (click)="hide = !hide">{{hide ?
-            'visibility_off' : 'visibility'}}</mat-icon>
-        </mat-form-field>
+
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10" [formGroup]="adhaarNumberForm" style="margin-left: 15px">
+        <mat-label class="control-label">{{ enterAuthIdLabel }}</mat-label>
+        <br>
+        <br>
+        <div>
+          <mat-form-field appearance="outline" style="width: 110px;" >
+            <input matInput [type]="inputType" formControlName="part1" maxlength="4" required #part1
+              (input)="moveToNext($event, part2)" style="text-align: center;"/>
+          </mat-form-field>
+       
+          <span style=" font-size: x-large;
+          padding: 0px 5px 0px 5px;
+          margin-bottom: 17px;">-</span>
+       
+          <mat-form-field appearance="outline" style="width: 110px;">
+            <input matInput [type]="inputType" formControlName="part2" maxlength="4" required #part2
+              (input)="moveToNext($event, part3)" (keydown.backspace)="moveToPrev($event, part1)" style="text-align: center;" />
+          </mat-form-field>
+       
+          <span style=" font-size: x-large;
+          padding: 0px 5px 0px 5px;
+          margin-bottom: 17px;">-</span>
+       
+          <mat-form-field appearance="outline" style="width: 110px;">
+            <input matInput [type]="inputType" formControlName="part3" maxlength="4" required #part3
+              (keydown.backspace)="moveToPrev($event, part2)"  style="text-align: center;"/>
+          </mat-form-field>
+       
+          <mat-icon class="eye-icon" (click)="toggleVisibility()" style="width: 25px; margin-bottom: -5px; margin-left: 15px;">
+            {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+          <mat-error style="margin-top: -25px;" *ngIf="isInvalid"> Please enter a valid Aadhaar number</mat-error>
+          
+        </div>
       </div>
     </div>
 
@@ -61,18 +88,16 @@
           </p>
         </div>
         <div *ngIf='enableAuthIdField' class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-          <button id="searchHealthID" (click)="checkAbhaIdType()"
-            class="pull-right font-regular f-s-18 m-t-8 full-width-search-box background-overall button-overall-disabled"
-            [disabled]="
-                !abhaAuthMethodForm.controls['abhaAuthId'].value ||
-                !checkValidHealthID() ||
+          <button id="searchHealthID" (click)="checkAbhaIdType()" style="margin-left: 5px;"
+            class="pull-right font-regular f-s-18 m-t-10 full-width-search-box background-overall button-overall-disabled"
+            [disabled]="!checkValidHealthID() ||
                 !this.abhaAuthMethodForm.controls['modeofAuthMethod'].value || (enableAuthMethodForAbha &&  
                 !this.abhaAuthMethodForm.controls['authMethodForAbha'].value)
               ">
             {{ currentLanguageSet?.common?.search }}
           </button>
           <button id="back" (click)="goBackToOptions()"
-            class="pull-right font-regular f-s-18 m-t-8 full-width-search-box background-overall button-overall-disabled">
+            class="pull-right font-regular f-s-18 m-t-10 full-width-search-box background-overall button-overall-disabled">
             {{ currentLanguageSet?.common?.back }}
           </button>
         </div>

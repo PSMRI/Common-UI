@@ -36,7 +36,7 @@
 
 .title {
     margin: 0px;
-    padding: 15px 24px 15px;
+    padding: 16px 24px 0px;
     color: white;
     font-size: 18px;
     line-height: 32px;
@@ -115,3 +115,56 @@
 .mat-mdc-dialog-container .mdc-dialog__surface {
     overflow: visible !important;
 }
+   
+  .eye-icon {
+    cursor: pointer;
+    font-size: 24px;
+    margin-left: 10px;
+    color: gray;
+  }
+   
+  .eye-icon:hover {
+    color: black;
+  }
+   
+  .error-message {
+    font-size: 14px;
+    margin-top: -5px;
+  }
+
+  .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mat-mdc-form-field-infix{
+    padding-top: 10px !important;
+  }
+  .mat-mdc-form-field {
+    --mat-mdc-form-field-floating-label-scale: 0.75;
+    display: inline-flex;
+    flex-direction: column;
+    min-width: 0;
+    text-align: left;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-family: var(--mat-form-field-container-text-font);
+    /* line-height: var(--mat-form-field-container-text-line-height); */
+    font-size: var(--mat-form-field-container-text-size);
+    letter-spacing: var(--mat-form-field-container-text-tracking);
+    font-weight: var(--mat-form-field-container-text-weight);
+}
+
+input::-ms-reveal, input::-ms-clear {
+    display: none;
+  }
+  
+  input[type="password"] {
+    -webkit-appearance: none; /* To prevent password visibility toggles in webkit browsers */
+    -moz-appearance: textfield; /* For Firefox */
+  }
+
+  .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mat-mdc-form-field-infix{
+    padding-top: 10px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .mdc-notched-outline {
+    left: -6px !important;
+  }
+  

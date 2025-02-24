@@ -220,8 +220,8 @@ export class AbhaInformationComponent {
       console.log("consent after response -", res);
       if (res) {
         this.dialog.open(GenerateAbhaComponentComponent, {
-          height: '290px',
-          width: '470px',
+          height: '340px',
+          width: '500px',
           disableClose: true,
         });
       }

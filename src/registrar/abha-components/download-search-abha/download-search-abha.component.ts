@@ -16,6 +16,7 @@ import { environment } from 'src/environments/environment';
 export class DownloadSearchAbhaComponent {
   currentLanguageSet: any;
   abhaAuthMethodForm!: FormGroup;
+  adhaarNumberForm!: FormGroup;
   idErrorText:any;
   enterAuthIdLabel: any;
   abhaSuffix = environment.abhaExtension;
@@ -24,6 +25,8 @@ export class DownloadSearchAbhaComponent {
   enableOnlyAuthMode = false;
   enableAuthMethodForAbha = false;
   hide = true;
+  allowAuthIdCharacters: number = 0;
+  inputType: string = 'password';
 
   constructor(
     public dialogRef: MatDialogRef<DownloadSearchAbhaComponent>,
@@ -39,6 +42,7 @@ export class DownloadSearchAbhaComponent {
 
   ngOnInit(): void {
     this.abhaAuthMethodForm = this.createAbhaAuthMethod();
+    this.adhaarNumberForm = this.createAdhaarForm();
     this.enableOnlyAuthMode = false;
     if(this.data?.healthId){
       this.healthId = this.data.healthId;
@@ -56,6 +60,14 @@ export class DownloadSearchAbhaComponent {
         Validators.required,
         Validators.pattern('^[0-9]*$')
       ]]
+    });
+  }
+
+  createAdhaarForm(){
+    return this.fb.group({
+      part1: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]],
+      part2: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]],
+      part3: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]]
     });
   }
   
@@ -78,19 +90,23 @@ export class DownloadSearchAbhaComponent {
     if(authMode === "AADHAAR" && !this.enableOnlyAuthMode){
       this.enterAuthIdLabel = this.currentLanguageSet.enterAadhaarNumber;
       this.enableAuthIdField = true;
+      this.allowAuthIdCharacters = 12;
       this.enableAuthMethodForAbha = false;
     } else if(authMode === "MOBILE" && !this.enableOnlyAuthMode) {
       this.enterAuthIdLabel = this.currentLanguageSet.enterMobileNumber;
       this.enableAuthIdField = true;
       this.enableAuthMethodForAbha = false;
+      this.allowAuthIdCharacters = 10;
     } else if(authMode === "ABHAADDRESS" && !this.enableOnlyAuthMode) {
       this.enterAuthIdLabel = this.currentLanguageSet.enterABHAAddress;
       this.enableAuthIdField = true;
       this.enableAuthMethodForAbha = true;
+      this.allowAuthIdCharacters = 32;
     } else if(authMode === "ABHANUMBER" && !this.enableOnlyAuthMode) {
       this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumber;
       this.enableAuthIdField = true;
       this.enableAuthMethodForAbha = true;
+      this.allowAuthIdCharacters = 17;
     } else if (authMode === "MOBILE" && this.enableOnlyAuthMode){
       const loginMethod = "mobile";
       const loginHint = "abha"
@@ -106,7 +122,12 @@ export class DownloadSearchAbhaComponent {
 
   checkAbhaIdType(){
     const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
-    const abhaAuthId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+    let abhaAuthId: any;
+    if(authMode === "AADHAAR"){
+      abhaAuthId = this.adhaarNumberForm.controls['part1'].value + this.adhaarNumberForm.controls['part2'].value + this.adhaarNumberForm.controls['part3'].value;
+    } else {
+      abhaAuthId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+    }
     const abhaAuthMethod = this.abhaAuthMethodForm.controls['authMethodForAbha'].value;
     let loginHint = null;
     let loginMethod: any = null;
@@ -134,7 +155,7 @@ export class DownloadSearchAbhaComponent {
     } else if(authMode === "AADHAAR" && abhaAuthId.length === 12){
       loginHint = "aadhaar";
       loginMethod = "aadhaar";
-      loginId = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+      loginId = this.adhaarNumberForm.controls['part1'].value + this.adhaarNumberForm.controls['part2'].value + this.adhaarNumberForm.controls['part3'].value;
       this.requestOtpForAbhaLogin(loginHint, loginMethod, loginId);
     } else if(authMode === "MOBILE" && abhaAuthId.length === 10) {
       loginHint = "mobile";
@@ -151,6 +172,7 @@ export class DownloadSearchAbhaComponent {
     this.enableAuthMethodForAbha = false;
     this.abhaAuthMethodForm.controls['abhaAuthId'].reset();
     this.abhaAuthMethodForm.controls['modeofAuthMethod'].reset();
+    this.adhaarNumberForm.reset();
   }
 
   requestOtpForAbhaLogin(loginHint: any, loginMethod: any, loginId: any){
@@ -197,16 +219,19 @@ export class DownloadSearchAbhaComponent {
   }
 
   checkValidHealthID() {
-    const healthidval = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+    let healthidval: any;
+    if(this.abhaAuthMethodForm.controls['modeofAuthMethod'].value === 'AADHAAR'){
+      healthidval = this.adhaarNumberForm.controls['part1'].value + this.adhaarNumberForm.controls['part2'].value + this.adhaarNumberForm.controls['part3'].value;
+    } else {
+      healthidval = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
+    }
+    const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
   
-    if (healthidval.length === 12 && /^\d{12}$/.test(healthidval)) {
+    if (authMode === "AADHAAR" && healthidval.length === 12 && /^\d{12}$/.test(healthidval)) {
       return true; 
-    }  else if (healthidval.length === 10 && /^\d{10}$/.test(healthidval)) {
+    }  else if (authMode === "MOBILE" && healthidval.length === 10 && /^\d{10}$/.test(healthidval)) {
       return true; 
-    // } 
-    // else if (healthidval.length === 14 && /^\d{14}$/.test(healthidval)) {
-    //   return true; // Valid Health ID without hyphens
-    } else if (healthidval.length === 17 && /^(\d{2})-(\d{4})-(\d{4})-(\d{4})$/.test(healthidval)) {
+    } else if (authMode === "ABHANUMBER" && healthidval.length === 17 && /^(\d{2})-(\d{4})-(\d{4})-(\d{4})$/.test(healthidval)) {
       return true; // Valid Health ID with hyphens
     }
     let healthIDPattern;
@@ -224,6 +249,25 @@ export class DownloadSearchAbhaComponent {
     this.idErrorText = 'Please enter a valid Health ID / Aadhaar Number / Mobile Number';
     return false; // Invalid
   }
-  
+
+  moveToNext(event: any, nextElement: any) {
+    if (event.target.value.length === 4) {
+      nextElement.focus();
+    }
+  }
+
+  moveToPrev(event: any, prevElement: any) {
+    if (event.target.value.length === 0) {
+      prevElement.focus();
+    }
+  }
+
+  toggleVisibility() {
+    this.inputType = this.inputType === 'password' ? 'text' : 'password';
+  }
+
+  get isInvalid() {
+    return this.adhaarNumberForm.get('part1')?.invalid || this.adhaarNumberForm.get('part2')?.invalid || this.adhaarNumberForm.get('part3')?.invalid;
+  }
 
 }

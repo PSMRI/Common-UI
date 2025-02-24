@@ -48,7 +48,15 @@ export class LocationInformationComponent {
     private fb: FormBuilder,
     private registrarService: RegistrarService,
     private sessionstorage:SessionStorageService,
-  ) {}
+  ) {
+      this.registrarService.abhaLocationDetails$.subscribe((result: any) => {
+        if(result){
+          this.patchAbhaLocationDetails = true;
+          this.patchAbhaBenLocationDetails = result;
+          this.loadLocalMasterForDemographic();
+        }
+      });
+  }
 
   ngOnInit() {
     this.formData.forEach((item: any) => {
