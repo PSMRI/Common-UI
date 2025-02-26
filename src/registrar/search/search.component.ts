@@ -42,6 +42,7 @@ import {
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from 'Common-UI/src/registrar/services/registrar.service';
 import * as moment from 'moment';
+import { environment } from 'src/environments/environment';
 import { SessionStorageService } from '../services/session-storage.service';
 import { HealthIdDisplayModalComponent } from '../abha-components/health-id-display-modal/health-id-display-modal.component';
 
