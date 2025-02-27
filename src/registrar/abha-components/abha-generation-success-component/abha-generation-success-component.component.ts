@@ -100,7 +100,7 @@ export class AbhaGenerationSuccessComponentComponent {
     let reqObj = {
       xToken: this.xToken
     }
-    this.registrarService.printPngCard(reqObj).subscribe((res: any) => {
+    this.registrarService.printPngCard(reqObj, null).subscribe((res: any) => {
       this.showProgressBar = false;
       if(res.statusCode === 200 && res.data){
         console.log("png API response -", res.data)

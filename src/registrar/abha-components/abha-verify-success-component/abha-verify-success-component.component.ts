@@ -57,7 +57,7 @@ export class AbhaVerifySuccessComponentComponent {
     let reqObj = {
       xToken: this.data.xToken
     }
-    this.registrarService.printPngCard(reqObj).subscribe((res: any) => {
+    this.registrarService.printPngCard(reqObj, this.data.loginHint).subscribe((res: any) => {
       if(res.statusCode === 200 && res.data){
         png = res.data.png;
         this.displayAbhaCard(png);

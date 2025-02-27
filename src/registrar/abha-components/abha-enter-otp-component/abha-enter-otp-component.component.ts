@@ -233,7 +233,7 @@ export class AbhaEnterOtpComponentComponent {
         height: '370px',
         width: '480px',
         disableClose: true,
-        data: { abhaResponse: abhaDetails, xToken: token }
+        data: { abhaResponse: abhaDetails, xToken: token, loginHint: this.loginHint }
       },
     );
     this.showProgressBar = false;

@@ -43,12 +43,21 @@ export class LocationInformationComponent {
   locationPatchDetails: any;
   patchAbhaLocationDetails = false;
   patchAbhaBenLocationDetails: any;
+  registrationSubscription!: Subscription;
 
   constructor(
     private fb: FormBuilder,
     private registrarService: RegistrarService,
     private sessionstorage:SessionStorageService,
-  ) {}
+  ) {
+      this.registrationSubscription = this.registrarService.abhaLocationDetails$.subscribe((result: any) => {
+        if(result){
+          this.patchAbhaLocationDetails = true;
+          this.patchAbhaBenLocationDetails = result;
+          this.loadLocalMasterForDemographic();
+        }
+      });
+  }
 
   ngOnInit() {
     this.formData.forEach((item: any) => {
@@ -481,6 +490,12 @@ export class LocationInformationComponent {
         servicePoint: this.demographicsMaster.servicePointID,
         servicePointName: this.demographicsMaster.servicePointName,
       });
+    }
+  }
+
+  ngOnDestroy(){
+    if(this.registrationSubscription){
+      this.registrationSubscription.unsubscribe();
     }
   }
 }

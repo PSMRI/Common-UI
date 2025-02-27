@@ -73,6 +73,7 @@ export class RegistrationComponent {
     this.registrarService.healthIdMobVerificationCheck$.subscribe(
       (responseMob) => {
         if (responseMob !== null && responseMob !== undefined) {
+          console.log("response to patch the details", responseMob)
           this.setHealthIdAfterGeneration(responseMob);
         }
       },

@@ -1,0 +1,73 @@
+<div class="title info">
+    <h4>CONSENT FORM</h4>
+    <mat-icon class="pull-right close-btn md-24" matDialogClose (click)="closeDialog()" mat-icon-button>close</mat-icon>
+</div>
+<div mat-dialog-content>
+    <form>
+        <div>
+            <div class="checkbox-container">
+                <mat-checkbox style="margin-top: -7px !important;" [formControl]="consent" (change)="checkAll()"></mat-checkbox>
+                    <h3 style="font-weight: 600;"><p>I hereby declare that: </p></h3>
+            </div>
+            <div class="checkbox-container">
+                <mat-checkbox style="margin-top: -6px !important;" [formControl]="consent1"></mat-checkbox>
+                <p>I am voluntarily sharing my Aadhaar Number / Virtual ID issued by the Unique Identification Authority
+                    of India (“UIDAI”), and my demographic information for the purpose of creating an Ayushman Bharat
+                    Health Account number (“ABHA number”) and Ayushman Bharat Health Account address (“ABHA Address”). I
+                    authorize NHA to use my Aadhaar number / Virtual ID for performing Aadhaar based authentication with UIDAI as
+                    per the provisions of the Aadhaar (Targeted Delivery of Financial and other Subsidies, Benefits and
+                    Services) Act, 2016 for the aforesaid purpose. I understand that UIDAI will share my e-KYC details,
+                    or response of “Yes” with NHA upon successful authentication.</p>
+            </div>
+
+            <div class="checkbox-container">
+                <mat-checkbox style="margin-top: -6px !important;" [formControl]="consent2"></mat-checkbox>
+                <p>I intend to create Ayushman Bharat Health Account Number (“ABHA number”) and Ayushman Bharat Health
+                    Account address (“ABHA Address”) using document other than Aadhaar.</p>
+            </div>
+
+            <div class="checkbox-container">
+                <mat-checkbox style="margin-top: -6px !important;" [formControl]="consent3"></mat-checkbox>
+                <p>I consent to usage of my ABHA address and ABHA number for linking of my legacy (past) government
+                    health records and those which will be generated during this encounter.</p>
+            </div>
+
+            <div class="checkbox-container">
+                <mat-checkbox style="margin-top: -6px !important;" [formControl]="consent4"></mat-checkbox>
+                <p>I authorize the sharing of all my health records with healthcare provider(s) for the purpose of
+                    providing healthcare services to me during this encounter.</p>
+            </div>
+
+            <div>
+                <div class="checkbox-container">
+                    <mat-checkbox style="margin-top: -6px !important;" [formControl]="consent5"
+                        (change)="checkBenConsent()"></mat-checkbox>
+                    <p>I consent to the anonymization and subsequent use of my government health records for public
+                        health purposes</p>
+                </div>
+                <div>
+                    <ul>
+                        <div class="checkbox-container">
+                            <mat-checkbox style="margin-top: -6px !important;" [formControl]="consent5one"
+                                (change)="checkBenDoubleConsent()"></mat-checkbox>
+                            <p>I {{userName}},
+                                confirm that I have duly informed and explained the beneficiary of the contents of
+                                consent for aforementioned purposes.</p>
+                        </div>
+                        <div class="checkbox-container">
+                            <mat-checkbox style="margin-top: -6px !important;" [formControl]="consent5two"
+                                (change)="checkBenDoubleConsent()"></mat-checkbox>
+                            <p>I,(beneficiary), have been explained about the consent as stated above and hereby
+                                provide my consent for the aforementioned purposes.</p>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <button mat-button color="primary" mat-raised-button
+        class="pull-right font-regular f-s-18 m-t-8 full-width-search mat_blue" [disabled]="!allConsentsChecked()"
+        style="margin: 0px 15px 10px 0px" (click)="submitConsent()">Accept</button>
+</div>

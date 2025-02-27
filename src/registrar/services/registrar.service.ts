@@ -218,8 +218,12 @@ export class RegistrarService {
     return this.http.post(environment.verifyOtpForLogin, reqObj);
   }
 
-  printPngCard(reqObj: any){
-    return this.http.post(environment.printPngCard, reqObj);
+  printPngCard(reqObj: any, loginHint: any){
+    if(loginHint !==  null && loginHint === "abha-address"){
+      return this.http.post(environment.printWebLoginPhrCard, reqObj);
+    } else {
+      return this.http.post(environment.printPngCard, reqObj);
+    }
   }
 
   generateHealthId(reqObj: any) {

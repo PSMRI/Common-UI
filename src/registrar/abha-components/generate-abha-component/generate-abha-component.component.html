@@ -1,61 +1,61 @@
 <div class="title info">
-    <h4>Generate ABHA CARD</h4>
-    <mat-icon
-      class="pull-right close-btn md-24"
-      matDialogClose
-      (click)="closeDialog()"
-      mat-icon-button
-      >close</mat-icon
-    >
-  </div>
-  <br />
-  <div class="col-xs-12 col-sm-12" style="overflow: hidden;" [formGroup]="abhaGenerateForm">
-    <div class="row">
-      <div
-        class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10"
-        style="margin-left: 15px"
-      >
-        <label class="control-label" for="modeofAbhaHealthID"
-          >Abha Generation Mode*</label
-        >
-        <mat-radio-group formControlName="modeofAbhaHealthID">
-            <mat-radio-button color="primary" class="radio-button" value="AADHAR"
-            >Aadhar</mat-radio-button
-          >
-          <mat-radio-button color="primary" value="BIOMETRIC"
-            >Biometric</mat-radio-button
-          >
-        </mat-radio-group>
-      </div>
-  
-      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
-        <mat-form-field [style.width]="'92%'" style="margin-left: 20px;">
-          <mat-label>Enter Aadhar Number</mat-label>
-          <input
-            defaultNull
-            autocomplete="off"
-            matInput
-            type="text"
-            required
-            formControlName="aadharNumber"
-            myMobileNumber
-            minlength="12"
-            maxlength="12"
-          />
+  <h4>Generate ABHA CARD</h4>
+  <mat-icon class="pull-right close-btn md-24" matDialogClose (click)="closeDialog()" mat-icon-button>close</mat-icon>
+</div>
+<br />
+<div class="col-xs-12 col-sm-12" style="overflow: hidden;" [formGroup]="abhaGenerateForm">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10" style="margin-left: 15px">
+      <label class="control-label" for="modeofAbhaHealthID">ABHA Generation Mode*</label>
+      <mat-radio-group formControlName="modeofAbhaHealthID">
+        <mat-radio-button color="primary" class="radio-button" value="AADHAAR">Aadhaar</mat-radio-button>
+        <mat-radio-button color="primary" value="BIOMETRIC">Biometric</mat-radio-button>
+      </mat-radio-group>
+    </div>
+
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10" style="margin-left: 15px">
+      <mat-label class="control-label">Aadhaar Number*</mat-label>
+      <br>
+      <br>
+      <div>
+        <mat-form-field appearance="outline" style="width: 110px;">
+          <input matInput [type]="inputType" formControlName="part1" maxlength="4" required #part1
+            (input)="moveToNext($event, part2)" style="text-align: center;"/>
         </mat-form-field>
+     
+        <span style=" font-size: x-large;
+        padding: 0px 5px 0px 5px;
+        margin-bottom: 17px;">-</span>
+     
+        <mat-form-field appearance="outline" style="width: 110px;">
+          <input matInput [type]="inputType" formControlName="part2" maxlength="4" required #part2
+            (input)="moveToNext($event, part3)" (keydown.backspace)="moveToPrev($event, part1)" style="text-align: center;" />
+        </mat-form-field>
+     
+        <span style=" font-size: x-large;
+        padding: 0px 5px 0px 5px;
+        margin-bottom: 17px;">-</span>
+     
+        <mat-form-field appearance="outline" style="width: 110px;">
+          <input matInput [type]="inputType" formControlName="part3" maxlength="4" required #part3
+            (keydown.backspace)="moveToPrev($event, part2)"  style="text-align: center;"/>
+        </mat-form-field>
+     
+        <mat-icon class="eye-icon" (click)="toggleVisibility()" style="width: 25px; margin-bottom: -5px;">
+          {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
+        </mat-icon>
+        <mat-error style="margin-top: -25px;" *ngIf="isInvalid"> Please enter a valid Aadhaar number</mat-error>
+        
       </div>
-  
-      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-        <button
-          (click)="generateABHACard()"
-          [disabled]="!abhaGenerateForm.valid || !abhaGenerateForm.get('modeofAbhaHealthID')?.value"
-          mat-raised-button
-          color="primary"
-          class="pull-right font-regular f-s-18 m-t-8 full-width-search mat_blue"
-          style="margin: 0px 15px 10px 0px"
-        >
-          Generate
-        </button>
-      </div>
+    </div>    
+
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+      <button (click)="generateABHACard()"
+        [disabled]="!abhaGenerateForm.valid || !abhaGenerateForm.get('modeofAbhaHealthID')?.value" mat-raised-button
+        color="primary" class="pull-right font-regular f-s-18 m-t-8 full-width-search mat_blue"
+        style="margin: 0px 15px 10px 0px">
+        Generate
+      </button>
     </div>
   </div>
+</div>

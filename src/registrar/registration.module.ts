@@ -37,6 +37,7 @@ import { DownloadSearchAbhaComponent } from './abha-components/download-search-a
 import { DisplayAbhaCardComponent } from './abha-components/display-abha-card/display-abha-card.component';
 import { AbhaVerifySuccessComponentComponent } from './abha-components/abha-verify-success-component/abha-verify-success-component.component';
 import { AbhaEnterMobileOtpComponentComponent } from './abha-components/abha-enter-mobile-otp-component/abha-enter-mobile-otp-component.component';
+import { AbhaConsentFormComponent } from './abha-components/abha-consent-form/abha-consent-form.component';
 
 @NgModule({
   declarations: [
@@ -64,6 +65,7 @@ import { AbhaEnterMobileOtpComponentComponent } from './abha-components/abha-ent
     DisplayAbhaCardComponent,
     AbhaVerifySuccessComponentComponent,
     AbhaEnterMobileOtpComponentComponent,
+    AbhaConsentFormComponent,
   ],
   imports: [
     CommonModule,

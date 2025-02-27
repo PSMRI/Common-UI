@@ -1,74 +1,111 @@
 <div class="title info">
   <h4>{{ currentLanguageSet.searchAndDownloadAbha }}</h4>
-  <button
-    class="pull-right close-btn"
-    style="border: unset !important;background-color: unset !important; color: white;"
-    matDialogClose
-    (click)="closeDialogAuth()"
-    mat-icon-button
-  >
+  <button class="pull-right close-btn"
+    style="border: unset !important;background-color: unset !important; color: white;" matDialogClose
+    (click)="closeDialogAuth()" mat-icon-button>
     <mat-icon class="md-24">close</mat-icon>
   </button>
 </div>
 <br />
 <div class="col-xs-12 col-sm-12 container-fluid" [formGroup]="abhaAuthMethodForm">
-  <div class="row"> 
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10">
+  <div class="row">
+    <div *ngIf='!enableAuthIdField' class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10">
       <label class="control-label" for="modeofAuthMethod">{{ currentLanguageSet.abhaSearchMode}}</label>
-      <mat-radio-group
-        formControlName="modeofAuthMethod"
-        (change)="getAbhaAuthMethod()"
-      >
-        <mat-radio-button color="primary" value="AADHAAR"
-          >Aadhar</mat-radio-button
-        >
-        <mat-radio-button color="primary" value="MOBILE"
-          >Mobile</mat-radio-button
-        >
+      <mat-radio-group formControlName="modeofAuthMethod" (change)="getAbhaAuthMethod()"
+        class="horizontal-radio-buttons">
+        <mat-radio-button color="primary" value="AADHAAR">Aadhaar</mat-radio-button>
+        <mat-radio-button color="primary" value="MOBILE">Mobile</mat-radio-button>
+        <mat-radio-button color="primary" value="ABHANUMBER">Abha Number</mat-radio-button>
+        <mat-radio-button color="primary" value="ABHAADDRESS">Abha Address</mat-radio-button>
       </mat-radio-group>
     </div>
-    <div *ngIf ='enableAuthIdField'>
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
+    <div *ngIf="enableAuthIdField && abhaAuthMethodForm.controls['modeofAuthMethod']?.value !== 'AADHAAR'">
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10">
         <mat-form-field [style.width]="'100%'">
           <mat-label> {{ enterAuthIdLabel }} </mat-label>
-          <input
-            id="abhaAuthId"
-            defaultNull
-            autocomplete="off"
-            formControlName="abhaAuthId"
-            matInput
-            type="text"
-            required
-            (keydown.space)="$event.preventDefault()"
-            minlength="5"
-            maxlength="32"
-          />
+          <input id="abhaAuthId" defaultNull autocomplete="off" formControlName="abhaAuthId" matInput type="text"
+            required (keydown.space)="$event.preventDefault()" minlength="5" maxlength="32" />
         </mat-form-field>
       </div>
-      <div class="col-12">
-        <div class="row">
-          <div class="col-6" style="margin-left: 15px">
-            <p class="align-Para">
-              Note*: {{ currentLanguageSet?.aBHA }}- xxx{{ abhaSuffix }},
-              xxx.xx{{ abhaSuffix }}
-              <br />
-              {{ currentLanguageSet?.aBHANumber }} - xx-xxxx-xxxx-xxxx
-            </p>
-          </div>
-          <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-            <button
-              id="searchHealthID"
-              (click)="checkAbhaIdType()"
-              class="pull-right font-regular f-s-18 m-t-8 full-width-search-box background-overall button-overall-disabled"
-              [disabled]="
-                !abhaAuthMethodForm.controls['abhaAuthId'].value ||
-                !checkValidHealthID() ||
-                !this.abhaAuthMethodForm.controls['modeofAuthMethod'].value
-              "
-            >
-              {{ currentLanguageSet?.common?.search }}
-            </button>
-          </div>
+    </div>
+
+    <div *ngIf="enableAuthIdField && abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'AADHAAR'">
+
+      <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10" [formGroup]="adhaarNumberForm"
+        style="margin-left: 15px">
+        <mat-label class="control-label">{{ enterAuthIdLabel }}</mat-label>
+        <br>
+        <br>
+        <div>
+          <mat-form-field appearance="outline" style="width: 110px;">
+            <input matInput [type]="inputType" formControlName="part1" maxlength="4" required #part1
+              (input)="moveToNext($event, part2)" aria-label="First part of Aadhaar number"
+              aria-describedby="aadhaar-format-hint" style="text-align: center;" />
+          </mat-form-field>
+
+          <span style=" font-size: x-large;
+          padding: 0px 5px 0px 5px;
+          margin-bottom: 17px;">-</span>
+
+          <mat-form-field appearance="outline" style="width: 110px;">
+            <input matInput [type]="inputType" formControlName="part2" maxlength="4" required #part2
+              (input)="moveToNext($event, part3)" (keydown.backspace)="moveToPrev($event, part1)"
+              style="text-align: center;" aria-label="Second part of Aadhaar number"
+              aria-describedby="aadhaar-format-hint" />
+          </mat-form-field>
+
+          <span style=" font-size: x-large;
+          padding: 0px 5px 0px 5px;
+          margin-bottom: 17px;">-</span>
+
+          <mat-form-field appearance="outline" style="width: 110px;">
+            <input matInput [type]="inputType" formControlName="part3" maxlength="4" required #part3
+              (keydown.backspace)="moveToPrev($event, part2)" style="text-align: center;"
+              aria-label="Third part of Aadhaar number" aria-describedby="aadhaar-format-hint" />
+          </mat-form-field>
+
+          <mat-icon class="eye-icon" (click)="toggleVisibility()"
+            style="width: 25px; margin-bottom: -5px; margin-left: 15px;">
+            {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+          <mat-error style="margin-top: -25px;" *ngIf="isInvalid"> Please enter a valid Aadhaar number</mat-error>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div *ngIf='enableAuthMethodForAbha' class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10">
+        <label class="control-label" for="authMethodForAbha">ABHA AUTH Mode*</label>
+        <mat-radio-group formControlName="authMethodForAbha">
+          <mat-radio-button color="primary" value="AUTH_AADHAAR">Aadhaar</mat-radio-button>
+          <mat-radio-button color="primary" value="AUTH_MOBILE">Mobile</mat-radio-button>
+        </mat-radio-group>
+      </div>
+      <div class="row">
+        <div
+          *ngIf="abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHANUMBER' ||  abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHAADDRESS'"
+          class="col-6" style="margin-left: 15px">
+          <p class="align-Para">
+            Note*: {{ currentLanguageSet?.aBHA }}- xxx{{ abhaSuffix }},
+            xxx.xx{{ abhaSuffix }}
+            <br />
+            {{ currentLanguageSet?.aBHANumber }} - xx-xxxx-xxxx-xxxx
+          </p>
+        </div>
+        <div *ngIf='enableAuthIdField' class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+          <button id="searchHealthID" (click)="checkAbhaIdType()" style="margin-left: 5px;"
+            class="pull-right font-regular f-s-18 m-t-10 full-width-search-box background-overall button-overall-disabled"
+            [disabled]="!checkValidHealthID() ||
+                !this.abhaAuthMethodForm.controls['modeofAuthMethod'].value || (enableAuthMethodForAbha &&  
+                !this.abhaAuthMethodForm.controls['authMethodForAbha'].value)
+              ">
+            {{ currentLanguageSet?.common?.search }}
+          </button>
+          <button id="back" (click)="goBackToOptions()"
+            class="pull-right font-regular f-s-18 m-t-10 full-width-search-box background-overall button-overall-disabled">
+            {{ currentLanguageSet?.common?.back }}
+          </button>
         </div>
       </div>
     </div>
