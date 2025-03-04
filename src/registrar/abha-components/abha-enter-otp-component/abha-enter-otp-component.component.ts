@@ -174,7 +174,8 @@ export class AbhaEnterOtpComponentComponent {
     let reqObj = {
       loginMethod: this.loginMethod,
       loginId: this.healthIdOTPForm.controls['otp'].value,
-      txnId: this.transactionId
+      txnId: this.transactionId,
+      loginHint: this.loginHint
     }
     this.registrarService.verifyAbhaLogin(reqObj).subscribe((res: any) => {
       if(res.statusCode === 200 && res.data){
@@ -240,8 +241,8 @@ export class AbhaEnterOtpComponentComponent {
     dialogRefSuccess.afterClosed().subscribe((result) => {
       if (result) { 
         const dat = {
-          healthIdNumber: abhaDetails.ABHANumber,
-          healthId: abhaDetails.preferredAbhaAddress,
+          healthIdNumber: (abhaDetails.ABHANumber !== undefined && abhaDetails.ABHANumber !== null) ? abhaDetails.ABHANumber : abhaDetails.abhaNumber,
+          healthId: (abhaDetails.preferredAbhaAddress !== undefined && abhaDetails.preferredAbhaAddress !== null) ? abhaDetails.preferredAbhaAddress : abhaDetails.abhaAddress,
         };
         this.registrarService.getRegistrarAbhaDetail(dat);
       }
