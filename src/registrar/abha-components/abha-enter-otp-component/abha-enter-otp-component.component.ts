@@ -38,7 +38,7 @@ export class AbhaEnterOtpComponentComponent {
   }
 
   healthIdMode: any = this.data.healthIdMode;
-  transactionId: any = this.data.txnId; 
+  transactionId: any = this.data.txnId;
   loginMethod: any = this.data.loginMethod;
   aadharNumber: any = this.data.aadharNumber;
   loginHint: any = this.data.loginHint
@@ -47,7 +47,7 @@ export class AbhaEnterOtpComponentComponent {
     this.assignSelectedLanguage();
     this.healthIdOTPForm = this.createOtpGenerationForm();
     console.log("popup data of enter otp", this.data);
-    if(this.loginMethod != null && this.loginMethod != undefined){
+    if (this.loginMethod != null && this.loginMethod != undefined) {
       this.enableSubmitForVerify = true;
     }
   }
@@ -103,7 +103,7 @@ export class AbhaEnterOtpComponentComponent {
     return true;
   }
 
-  askMobileNumberForAbha(){
+  askMobileNumberForAbha() {
     const dialogRefMobile = this.dialog.open(
       AbhaMobileComponentComponent,
       {
@@ -119,13 +119,13 @@ export class AbhaEnterOtpComponentComponent {
         console.log("after mobile number success response", response);
         this.transactionId = response.data.txnId;
         this.xToken = response.data.xToken;
-        this.mobileNumber = (response.mobileNumber != null && response.mobileNumber != undefined)  ? response.mobileNumber : null;
+        this.mobileNumber = (response.mobileNumber != null && response.mobileNumber != undefined) ? response.mobileNumber : null;
         this.displayAbhaNumberOnSuccess(response.data);
       }
     });
   }
 
-  displayAbhaNumberOnSuccess(data : any){
+  displayAbhaNumberOnSuccess(data: any) {
     console.log("Abha profile response - ", data);
     const dialogRefSuccess = this.dialog.open(
       AbhaGenerationSuccessComponentComponent,
@@ -133,7 +133,7 @@ export class AbhaEnterOtpComponentComponent {
         height: '365px',
         width: '480px',
         disableClose: true,
-        data: { newAbhaResponse: data, xToken:  data.xToken, mobileNumber: this.mobileNumber}
+        data: { newAbhaResponse: data, xToken: data.xToken, mobileNumber: this.mobileNumber }
       },
     );
     this.showProgressBar = false;
@@ -161,7 +161,7 @@ export class AbhaEnterOtpComponentComponent {
         stateID: abhaData.stateCode,
         stateName: abhaData.stateName,
         districtID: abhaData.districtCode,
-        districtName:abhaData.districtName,
+        districtName: abhaData.districtName,
       };
       this.registrarService.setHealthIdMobVerification(dat);
       this.registrarService.getRegistrarAbhaDetail(dat);
@@ -170,7 +170,7 @@ export class AbhaEnterOtpComponentComponent {
   }
 
 
-  verifyAbhaLogin(){
+  verifyAbhaLogin() {
     let reqObj = {
       loginMethod: this.loginMethod,
       loginId: this.healthIdOTPForm.controls['otp'].value,
@@ -178,7 +178,7 @@ export class AbhaEnterOtpComponentComponent {
       loginHint: this.loginHint
     }
     this.registrarService.verifyAbhaLogin(reqObj).subscribe((res: any) => {
-      if(res.statusCode === 200 && res.data){
+      if (res.statusCode === 200 && res.data) {
         this.dialogRef.close();
         this.displayAbhaNumberOnVerify(res.data.abhaDetails, res.data.xToken);
       } else {
@@ -189,32 +189,47 @@ export class AbhaEnterOtpComponentComponent {
     })
   }
 
-  resendOtp(){
+  resendOtp() {
     this.healthIdOTPForm.controls['otp'].reset();
     let reqObj = {
       loginId: this.aadharNumber,
       loginMethod: "aadhaar"
-    }; 
+    };
     this.registrarService.requestOtpForAbhaEnroll(reqObj).subscribe((res: any) => {
-      if(res.data && res.statusCode === 200){
+      if (res.data && res.statusCode === 200) {
         this.transactionId = res.data.txnId;
-        this.confirmationService.alert(res.data.message, "success"); 
+        this.confirmationService.alert(res.data.message, "success");
       } else {
         this.confirmationService.alert(res.errorMessage, "error");
       }
-    },(err: any) => {
+    }, (err: any) => {
       this.confirmationService.alert(err.errorMessage, "error");
     });
   }
 
-  resendOtpForVerify(){
-    let reqObj = {
-      loginHint: this.loginHint,
-      loginMethod: this.loginMethod,
-      loginId: this.aadharNumber,
+  resendOtpForVerify() {
+    let reqObj = null;
+    if (this.loginMethod === "abha-aadhaar") {
+      reqObj = {
+        loginHint: this.loginHint,
+        loginMethod: "aadhaar",
+        loginId: this.aadharNumber,
+      }
+    } else if (this.loginMethod === "abha-mobile") {
+      reqObj = {
+        loginHint: this.loginHint,
+        loginMethod: "mobile",
+        loginId: this.aadharNumber,
+      }
+    } else {
+      reqObj = {
+        loginHint: this.loginHint,
+        loginMethod: this.loginMethod,
+        loginId: this.aadharNumber,
+      }
     }
-    this.registrarService.requestOtpForAbhaLogin(reqObj).subscribe((res:any) => {
-      if(res.statusCode === 200 && res.data){
+    this.registrarService.requestOtpForAbhaLogin(reqObj).subscribe((res: any) => {
+      if (res.statusCode === 200 && res.data) {
         this.transactionId = res.data.txnId;
         let message = res.data.message;
         this.confirmationService.alert(message, 'success')
@@ -226,7 +241,7 @@ export class AbhaEnterOtpComponentComponent {
     });
   }
 
-  displayAbhaNumberOnVerify(abhaDetails : any, token: any){
+  displayAbhaNumberOnVerify(abhaDetails: any, token: any) {
     console.log("Abha details response - ", abhaDetails);
     const dialogRefSuccess = this.dialog.open(
       AbhaVerifySuccessComponentComponent,
@@ -239,7 +254,7 @@ export class AbhaEnterOtpComponentComponent {
     );
     this.showProgressBar = false;
     dialogRefSuccess.afterClosed().subscribe((result) => {
-      if (result) { 
+      if (result) {
         const dat = {
           healthIdNumber: (abhaDetails.ABHANumber !== undefined && abhaDetails.ABHANumber !== null) ? abhaDetails.ABHANumber : abhaDetails.abhaNumber,
           healthId: (abhaDetails.preferredAbhaAddress !== undefined && abhaDetails.preferredAbhaAddress !== null) ? abhaDetails.preferredAbhaAddress : abhaDetails.abhaAddress,
@@ -248,6 +263,6 @@ export class AbhaEnterOtpComponentComponent {
       }
     });
   }
-  
+
 
 }

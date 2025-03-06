@@ -155,7 +155,6 @@ export class GenerateAbhaComponentComponent {
   }
 
   ngOnDestroy() {
-    this.aadharNumber = null;
     this.abhaGenerateForm.reset();
   }
 }

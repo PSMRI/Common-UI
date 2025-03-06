@@ -212,8 +212,8 @@ export class AbhaInformationComponent {
 
   generateAbhaCard() {
     const dialogRef = this.dialog.open(AbhaConsentFormComponent, {
-      height: '550px',
-      width: '850px',
+      height: '525px',
+      width: '750px',
       disableClose: true
     });
     dialogRef.afterClosed().subscribe(res => {
