@@ -289,5 +289,11 @@ export class AbhaEnterOtpComponentComponent {
     }, 1000);  // Update every second
   }
 
+  ngOnDestroy() {
+    // Clear the interval to prevent memory leaks
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+  }
 
 }
