@@ -24,7 +24,7 @@
         <mat-form-field [style.width]="'100%'">
           <mat-label> {{ enterAuthIdLabel }} </mat-label>
           <input id="abhaAuthId" defaultNull autocomplete="off" formControlName="abhaAuthId" matInput type="text"
-            required (keydown.space)="$event.preventDefault()" minlength="5" maxlength="32" />
+            required (keydown.space)="$event.preventDefault()" (input)="abhaNumberInputValidation($event)" minlength="5" maxlength="32" />
         </mat-form-field>
       </div>
     </div>

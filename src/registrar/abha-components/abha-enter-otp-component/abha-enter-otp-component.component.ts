@@ -24,6 +24,9 @@ export class AbhaEnterOtpComponentComponent {
   abhaGenerateForm!: FormGroup;
   xToken: any;
   mobileNumber: any;
+  enableResend = false;
+  countdown: number = 30;  // Initial countdown value (30 seconds)
+  countdownInterval: any;
 
   constructor(
     private fb: FormBuilder,
@@ -50,6 +53,7 @@ export class AbhaEnterOtpComponentComponent {
     if (this.loginMethod != null && this.loginMethod != undefined) {
       this.enableSubmitForVerify = true;
     }
+    this.startCountdown();
   }
 
   ngDoCheck() {
@@ -205,6 +209,9 @@ export class AbhaEnterOtpComponentComponent {
     }, (err: any) => {
       this.confirmationService.alert(err.errorMessage, "error");
     });
+    // After OTP is resent, restart the countdown timer
+    this.countdown = 30; // Reset countdown
+    this.startCountdown(); // Restart the countdown
   }
 
   resendOtpForVerify() {
@@ -239,6 +246,9 @@ export class AbhaEnterOtpComponentComponent {
     }, (err: any) => {
       this.confirmationService.alert(err.errorMessage, 'error');
     });
+    // After OTP is resent, restart the countdown timer
+    this.countdown = 30; // Reset countdown
+    this.startCountdown(); // Restart the countdown
   }
 
   displayAbhaNumberOnVerify(abhaDetails: any, token: any) {
@@ -264,5 +274,26 @@ export class AbhaEnterOtpComponentComponent {
     });
   }
 
+
+  startCountdown() {
+    this.enableResend = false; // Disable the resend button initially
+
+    // Set interval to count down every second
+    this.countdownInterval = setInterval(() => {
+      if (this.countdown > 0) {
+        this.countdown--;  // Decrease the countdown
+      } else {
+        clearInterval(this.countdownInterval);  // Clear the interval when countdown reaches 0
+        this.enableResend = true;  // Enable the resend button
+      }
+    }, 1000);  // Update every second
+  }
+
+  ngOnDestroy() {
+    // Clear the interval to prevent memory leaks
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+  }
 
 }

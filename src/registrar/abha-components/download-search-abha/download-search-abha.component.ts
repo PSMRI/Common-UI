@@ -212,7 +212,7 @@ export class DownloadSearchAbhaComponent {
         txnId: txnId,
         loginMethod: loginMethod,
         loginHint: loginHint,
-        aadharNumber: this.abhaAuthMethodForm.controls['abhaAuthId'].value
+        aadharNumber: (this.abhaAuthMethodForm.controls['abhaAuthId'].value) ? this.abhaAuthMethodForm.controls['abhaAuthId'].value : (this.adhaarNumberForm.controls['part1'].value + this.adhaarNumberForm.controls['part2'].value + this.adhaarNumberForm.controls['part3'].value)
       },
     });
     this.dialogRef.afterClosed();
@@ -269,5 +269,30 @@ export class DownloadSearchAbhaComponent {
   get isInvalid() {
     return this.adhaarNumberForm.get('part1')?.invalid || this.adhaarNumberForm.get('part2')?.invalid || this.adhaarNumberForm.get('part3')?.invalid;
   }
+
+  abhaNumberInputValidation(event: any) {
+    const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
+  
+    if (authMode === "ABHANUMBER") {
+      // Get the value entered by the user and remove all non-numeric characters (including hyphens)
+      let value = event.target.value.replace(/\D/g, '');
+  
+      if (value.length > 14) {
+        value = value.slice(0, 14); // Truncate to 14 digits
+      }
+  
+      let formattedValue = '';
+      for (let i = 0; i < value.length; i++) {
+        if (i === 2 || i === 6 || i === 10) {
+          formattedValue += '-';
+        }
+        formattedValue += value[i];
+      }
+  
+      this.abhaAuthMethodForm.controls['abhaAuthId'].setValue(formattedValue, { emitEvent: false });
+    }
+  }
+  
+  
 
 }
