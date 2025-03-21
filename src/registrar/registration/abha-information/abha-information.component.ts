@@ -174,8 +174,8 @@ export class AbhaInformationComponent {
 
   healthIdSearch() {
     const dialog = this.dialog.open(AbhaConsentFormComponent, {
-      height: '550px',
-      width: '850px',
+      height: 'auto',
+      width: 'auto',
       disableClose: true
     });
     dialog.afterClosed().subscribe(res => {
@@ -212,8 +212,8 @@ export class AbhaInformationComponent {
 
   generateAbhaCard() {
     const dialogRef = this.dialog.open(AbhaConsentFormComponent, {
-      height: '525px',
-      width: '750px',
+      height: 'auto',
+      width: 'auto',
       disableClose: true
     });
     dialogRef.afterClosed().subscribe(res => {

@@ -66,8 +66,8 @@
         </div>
     </form>
 </div>
-<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+<div mat-dialog-actions class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
     <button mat-button color="primary" mat-raised-button
-        class="pull-right font-regular f-s-18 m-t-8 full-width-search mat_blue" [disabled]="!allConsentsChecked()"
-        style="margin: 0px 15px 10px 0px" (click)="submitConsent()">Accept</button>
+        class="pull-right font-regular f-s-18 full-width-search mat_blue" [disabled]="!allConsentsChecked()"
+        style="margin: 8px 10px 8px 10px" (click)="submitConsent()">Accept</button>
 </div>
