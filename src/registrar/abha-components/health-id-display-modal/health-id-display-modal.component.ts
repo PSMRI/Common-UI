@@ -277,9 +277,9 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         : null,
       visitCode: this.input.visitCode,
       visitCategory:
-        this.sessionstorage.getItem('visiCategoryANC') === 'General OPD (QC)'
+        this.sessionstorage.getItem('visitCategory') === 'General OPD (QC)'
           ? 'Emergency'
-          : this.sessionstorage.getItem('visiCategoryANC'),
+          : this.sessionstorage.getItem('visitCategory'),
     };
     this.registrarService
       .verifyOtpForMappingCarecontext(verifyOtpData)
