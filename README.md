@@ -5,7 +5,7 @@ A configurable framework ccomprising reusable UI elements across multiple AMRIT 
 Since registration is a core process in various AMRIT modules, the registration page is designed to be highly flexible, allowing customization based on service line and project-specific requirements. This ensures seamless data collection across MMU, HWC, and Telemedicine while enabling easy adaptation to different project needs.
 
 By offering a scalable and adaptable UI framework, this system simplifies the modification of registration fields, ensuring consistency and efficiency across AMRIT service lines.
-## Features
+## Features 
 
 * **Registration Page**: This page allows the user to create new beneficiaries and edit the data of existing beneficiaries. User can collect and submit personal information, Location Information, Other Information of beneficiaries. User can generate/download ABHA card in registration page.
 
