@@ -1,8 +1,11 @@
 # AMRIT - Common-UI
 
-As registration is a common process across multiple AMRIT modules, registration page needs to be configurable based on the service line and project. Providing a framework that makes it easier to modify and set up fields on the user interface (UI) for data collecting on service lines for MMU, HWC, and telemedicine. The system has to possess the ability to change according to certain project specifications, facilitating the easy customization of data fields to fulfil the distinct requirements of every project within these service lines. 
+A configurable framework ccomprising reusable UI elements across multiple AMRIT service lines.
 
-## Features
+Since registration is a core process in various AMRIT modules, the registration page is designed to be highly flexible, allowing customization based on service line and project-specific requirements. This ensures seamless data collection across MMU, HWC, and Telemedicine while enabling easy adaptation to different project needs.
+
+By offering a scalable and adaptable UI framework, this system simplifies the modification of registration fields, ensuring consistency and efficiency across AMRIT service lines.
+## Features 
 
 * **Registration Page**: This page allows the user to create new beneficiaries and edit the data of existing beneficiaries. User can collect and submit personal information, Location Information, Other Information of beneficiaries. User can generate/download ABHA card in registration page.
 
@@ -10,12 +13,13 @@ As registration is a common process across multiple AMRIT modules, registration 
 ## Building From Source
 
 This microservice is developed using Java and the Spring Boot framework, with MySQL as the database.
+For step-by-step guide, follow this [guide] (https://piramal-swasthya.gitbook.io/amrit/developer-guide/development-environment-setup) .
 
 ### Prerequisites
 
 Ensure that the following prerequisites are met before building the MMU service:
-
-* JDK 17
+Find the detailed list of software dependencies [here] (https://piramal-swasthya.gitbook.io/amrit/developer-guide/development-environment-setup/software-dependencies) .
+* JDK 17 (LTS)
 * Maven 
 * Nodejs v18.10.0
 * MySQL
