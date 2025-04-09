@@ -300,7 +300,7 @@ export class AbhaEnterOtpComponentComponent {
         response = res.data;
         if (response && response.length > 0) {
           this.confirmationService.alert(this.currentLanguageSet.abhaNumberAlreadyWith + response.join(', ') , 'info');
-        } else if (response.response?.toLowerCase() === "no beneficiary found") {
+        } else if (response?.response?.toLowerCase() === "no beneficiary found") {
           console.log("No Beneficiary Found");
           this.registrarService.getRegistrarAbhaDetail(data);
         } else {
