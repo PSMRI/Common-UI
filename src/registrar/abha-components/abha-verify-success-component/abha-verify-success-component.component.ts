@@ -30,10 +30,10 @@ export class AbhaVerifySuccessComponentComponent {
 
   ngOnInit() {
     this.assignSelectedLanguage();
-    if(this.data.abhaResponse){
+    if (this.data.abhaResponse) {
       this.abhaDetails = this.data.abhaResponse;
     }
-    if(this.data.xToken){
+    if (this.data.xToken) {
       this.xToken = this.data.xToken;
     }
   }
@@ -50,7 +50,7 @@ export class AbhaVerifySuccessComponentComponent {
     this.currentLanguageSet = getLanguageJson.currentLanguageObject;
   }
 
-  downloadPngCard(){
+  downloadPngCard() {
     this.dialogSucRef.close(true);
     let png = null;
     this.showProgressBar = true;
@@ -58,7 +58,7 @@ export class AbhaVerifySuccessComponentComponent {
       xToken: this.data.xToken
     }
     this.registrarService.printPngCard(reqObj, this.data.loginHint).subscribe((res: any) => {
-      if(res.statusCode === 200 && res.data){
+      if (res.statusCode === 200 && res.data) {
         png = res.data.png;
         this.displayAbhaCard(png);
       } else {
@@ -69,11 +69,11 @@ export class AbhaVerifySuccessComponentComponent {
     });
   }
 
-  displayAbhaCard(png: any){
+  displayAbhaCard(png: any) {
     let matDialogRef = this.dialog.open(DisplayAbhaCardComponent, {
       height: 'auto',
       width: 'auto',
-      data: {png: png}
+      data: { png: png }
     });
   }
 
