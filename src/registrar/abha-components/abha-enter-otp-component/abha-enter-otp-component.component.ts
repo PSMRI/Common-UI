@@ -295,14 +295,16 @@ export class AbhaEnterOtpComponentComponent {
       healthIdNumber: data.healthIdNumber
     }
     this.registrarService.fetchBenIdLinkedToAbha(reqObj).subscribe((res: any) => {
-      if (res && res.data && res.data) {
+      if (res?.data) {
         let response: any;
         response = res.data;
         if (response && response.length > 0) {
           this.confirmationService.alert(this.currentLanguageSet.abhaNumberAlreadyWith + response.join(', ') , 'info');
-        } else if (response.response && response.response?.toLowerCase() === "no beneficiary found") {
+        } else if (response.response?.toLowerCase() === "no beneficiary found") {
           console.log("No Beneficiary Found");
           this.registrarService.getRegistrarAbhaDetail(data);
+        } else {
+          this.confirmationService.alert(this.currentLanguageSet.issueInFetchinglinkedBeneficiaryId, 'error')
         }
       }
     }, (err: any) => {
