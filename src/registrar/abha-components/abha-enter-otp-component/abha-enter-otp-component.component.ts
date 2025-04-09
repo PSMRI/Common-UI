@@ -168,7 +168,7 @@ export class AbhaEnterOtpComponentComponent {
         districtName: abhaData.districtName,
       };
       this.registrarService.setHealthIdMobVerification(dat);
-      this.registrarService.getRegistrarAbhaDetail(dat);
+      this.getLinkedBenIdsToAbha(dat);
       this.dialogRef.close(dat);
     });
   }
@@ -269,7 +269,7 @@ export class AbhaEnterOtpComponentComponent {
           healthIdNumber: (abhaDetails.ABHANumber !== undefined && abhaDetails.ABHANumber !== null) ? abhaDetails.ABHANumber : abhaDetails.abhaNumber,
           healthId: (abhaDetails.preferredAbhaAddress !== undefined && abhaDetails.preferredAbhaAddress !== null) ? abhaDetails.preferredAbhaAddress : abhaDetails.abhaAddress,
         };
-        this.registrarService.getRegistrarAbhaDetail(dat);
+        this.getLinkedBenIdsToAbha(dat);
       }
     });
   }
@@ -287,6 +287,29 @@ export class AbhaEnterOtpComponentComponent {
         this.enableResend = true;  // Enable the resend button
       }
     }, 1000);  // Update every second
+  }
+
+  //Method to check if generated ABHA has any beneficiary ID linked
+  getLinkedBenIdsToAbha(data : any) {
+    let reqObj = {
+      healthIdNumber: data.healthIdNumber
+    }
+    this.registrarService.fetchBenIdLinkedToAbha(reqObj).subscribe((res: any) => {
+      if (res?.data) {
+        let response: any;
+        response = res.data;
+        if (response && response.length > 0) {
+          this.confirmationService.alert(this.currentLanguageSet.abhaNumberAlreadyWith + response.join(', ') , 'info');
+        } else if (response?.response?.toLowerCase() === "no beneficiary found") {
+          console.log("No Beneficiary Found");
+          this.registrarService.getRegistrarAbhaDetail(data);
+        } else {
+          this.confirmationService.alert(this.currentLanguageSet.issueInFetchinglinkedBeneficiaryId, 'error')
+        }
+      }
+    }, (err: any) => {
+      this.confirmationService.alert(err.errorMessage, 'error');
+    });
   }
 
   ngOnDestroy() {

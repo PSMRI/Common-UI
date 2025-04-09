@@ -226,6 +226,10 @@ export class RegistrarService {
     }
   }
 
+  fetchBenIdLinkedToAbha(reqObj: any){
+    return this.http.post(environment.getBenIdForhealthID, reqObj);
+  }
+
   generateHealthId(reqObj: any) {
     return this.http.post(environment.healthIdGenerationUrl, reqObj);
   }
