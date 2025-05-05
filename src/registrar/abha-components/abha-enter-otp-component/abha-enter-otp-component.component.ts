@@ -167,7 +167,6 @@ export class AbhaEnterOtpComponentComponent {
         districtID: abhaData.districtCode,
         districtName: abhaData.districtName,
       };
-      this.registrarService.setHealthIdMobVerification(dat);
       this.getLinkedBenIdsToAbha(dat);
       this.dialogRef.close(dat);
     });
@@ -302,6 +301,7 @@ export class AbhaEnterOtpComponentComponent {
           this.confirmationService.alert(this.currentLanguageSet.abhaNumberAlreadyWith + response.join(', ') , 'info');
         } else if (response?.response?.toLowerCase() === "no beneficiary found") {
           console.log("No Beneficiary Found");
+          this.registrarService.setHealthIdMobVerification(data);
           this.registrarService.getRegistrarAbhaDetail(data);
         } else {
           this.confirmationService.alert(this.currentLanguageSet.issueInFetchinglinkedBeneficiaryId, 'error')
