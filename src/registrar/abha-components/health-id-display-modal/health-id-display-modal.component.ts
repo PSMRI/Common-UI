@@ -317,11 +317,12 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
 
   printHealthIDCard(data: any) {
     const dialogRefValue = this.dialogMd.open(DownloadSearchAbhaComponent, {
-      height: '250px',
-      width: '420px',
-      disableClose: true,
+      height: '330px',
+      width: '500px',
+      disableClose: true, 
       data: {
-        healthId: data.healthId
+        printCard: true,
+        healthId: data.healthId 
       }
     });
   }

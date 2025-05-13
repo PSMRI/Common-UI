@@ -94,7 +94,7 @@ export class FamilyTaggingDetailsComponent
   beneficiaryId: any;
   searchRequest: any = null;
   beneficiary: any;
-
+  benStateId: any;
   benDistrictId: any;
   benBlockId: any;
 
@@ -116,6 +116,7 @@ export class FamilyTaggingDetailsComponent
     this.beneficiaryRegID =
       this.route.snapshot.paramMap.get('beneficiaryRegID');
     this.beneficiaryName = this.route.snapshot.paramMap.get('beneficiaryName');
+    this.benStateId = this.route.snapshot.paramMap.get('benStateId');
     this.benDistrictId = this.route.snapshot.paramMap.get('benDistrictId');
     this.benBlockId = this.route.snapshot.paramMap.get('benBlockId');
     this.benVillageId = this.route.snapshot.paramMap.get('benVillageId');
@@ -277,6 +278,7 @@ export class FamilyTaggingDetailsComponent
         disableClose: true,
         data: {
           benSurname: this.benFamilyName,
+          benStateId: this.benStateId,
           benDistrictId: this.benDistrictId,
           benBlockId: this.benBlockId,
           benVillageId: this.benVillageId,

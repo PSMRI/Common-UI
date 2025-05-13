@@ -80,6 +80,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
   villageList: any;
   statesList: any;
   stateValue: any;
+  benStateId: any;
   benDistrictId: any;
   benBlockId: any;
   benVillageId: any;
@@ -112,6 +113,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
           ? this.data.benSurname
           : null
       );
+      this.benStateId = parseInt(this.data.benStateId)
       this.benDistrictId = parseInt(this.data.benDistrictId);
       this.benBlockId = parseInt(this.data.benBlockId);
       this.benVillageId = parseInt(this.data.benVillageId);
@@ -258,7 +260,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
   }
 
   fetchDistrictsOnStateSelection() {
-    const stateId = this.registrarService.stateIdFamily;
+    let stateId = this.benStateId;
     this.registrarService.getDistrictList(stateId).subscribe((res: any) => {
       if (res && res.statusCode === 200) {
         this.districtList = res.data;

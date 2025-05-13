@@ -718,6 +718,10 @@ export class RegistrationComponent {
           ? this.revisitData.familyId
           : null,
       beneficiaryName: benFullName,
+      benStateId: this.revisitData.i_bendemographics.stateID !== null &&
+      this.revisitData.i_bendemographics.stateID !== undefined
+        ? this.revisitData.i_bendemographics.stateID
+        : null,
       benDistrictId:
         this.revisitData.i_bendemographics.districtID !== null &&
         this.revisitData.i_bendemographics.districtID !== undefined
