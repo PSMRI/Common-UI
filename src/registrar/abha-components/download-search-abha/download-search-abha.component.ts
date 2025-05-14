@@ -41,10 +41,17 @@ export class DownloadSearchAbhaComponent {
   }
 
   ngOnInit(): void {
+    this.assignSelectedLanguage();
     this.abhaAuthMethodForm = this.createAbhaAuthMethod();
     this.adhaarNumberForm = this.createAdhaarForm();
     this.enableOnlyAuthMode = false;
-    if(this.data?.healthId){
+    if(this.data.printCard !== undefined && this.data?.printCard && this.data?.healthId){
+      this.enterAuthIdLabel = this.currentLanguageSet.enterABHANumber;
+      this.enableAuthIdField = true;
+      this.enableAuthMethodForAbha = true;
+      this.abhaAuthMethodForm.controls['modeofAuthMethod'].setValue('ABHANUMBER');
+      this.abhaAuthMethodForm.controls['abhaAuthId'].patchValue(this.data.healthId);
+    } else if(this.data?.healthId){
       this.healthId = this.data.healthId;
       this.enableOnlyAuthMode = true;
     } else {
