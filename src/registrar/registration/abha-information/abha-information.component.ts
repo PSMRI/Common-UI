@@ -84,9 +84,8 @@ export class AbhaInformationComponent {
       }
     });
     console.log("formDataABHA", this.formData);
-    console.log('abhaInfoFormGroup Data', this.abhaInfoFormGroup);
     if (this.patientRevisit) {
-      this.abhaInfoFormGroup.patchValue(this.revisitData);
+      this.abhaInfoFormGroup.controls['healthIdNumber'].patchValue(this.revisitData?.abhaDetails[0]?.healthIDNumber);
       console.log('other Form Data', this.formData);
     }
   }
