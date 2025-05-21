@@ -145,21 +145,16 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       this.input.dataList !== undefined &&
       this.input.search === true
     ) {
-      let tempVal: any = this.input.dataList.otherFields;
-      this.benDetails = this.input.dataList.otherFields;
+      let tempVal: any = this.input.dataList;
+      this.benDetails = this.input.dataList;
       let tempCreatDate: any = this.input.dataList.createdDate;
       console.log("tempVal", tempVal);
-      let tempDataList: any;
-      if (typeof tempVal === 'string') {
-        tempDataList = JSON.parse(tempVal);
-        console.log("tempDataList", tempDataList);
-        this.searchDetails.data.push(tempDataList);
+        this.searchDetails.data.push(tempVal);
         console.log("this.searchDetails.data%%", this.searchDetails.data)
-      }
 
     }
     if (this.input.dataList !== undefined &&
-      this.input.dataList.data.BenHealthDetails !== undefined
+      this.input.dataList.data?.BenHealthDetails !== undefined
     ){
       this.benDetails = this.input.dataList.data.BenHealthDetails;
       console.log("this.benDetails1",this.benDetails)
