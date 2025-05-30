@@ -30,7 +30,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 import * as moment from 'moment';
 import { Subscription } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
-import { BeneficiaryDetailsService, ConfirmationService } from 'src/app/app-modules/core/services';
+import {
+  BeneficiaryDetailsService,
+  ConfirmationService,
+} from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../services/registrar.service';
 import { SessionStorageService } from '../services/session-storage.service';
@@ -132,38 +135,42 @@ export class BeneficiaryDetailsComponent implements OnInit, DoCheck, OnDestroy {
   }
 
   getBenFamilyDetails() {
-    const reqObj = {
-      beneficiaryRegID: null,
-      beneficiaryName: null,
-      beneficiaryID: this.sessionstorage.getItem('beneficiaryID'),
-      phoneNo: null,
-      HealthID: null,
-      HealthIDNumber: null,
-      familyId: null,
-      identity: null,
-    };
-    this.registrarService.identityQuickSearch(reqObj).subscribe((res: any) => {
-      if (res && res.data.length === 1) {
-        this.beneficiary = res.data[0];
-        this.benFamilyId = res.data[0].familyId;
-        this.beneficiaryName =
-          this.beneficiary.firstName +
-          (this.beneficiary.lastName !== undefined
-            ? ' ' + this.beneficiary.lastName
-            : '');
-        this.regDate = moment
-          .utc(this.beneficiary.createdDate)
-          .format('DD-MM-YYYY hh:mm A');
-      }
+    this.route.params.subscribe((param) => {
+      const reqObj = {
+        beneficiaryRegID: null,
+        beneficiaryName: null,
+        beneficiaryID: param['beneficiaryId'],
+        phoneNo: null,
+        HealthID: null,
+        HealthIDNumber: null,
+        familyId: null,
+        identity: null,
+      };
+      this.registrarService
+        .identityQuickSearch(reqObj)
+        .subscribe((res: any) => {
+          if (res && res.data.length === 1) {
+            this.beneficiary = res.data[0];
+            this.benFamilyId = res.data[0].familyId;
+            this.beneficiaryName =
+              this.beneficiary.firstName +
+              (this.beneficiary.lastName !== undefined
+                ? ' ' + this.beneficiary.lastName
+                : '');
+            this.regDate = moment
+              .utc(this.beneficiary.createdDate)
+              .format('DD-MM-YYYY hh:mm A');
+          }
+        });
+      const benFlowID: any = param['beneficiaryRegID'];
+      this.beneficiaryDetailsService
+        .getBeneficiaryImage(benFlowID)
+        .subscribe((data: any) => {
+          if (data && data.benImage) {
+            this.beneficiary.benImage = data.benImage;
+          }
+        });
     });
-    const benFlowID: any = this.sessionstorage.getItem('beneficiaryRegID');
-    this.beneficiaryDetailsService
-      .getBeneficiaryImage(benFlowID)
-      .subscribe((data: any) => {
-        if (data && data.benImage) {
-          this.beneficiary.benImage = data.benImage;
-        }
-      });
   }
 
   getHealthIDDetails() {
