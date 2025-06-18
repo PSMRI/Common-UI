@@ -13,6 +13,16 @@ export class GATrackingService implements TrackingProvider {
     console.warn(`GA pageView stub: ${path}`);
   }
   event(category: string, action: string, label?: string, value?: number) {
-    console.warn(`GA event stub: ${category}, ${action}, ${label}, ${value}`);
+    const args: (string | number)[] = [category, action];
+
+    if (label !== undefined) {
+      args.push(label);
+    }
+
+    if (value !== undefined) {
+      args.push(value);
+    }
+
+    console.warn(`GA event stub: ${args.join(', ')}`);
   }
 }
