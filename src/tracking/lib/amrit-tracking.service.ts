@@ -38,7 +38,7 @@ export class AmritTrackingService implements OnDestroy {
 
   private setupUserTracking() {
     const userId = this.sessionStorage.getItem('userID');
-    if (userId) {
+    if (typeof userId === 'string' && userId !== null && userId !== undefined && userId !== '') {
       this.trackingProvider.setUserId(userId);
     }
   }
