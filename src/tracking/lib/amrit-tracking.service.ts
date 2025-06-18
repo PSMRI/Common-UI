@@ -1,14 +1,17 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable, Inject, OnDestroy } from '@angular/core';
 import { TrackingProvider } from './tracking-provider';
 import { SessionStorageService } from '../../registrar/services/session-storage.service';
 import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { TRACKING_PROVIDER } from './tracking.tokens';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AmritTrackingService {
+export class AmritTrackingService implements OnDestroy {
+  private destroy$ = new Subject<void>();
+
   constructor(
     @Inject(TRACKING_PROVIDER) private trackingProvider: TrackingProvider,
     private sessionStorage: SessionStorageService,
@@ -26,7 +29,8 @@ export class AmritTrackingService {
 
   private setupPageViewTracking() {
     this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
     ).subscribe((event: NavigationEnd) => {
       this.trackingProvider.pageView(event.urlAfterRedirects);
     });
@@ -59,5 +63,10 @@ export class AmritTrackingService {
 
   trackError(errorMessage: string, errorSource?: string) {
     this.trackEvent('Error', errorMessage, errorSource);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
