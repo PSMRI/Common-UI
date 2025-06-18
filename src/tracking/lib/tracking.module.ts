@@ -4,22 +4,18 @@ import { MatomoTrackingService } from './matomo-tracking.service';
 import { GATrackingService } from './ga-tracking.service';
 import { AmritTrackingService } from './amrit-tracking.service';
 import { TRACKING_PLATFORM, MATOMO_SITE_ID, MATOMO_URL, TRACKING_PROVIDER } from './tracking.tokens';
-
-export interface TrackingConfig {
-  platform: 'matomo' | 'ga';
-  matomoSiteId?: number;
-  matomoUrl?: string;
-}
+import { environment } from 'src/environments/environment';
 
 @NgModule({})
 export class TrackingModule {
-  static forRoot(config: TrackingConfig): ModuleWithProviders<TrackingModule> {
+  static forRoot(): ModuleWithProviders<TrackingModule> {
+    // Only use environment values
     return {
       ngModule: TrackingModule,
       providers: [
-        { provide: TRACKING_PLATFORM, useValue: config.platform },
-        { provide: MATOMO_SITE_ID, useValue: config.matomoSiteId },
-        { provide: MATOMO_URL, useValue: config.matomoUrl },
+        { provide: TRACKING_PLATFORM, useValue: environment.tracking?.platform || 'matomo' },
+        { provide: MATOMO_SITE_ID, useValue: environment.tracking?.matomoSiteId },
+        { provide: MATOMO_URL, useValue: environment.tracking?.matomoUrl },
         {
           provide: TRACKING_PROVIDER,
           useFactory: (platform: string, injector: Injector) =>
