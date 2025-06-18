@@ -17,14 +17,28 @@ export class AmritTrackingService implements OnDestroy {
     private sessionStorage: SessionStorageService,
     private router: Router
   ) {
-    // Initialise underlying provider
-    this.trackingProvider.init?.();
-    
-    // Initialize automatic page view tracking
-    this.setupPageViewTracking();
-    
-    // Set user ID if available
-    this.setupUserTracking();
+    try {
+      // Attempt to initialize the tracking provider
+      this.trackingProvider.init?.();
+
+      // Initialize automatic page view tracking
+      this.setupPageViewTracking();
+
+      // Set user ID if available
+      this.setupUserTracking();
+    } catch (error) {
+      console.error('Error initializing tracking provider:', error);
+
+      // Fallback handling: Log the error and ensure the application continues to function
+      this.trackingProvider = {
+        init: () => console.warn('Fallback: Tracking provider initialization failed'),
+        setUserId: () => console.warn('Fallback: Tracking provider setUserId failed'),
+        pageView: () => console.warn('Fallback: Tracking provider pageView failed'),
+        event: () => console.warn('Fallback: Tracking provider event failed'),
+      };
+
+      this.trackingProvider.init();
+    }
   }
 
   private setupPageViewTracking() {
