@@ -29,7 +29,6 @@ export class AmritTrackingService implements OnDestroy {
     } catch (error) {
       console.error('Error initializing tracking provider:', error);
 
-      // Fallback handling: Log the error and ensure the application continues to function
       this.trackingProvider = {
         init: () => console.warn('Fallback: Tracking provider initialization failed'),
         setUserId: () => console.warn('Fallback: Tracking provider setUserId failed'),
@@ -84,7 +83,11 @@ export class AmritTrackingService implements OnDestroy {
   }
 
   trackError(errorMessage: string, errorSource?: string) {
-    this.trackEvent('Error', errorMessage, errorSource);
+    if (errorSource !== undefined) {
+      this.trackEvent('Error', errorMessage, errorSource);
+    } else {
+      this.trackEvent('Error', errorMessage);
+    }
   }
 
   ngOnDestroy() {
