@@ -45,7 +45,15 @@ export class AmritTrackingService implements OnDestroy {
 
   // Public methods to track events
   trackEvent(category: string, action: string, label?: string, value?: number) {
-    this.trackingProvider.event(category, action, label, value);
+    if (label !== undefined && value !== undefined) {
+      this.trackingProvider.event(category, action, label, value);
+    } else if (label !== undefined) {
+      this.trackingProvider.event(category, action, label);
+    } else if (value !== undefined) {
+      this.trackingProvider.event(category, action, undefined, value);
+    } else {
+      this.trackingProvider.event(category, action);
+    }
   }
 
   // Specific tracking methods for common actions
