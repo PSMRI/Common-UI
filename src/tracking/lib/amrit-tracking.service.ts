@@ -14,6 +14,9 @@ export class AmritTrackingService {
     private sessionStorage: SessionStorageService,
     private router: Router
   ) {
+    // Initialise underlying provider
+    this.trackingProvider.init?.();
+    
     // Initialize automatic page view tracking
     this.setupPageViewTracking();
     

@@ -2,7 +2,10 @@ import { Injectable, Inject } from '@angular/core';
 import { TrackingProvider } from './tracking-provider';
 import { MATOMO_SITE_ID, MATOMO_URL } from './tracking.tokens';
 
-declare const _paq: any[];
+// Initialise global queue if Matomo script not yet loaded
+const _w = window as any;
+_w._paq = _w._paq || [];
+const _paq: any[] = _w._paq;
 
 @Injectable()
 export class MatomoTrackingService implements TrackingProvider {
@@ -30,6 +33,9 @@ export class MatomoTrackingService implements TrackingProvider {
   }
 
   event(category: string, action: string, label?: string, value?: number) {
-    _paq.push(['trackEvent', category, action, label || '', value || 0]);
+    const args: (string | number)[] = ['trackEvent', category, action];
+    if (label) { args.push(label); }
+    if (value !== undefined) { args.push(value); }
+    _paq.push(args);
   }
 }
