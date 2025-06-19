@@ -14,8 +14,8 @@ export class TrackingModule {
       ngModule: TrackingModule,
       providers: [
         { provide: TRACKING_PLATFORM, useValue: environment.tracking?.platform || 'matomo' },
-        { provide: MATOMO_SITE_ID, useValue: environment.tracking?.matomoSiteId },
-        { provide: MATOMO_URL, useValue: environment.tracking?.matomoUrl },
+        { provide: MATOMO_SITE_ID, useValue: environment.tracking?.siteId },
+        { provide: MATOMO_URL, useValue: environment.tracking?.trackerUrl },
         {
           provide: TRACKING_PROVIDER,
           useFactory: (platform: string, injector: Injector) =>
