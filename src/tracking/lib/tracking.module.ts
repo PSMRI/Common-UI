@@ -3,17 +3,17 @@ import { TrackingProvider } from './tracking-provider';
 import { MatomoTrackingService } from './matomo-tracking.service';
 import { GATrackingService } from './ga-tracking.service';
 import { AmritTrackingService } from './amrit-tracking.service';
-import { TRACKING_PLATFORM, MATOMO_SITE_ID, MATOMO_URL, TRACKING_PROVIDER } from './tracking.tokens';
+import { TRACKING_PLATFORM, MATOMO_SITE_ID, MATOMO_URL, TRACKING_PROVIDER, TRACKING_ENABLED } from './tracking.tokens';
 import { environment } from 'src/environments/environment';
 
 @NgModule({})
 export class TrackingModule {
   static forRoot(): ModuleWithProviders<TrackingModule> {
-    // Only use environment values
     return {
       ngModule: TrackingModule,
       providers: [
         { provide: TRACKING_PLATFORM, useValue: environment.tracking?.platform || 'matomo' },
+        { provide: TRACKING_ENABLED, useValue: environment.tracking?.enabled ?? false },
         { provide: MATOMO_SITE_ID, useValue: environment.tracking?.siteId },
         { provide: MATOMO_URL, useValue: environment.tracking?.trackerUrl },
         {
@@ -33,4 +33,4 @@ export class TrackingModule {
 }
 
 // Re-export the tokens from the module if needed elsewhere
-export { TRACKING_PLATFORM, MATOMO_SITE_ID, MATOMO_URL, TRACKING_PROVIDER } from './tracking.tokens';
+export { TRACKING_PLATFORM, MATOMO_SITE_ID, MATOMO_URL, TRACKING_PROVIDER, TRACKING_ENABLED} from './tracking.tokens';

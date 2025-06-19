@@ -7,6 +7,11 @@ export const TRACKING_PLATFORM = new InjectionToken<string>('tracking.platform',
   factory: () => environment.tracking.trackingPlatform,
 });
 
+export const TRACKING_ENABLED = new InjectionToken<boolean>('tracking.enabled', {
+    providedIn: 'root',
+    factory: () => environment.tracking.enabled,
+  });
+
 export const MATOMO_SITE_ID = new InjectionToken<number>('matomo.siteId', {
   providedIn: 'root',
   factory: () => environment.tracking.siteId, 
