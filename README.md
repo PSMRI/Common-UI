@@ -2,7 +2,7 @@
 
 A configurable framework ccomprising reusable UI elements across multiple AMRIT service lines.
 
-Since registration is a core process in various AMRIT modules, the registration page is designed to be highly flexible, allowing customization based on service line and project-specific requirements. This ensures seamless data collection across MMU, HWC, and Telemedicine while enabling easy adaptation to different project needs.
+Since registration is a core process in various AMRIT modules, the registration page is designed to be highly flexible, allowing customization based on service line and project-specific requirements. This ensures seamless data collection across MMU, AAM, and Telemedicine while enabling easy adaptation to different project needs.
 
 By offering a scalable and adaptable UI framework, this system simplifies the modification of registration fields, ensuring consistency and efficiency across AMRIT service lines.
 ## Features 
