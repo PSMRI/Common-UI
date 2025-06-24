@@ -202,8 +202,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         ? this.selectedHealthID.healthIdNumber
         : null,
       authenticationMode: this.selectedHealthID.authenticationMode,
-      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined) ? abdmFacilityId : null,
-      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined) ? abdmFacilityName : null
+      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined && abdmFacilityId !== "") ? abdmFacilityId : null,
+      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined && abdmFacilityName !== "") ? abdmFacilityName : null
     };
     this.registrarService.generateOtpForMappingCareContext(reqObj).subscribe(
       (receivedOtpResponse: any) => {
@@ -281,8 +281,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         this.sessionstorage.getItem('visitCategory') === 'General OPD (QC)'
           ? 'Emergency'
           : this.sessionstorage.getItem('visitCategory'),
-      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined) ? abdmFacilityId : null,
-      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined) ? abdmFacilityName : null
+      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined && abdmFacilityId !== "") ? abdmFacilityId : null,
+      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined && abdmFacilityName !== "") ? abdmFacilityName : null
     };
     this.registrarService
       .verifyOtpForMappingCarecontext(verifyOtpData)
