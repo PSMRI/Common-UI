@@ -42,9 +42,9 @@ export class AmritTrackingService implements OnDestroy {
 
   private setupPageViewTracking() {
     this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       takeUntil(this.destroy$)
-    ).subscribe((event: NavigationEnd) => {
+    ).subscribe((event) => {
       this.trackingProvider.pageView(event.urlAfterRedirects);
     });
   }
