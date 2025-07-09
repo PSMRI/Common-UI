@@ -17,14 +17,10 @@ export class AmritTrackingService implements OnDestroy {
     private sessionStorage: SessionStorageService,
     private router: Router
   ) {
+    
     try {
-      // Attempt to initialize the tracking provider
       this.trackingProvider.init?.();
-
-      // Initialize automatic page view tracking
       this.setupPageViewTracking();
-
-      // Set user ID if available
       this.setupUserTracking();
     } catch (error) {
       console.error('Error initializing tracking provider:', error);
@@ -58,18 +54,21 @@ export class AmritTrackingService implements OnDestroy {
 
   // Public methods to track events
   trackEvent(category: string, action: string, label?: string, value?: number) {
-    if (label !== undefined && value !== undefined) {
-      this.trackingProvider.event(category, action, label, value);
-    } else if (label !== undefined) {
-      this.trackingProvider.event(category, action, label);
-    } else if (value !== undefined) {
-      this.trackingProvider.event(category, action, undefined, value);
-    } else {
-      this.trackingProvider.event(category, action);
+    try {
+      if (label !== undefined && value !== undefined) {
+        this.trackingProvider.event(category, action, label, value);
+      } else if (label !== undefined) {
+        this.trackingProvider.event(category, action, label);
+      } else if (value !== undefined) {
+        this.trackingProvider.event(category, action, undefined, value);
+      } else {
+        this.trackingProvider.event(category, action);
+      }
+    } catch (error) {
+      console.error(`Error tracking event ${category}:`, error);
     }
   }
 
-  // Specific tracking methods for common actions
   trackButtonClick(buttonName: string) {
     this.trackEvent('UI', 'ButtonClick', buttonName);
   }
@@ -88,6 +87,10 @@ export class AmritTrackingService implements OnDestroy {
     } else {
       this.trackEvent('Error', errorMessage);
     }
+  }
+
+  trackFieldInteraction(fieldName: string, category: string = 'Registration') {
+    this.trackEvent(category, 'Field Interaction', fieldName);
   }
 
   ngOnDestroy() {
