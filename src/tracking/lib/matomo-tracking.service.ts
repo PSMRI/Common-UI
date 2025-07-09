@@ -129,10 +129,12 @@ export class MatomoTrackingService implements TrackingProvider {
     }
     
     if (!category || typeof category !== 'string') {
+      console.error('MatomoTrackingService: Invalid category:', category);
       return;
     }
 
     if (!action || typeof action !== 'string') {
+      console.error('MatomoTrackingService: Invalid action:', action);
       return;
     }
 
