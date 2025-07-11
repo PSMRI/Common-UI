@@ -1,0 +1,51 @@
+<button
+  mat-raised-button
+  style="margin: 5px"
+  *ngIf="patientRevisit"
+  class="full-width-login pull-right m-r-5 mat_blue"
+  id="viewHealthID"
+  type="accent"
+  (click)="viewHealthIdData()"
+>
+  ABHA Details
+</button>
+
+<button
+  id="searchAhaCard"
+  style="margin: 5px"
+  mat-raised-button
+  color="primary"
+  class="full-width-login pull-right m-r-5 mat_blue"
+  (click)="printHealthIDCard()"
+> Search ABHA
+</button>
+<button
+  id="generateAbhaCard"
+  style="margin: 5px"
+  mat-raised-button
+  color="primary"
+  class="full-width-login pull-right m-r-5 mat_blue"
+  (click)="generateAbhaCard()"
+>
+  Generate ABHA Card
+</button>
+<div [formGroup]="abhaInfoFormGroup">
+  <ng-container *ngFor="let item of formData">
+    <div
+      class="col-xs-12 col-sm-6 col-md-3 col-lg-3"
+      *ngIf="item?.fieldType?.toLowerCase() === 'text'"
+    >
+      <mat-form-field class="input-full-width">
+        <mat-label> {{ item.fieldTitle }}</mat-label>
+        <input
+          matInput
+          type="input"
+          readonly="item.isEditable === false "
+          placeholder="{{ item.placeholder }}"
+          [required]="item.isRequired || false"
+          formControlName="{{ item.fieldName }}"
+        />
+      </mat-form-field>
+    </div>
+  </ng-container>
+</div>
