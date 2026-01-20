@@ -222,6 +222,7 @@ export class RegistrationComponent {
     let locationData = JSON.parse(location);
     let services: any = this.sessionstorage.getItem('services');
     let servicesData = JSON.parse(services);
+    console.clear();
     console.log('servicesData', servicesData);
     let reqObj = {
       serviceLine: this.sessionstorage.getItem('serviceName'),
