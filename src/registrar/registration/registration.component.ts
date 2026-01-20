@@ -217,13 +217,28 @@ export class RegistrationComponent {
   
   
 
-  getRegistrationData(){
+  getRegistrationData() {
     let location: any = this.sessionstorage.getItem('locationData');
-    let locationData = JSON.parse(location);
     let services: any = this.sessionstorage.getItem('services');
+
+    if (!location || !services) {
+      this.confirmationService.alert('Session expired. Please login again.', 'error');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    let locationData = JSON.parse(location);
     let servicesData = JSON.parse(services);
+
+    if (!servicesData || servicesData.length === 0 || !servicesData[0].serviceProviderID) {
+      this.confirmationService.alert('Session expired. Please login again.', 'error');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     console.clear();
     console.log('servicesData', servicesData);
+
     let reqObj = {
       serviceLine: this.sessionstorage.getItem('serviceName'),
       serviceLineId: this.sessionstorage.getItem('serviceID'),
@@ -231,21 +246,23 @@ export class RegistrationComponent {
       districtId: locationData.districtID,
       blockId: locationData.blockID,
       serviceProviderId: servicesData[0].serviceProviderID
-    }
+    };
+
     console.log('reqObj', reqObj);
+
     this.registrationService.fetchAllRegistrationData(reqObj).subscribe((res: any) => {
-      if(res && res.data && res.statusCode === 200){
-        if(res.data.length > 0){
-        this.filterData(res.data);
+      if (res && res.data && res.statusCode === 200) {
+        if (res.data.length > 0) {
+          this.filterData(res.data);
         } else {
-      this.confirmationService.alert('No Project is mapped to the serviceline for choosed block', 'info')
+          this.confirmationService.alert('No Project is mapped to the serviceline for choosed block', 'info');
         }
-      }else {
+      } else {
         this.confirmationService.alert(res.errorMessage, 'error');
       }
     }, (err: any) => {
       this.confirmationService.alert(err.errorMessage, 'error');
-    })
+    });
   }
 
   filterData(res: any) {
