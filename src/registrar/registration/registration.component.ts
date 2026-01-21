@@ -233,7 +233,7 @@ export class RegistrationComponent {
     let servicesData = JSON.parse(services);
 
     // Check if services data structure is corrupted (missing serviceProviderID)  
-    if (!servicesData || servicesData.length === 0 || !servicesData[0].serviceProviderID) {
+    if (!servicesData || !Array.isArray(servicesData) || servicesData.length === 0 || !servicesData[0].serviceProviderID) {
       // Recall the original method to restore session storage  
       const loginDataResponse = this.sessionstorage.getItem('loginDataResponse');
       if (loginDataResponse) {
