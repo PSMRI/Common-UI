@@ -221,6 +221,8 @@ export class RegistrationComponent {
     let location: any = this.sessionstorage.getItem('locationData');
     let services: any = this.sessionstorage.getItem('services');
 
+    console.log("services data from session storage", services);
+
     if (!location || !services) {
       this.confirmationService.alert('Session expired. Please login again.', 'error');
       this.router.navigate(['/login']);
