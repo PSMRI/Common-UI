@@ -230,15 +230,22 @@ export class RegistrationComponent {
     let locationData = JSON.parse(location);
     let servicesData = JSON.parse(services);
 
+    // Check if services data structure is corrupted (missing serviceProviderID)  
     if (!servicesData || servicesData.length === 0 || !servicesData[0].serviceProviderID) {
-      this.confirmationService.alert('Session expired. Please login again.', 'error');
-      this.router.navigate(['/login']);
-      return;
+      // Recall the original method to restore session storage  
+      const loginDataResponse = this.sessionstorage.getItem('loginDataResponse');
+      if (loginDataResponse) {
+        const loginData = JSON.parse(loginDataResponse);
+        this.getServicesAuthdetails(loginData);
+        return; // Exit and let the method complete  
+      } else {
+        this.confirmationService.alert('Session corrupted. Please login again.', 'error');
+        this.router.navigate(['/login']);
+        return;
+      }
     }
 
-    console.clear();
-    console.log('servicesData', servicesData);
-
+    // Proceed with normal registration flow  
     let reqObj = {
       serviceLine: this.sessionstorage.getItem('serviceName'),
       serviceLineId: this.sessionstorage.getItem('serviceID'),
@@ -247,8 +254,6 @@ export class RegistrationComponent {
       blockId: locationData.blockID,
       serviceProviderId: servicesData[0].serviceProviderID
     };
-
-    console.log('reqObj', reqObj);
 
     this.registrationService.fetchAllRegistrationData(reqObj).subscribe((res: any) => {
       if (res && res.data && res.statusCode === 200) {
@@ -263,6 +268,35 @@ export class RegistrationComponent {
     }, (err: any) => {
       this.confirmationService.alert(err.errorMessage, 'error');
     });
+  }
+
+  // Add the getServicesAuthdetails method to your component  
+  getServicesAuthdetails(loginDataResponse: any) {
+    sessionStorage.setItem('key', loginDataResponse.key);
+    sessionStorage.setItem('isAuthenticated', loginDataResponse.isAuthenticated);
+    this.sessionstorage.setItem('userID', loginDataResponse.userID);
+    this.sessionstorage.setItem('userName', loginDataResponse.userName);
+    this.sessionstorage.setItem('fullName', loginDataResponse.fullName);
+
+    const services: any = [];
+    loginDataResponse.previlegeObj.map((item: any) => {
+      if (item.roles[0].serviceRoleScreenMappings[0].providerServiceMapping.serviceID === 4) {
+        const service = {
+          providerServiceID: item.serviceID,
+          serviceName: item.serviceName,
+          apimanClientKey: item.apimanClientKey,
+          serviceID: item.roles[0].serviceRoleScreenMappings[0].providerServiceMapping.serviceID,
+          serviceProviderID: item.roles[0].serviceRoleScreenMappings[0].providerServiceMapping.serviceProviderID,
+        };
+        services.push(service);
+      }
+    });
+
+    if (services.length > 0) {
+      this.sessionstorage.setItem('services', JSON.stringify(services));
+      // Retry getRegistrationData after restoring services  
+      setTimeout(() => this.getRegistrationData(), 100);
+    }
   }
 
   filterData(res: any) {
