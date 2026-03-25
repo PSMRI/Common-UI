@@ -301,11 +301,8 @@ export class RegistrationComponent {
 
 
   submitBeneficiaryDetails() {
-    console.log('submitBeneficiaryDetails called, isSubmitting:', this.isSubmitting);
     if (this.isSubmitting) return;
     this.isSubmitting = true;
-    console.log('isSubmitting set to true');
-    console.log('registration data', this.mainForm);
     const newDate = this.dateFormatChange();
     const valueToSend = this.mainForm.value;
     valueToSend.personalInfoForm.dob = newDate;
@@ -367,7 +364,6 @@ export class RegistrationComponent {
         this.mainForm.reset();
         this.disableGenerateOTP = false;
         this.isSubmitting = false;
-        console.log('submit success, isSubmitting reset to false');
         this.router.navigate(['/registrar/search/']);
       }
 
@@ -377,11 +373,9 @@ export class RegistrationComponent {
           'error',
         );
         this.isSubmitting = false;
-        console.log('submit error response, isSubmitting reset to false');
       }
     }, () => {
       this.isSubmitting = false;
-      console.log('submit HTTP error, isSubmitting reset to false');
     });
   }
 
@@ -501,10 +495,8 @@ export class RegistrationComponent {
    * Update Beneficiary Form & Don't Move the Beneficiary To Nurse Worklist
    */
     updateBeneficiaryDetails(passToNurse = false) {
-        console.log('updateBeneficiaryDetails called, isSubmitting:', this.isSubmitting);
         if (this.isSubmitting) return;
         this.isSubmitting = true;
-        console.log('isSubmitting set to true');
         const finalReqObj: any = this.updateBenDataManipulation();
         finalReqObj['passToNurse'] = passToNurse;
   
@@ -528,17 +520,14 @@ export class RegistrationComponent {
                 createdBy: this.sessionstorage.getItem('userName'),
               };
               this.isSubmitting = false;
-              console.log('update success, isSubmitting reset to false');
               this.router.navigate(['/registrar/search/']);
             }
             else {
               this.isSubmitting = false;
-              console.log('update error response, isSubmitting reset to false');
               this.confirmationService.alert(res.errorMessage, 'error');
             }
           }, () => {
             this.isSubmitting = false;
-            console.log('update HTTP error, isSubmitting reset to false');
           });
     }
 
