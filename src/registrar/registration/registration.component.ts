@@ -46,6 +46,7 @@ export class RegistrationComponent {
   serviceLine: any;
   consentGranted: any;
   disableGenerateOTP = false;
+  isSubmitting = false;
   today = new Date();
 
 
@@ -300,7 +301,8 @@ export class RegistrationComponent {
 
 
   submitBeneficiaryDetails() {
-    console.log('registration data', this.mainForm);
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
     const newDate = this.dateFormatChange();
     const valueToSend = this.mainForm.value;
     valueToSend.personalInfoForm.dob = newDate;
@@ -361,24 +363,19 @@ export class RegistrationComponent {
           }
         this.mainForm.reset();
         this.disableGenerateOTP = false;
+        this.isSubmitting = false;
         this.router.navigate(['/registrar/search/']);
-        // this.confirmationService.alert(res.data.response, 'success');
-        // this.mainForm.reset();
-      } 
+      }
 
       else {
         this.confirmationService.alert(
           this.currentLanguageSet.alerts.info.issueInSavngData,
           'error',
         );
+        this.isSubmitting = false;
       }
-      
-      // else {
-      //   this.confirmationService.alert(
-      //     'issue in saving the data',
-      //     'error'
-      //   );
-      // }
+    }, () => {
+      this.isSubmitting = false;
     });
   }
 
@@ -497,7 +494,9 @@ export class RegistrationComponent {
    *
    * Update Beneficiary Form & Don't Move the Beneficiary To Nurse Worklist
    */
-    updateBeneficiaryDetails(passToNurse = false) {  
+    updateBeneficiaryDetails(passToNurse = false) {
+        if (this.isSubmitting) return;
+        this.isSubmitting = true;
         const finalReqObj: any = this.updateBenDataManipulation();
         finalReqObj['passToNurse'] = passToNurse;
   
@@ -520,11 +519,15 @@ export class RegistrationComponent {
                 providerServiceMapId: this.sessionstorage.getItem('providerServiceID'),
                 createdBy: this.sessionstorage.getItem('userName'),
               };
+              this.isSubmitting = false;
               this.router.navigate(['/registrar/search/']);
-            } 
+            }
             else {
+              this.isSubmitting = false;
               this.confirmationService.alert(res.errorMessage, 'error');
             }
+          }, () => {
+            this.isSubmitting = false;
           });
     }
 
