@@ -215,37 +215,79 @@ export class RegistrationComponent {
       );
       this.router.navigate(['/registrar/search/']);
     }
-  
-  
 
-  getRegistrationData(){
+ getRegistrationData(){
+
     let location: any = this.sessionstorage.getItem('locationData');
-    let locationData = JSON.parse(location);
+
+    let locationData = location ? JSON.parse(location) : null;
+
     let services: any = this.sessionstorage.getItem('services');
-    let servicesData = JSON.parse(services);
+
+    let servicesData = services ? JSON.parse(services) : null;
+
     console.log('servicesData', servicesData);
-    let reqObj = {
-      serviceLine: this.sessionstorage.getItem('serviceName'),
-      serviceLineId: this.sessionstorage.getItem('serviceID'),
-      stateId: locationData.stateID,
-      districtId: locationData.districtID,
-      blockId: locationData.blockID,
-      serviceProviderId: servicesData[0].serviceProviderID
+
+    if (!locationData || !Array.isArray(servicesData) || servicesData.length === 0 || !servicesData[0]?.serviceProviderID) {
+
+      this.confirmationService.alert(
+
+        'Unable to load registration data. Please re-select your service point and try again.',
+
+        'error'
+
+      );
+
+      this.router.navigate(['/registrar/search/']);
+
+      return;
+
     }
+
+    let reqObj = {
+
+      serviceLine: this.sessionstorage.getItem('serviceName'),
+
+      serviceLineId: this.sessionstorage.getItem('serviceID'),
+
+      stateId: locationData.stateID,
+
+      districtId: locationData.districtID,
+
+      blockId: locationData.blockID,
+
+      serviceProviderId: servicesData[0].serviceProviderID
+
+    }
+
     console.log('reqObj', reqObj);
+
     this.registrationService.fetchAllRegistrationData(reqObj).subscribe((res: any) => {
+
       if(res && res.data && res.statusCode === 200){
+
         if(res.data.length > 0){
+
         this.filterData(res.data);
+
         } else {
+
       this.confirmationService.alert('No Project is mapped to the serviceline for choosed block', 'info')
+
         }
+
       }else {
+
         this.confirmationService.alert(res.errorMessage, 'error');
+
       }
+
     }, (err: any) => {
+
       this.confirmationService.alert(err.errorMessage, 'error');
+
     })
+
   }
 
   filterData(res: any) {
