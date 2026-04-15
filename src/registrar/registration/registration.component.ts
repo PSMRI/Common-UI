@@ -216,14 +216,20 @@ export class RegistrationComponent {
       this.router.navigate(['/registrar/search/']);
     }
   
-  
-
   getRegistrationData(){
     let location: any = this.sessionstorage.getItem('locationData');
-    let locationData = JSON.parse(location);
+    let locationData = location ? JSON.parse(location) : null;
     let services: any = this.sessionstorage.getItem('services');
-    let servicesData = JSON.parse(services);
+    let servicesData = services ? JSON.parse(services) : null;
     console.log('servicesData', servicesData);
+    if (!locationData || !Array.isArray(servicesData) || servicesData.length === 0 || !servicesData[0]?.serviceProviderID) {
+      this.confirmationService.alert(
+        'Unable to load registration data. Please re-select your service point and try again.',
+        'error'
+      );
+      this.router.navigate(['/registrar/search/']);
+      return;
+    }
     let reqObj = {
       serviceLine: this.sessionstorage.getItem('serviceName'),
       serviceLineId: this.sessionstorage.getItem('serviceID'),
