@@ -56,4 +56,8 @@ export class FamilyTaggingService {
   getFamilyMemberDetails(reqObject: any) {
     return this.http.post(environment.getFamilyMemberUrl, reqObject);
   }
+
+  getBenFamilyDetailsByBenRegId(reqObject: any) {
+    return this.http.post(environment.getBenFamilyDetailsUrl, reqObject);
+  }
 }
