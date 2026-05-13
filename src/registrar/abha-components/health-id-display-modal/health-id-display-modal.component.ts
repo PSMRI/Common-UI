@@ -76,6 +76,7 @@ import { DownloadSearchAbhaComponent } from '../download-search-abha/download-se
       },
     },
   ],
+  standalone: false,
 })
 export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   chooseHealthID: any;

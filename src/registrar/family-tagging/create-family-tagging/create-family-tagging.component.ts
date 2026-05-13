@@ -32,6 +32,7 @@ import { SessionStorageService } from '../../services/session-storage.service';
   selector: 'app-create-family-tagging',
   templateUrl: './create-family-tagging.component.html',
   styleUrls: ['./create-family-tagging.component.css'],
+  standalone: false,
 })
 export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
   @ViewChild('newFamilyTaggingForm') form: any;

@@ -31,6 +31,7 @@ import { SessionStorageService } from '../../services/session-storage.service';
   selector: 'app-edit-family-tagging',
   templateUrl: './edit-family-tagging.component.html',
   styleUrls: ['./edit-family-tagging.component.css'],
+  standalone: false,
 })
 export class EditFamilyTaggingComponent implements OnInit, DoCheck {
   @ViewChild('editFamilyTaggingForm')

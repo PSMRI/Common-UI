@@ -44,6 +44,7 @@ type SL = "1097" | "104" | "AAM" | "MMU" | "TM" | "ECD";
       }
     `,
   ],
+  standalone: false,
 })
 export class FeedbackPublicPageComponent {
   serviceLine: SL = "AAM"; // default fallback

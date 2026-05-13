@@ -17,6 +17,7 @@ import { Injector } from '@angular/core';
   selector: 'app-location-information',
   templateUrl: './location-information.component.html',
   styleUrls: ['./location-information.component.css'],
+  standalone: false,
 })
 export class LocationInformationComponent {
   @Input()
