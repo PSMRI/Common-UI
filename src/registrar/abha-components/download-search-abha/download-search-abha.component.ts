@@ -11,7 +11,9 @@ import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-download-search-abha',
   templateUrl: './download-search-abha.component.html',
-  styleUrls: ['./download-search-abha.component.css']
+  styleUrls: ['./download-search-abha.component.css'],
+
+  standalone: false,
 })
 export class DownloadSearchAbhaComponent {
   currentLanguageSet: any;

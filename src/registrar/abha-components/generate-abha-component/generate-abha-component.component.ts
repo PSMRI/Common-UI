@@ -12,7 +12,9 @@ import { AbhaMobileComponentComponent } from '../abha-mobile-component/abha-mobi
 @Component({
   selector: 'app-generate-abha-component',
   templateUrl: './generate-abha-component.component.html',
-  styleUrls: ['./generate-abha-component.component.css']
+  styleUrls: ['./generate-abha-component.component.css'],
+
+  standalone: false,
 })
 export class GenerateAbhaComponentComponent {
 
