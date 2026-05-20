@@ -128,7 +128,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
 
   createFamilySearchForm() {
     this.familySearchForm = this.formBuilder.group({
-      villageID: [null, Validators.required],
+      villageID: null,
       districtID: [null, Validators.required],
       blockID: [null, Validators.required],
       surname: [null, Validators.required],
