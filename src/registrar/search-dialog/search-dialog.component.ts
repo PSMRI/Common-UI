@@ -62,34 +62,35 @@ interface Beneficary {
 }
 
 @Component({
-  selector: 'app-search-dialog',
-  templateUrl: './search-dialog.component.html',
-  styleUrls: ['./search-dialog.component.css'],
-  providers: [
-    {
-      provide: MAT_DATE_LOCALE,
-      useValue: 'en-US', // Set the desired locale (e.g., 'en-GB' for dd/MM/yyyy)
-    },
-    {
-      provide: DateAdapter,
-      useClass: MomentDateAdapter,
-      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
-    },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: 'LL',
+    selector: 'app-search-dialog',
+    templateUrl: './search-dialog.component.html',
+    styleUrls: ['./search-dialog.component.css'],
+    providers: [
+        {
+            provide: MAT_DATE_LOCALE,
+            useValue: 'en-US', // Set the desired locale (e.g., 'en-GB' for dd/MM/yyyy)
         },
-        display: {
-          dateInput: 'DD/MM/YYYY', // Set the desired display format
-          monthYearLabel: 'MMM YYYY',
-          dateA11yLabel: 'LL',
-          monthYearA11yLabel: 'MMMM YYYY',
+        {
+            provide: DateAdapter,
+            useClass: MomentDateAdapter,
+            deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
         },
-      },
-    },
-  ],
+        {
+            provide: MAT_DATE_FORMATS,
+            useValue: {
+                parse: {
+                    dateInput: 'LL',
+                },
+                display: {
+                    dateInput: 'DD/MM/YYYY', // Set the desired display format
+                    monthYearLabel: 'MMM YYYY',
+                    dateA11yLabel: 'LL',
+                    monthYearA11yLabel: 'MMMM YYYY',
+                },
+            },
+        },
+    ],
+    standalone: false
 })
 export class SearchDialogComponent implements OnInit, DoCheck {
   // for ID Manpulation

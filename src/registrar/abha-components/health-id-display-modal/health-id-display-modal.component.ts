@@ -45,37 +45,38 @@ import { SessionStorageService } from '../../services/session-storage.service';
 import { DownloadSearchAbhaComponent } from '../download-search-abha/download-search-abha.component';
 
 @Component({
-  selector: 'app-health-id-display-modal',
-  templateUrl: './health-id-display-modal.component.html',
-  styleUrls: ['./health-id-display-modal.component.css'],
-  providers: [
-    {
-      provide: DatePipe,
-    },
-    {
-      provide: MAT_DATE_LOCALE,
-      useValue: 'en-US', // Set the desired locale (e.g., 'en-GB' for dd/MM/yyyy)
-    },
-    {
-      provide: DateAdapter,
-      useClass: MomentDateAdapter,
-      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
-    },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: 'LL',
+    selector: 'app-health-id-display-modal',
+    templateUrl: './health-id-display-modal.component.html',
+    styleUrls: ['./health-id-display-modal.component.css'],
+    providers: [
+        {
+            provide: DatePipe,
         },
-        display: {
-          dateInput: 'DD/MM/YYYY', // Set the desired display format
-          monthYearLabel: 'MMM YYYY',
-          dateA11yLabel: 'LL',
-          monthYearA11yLabel: 'MMMM YYYY',
+        {
+            provide: MAT_DATE_LOCALE,
+            useValue: 'en-US', // Set the desired locale (e.g., 'en-GB' for dd/MM/yyyy)
         },
-      },
-    },
-  ],
+        {
+            provide: DateAdapter,
+            useClass: MomentDateAdapter,
+            deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+        },
+        {
+            provide: MAT_DATE_FORMATS,
+            useValue: {
+                parse: {
+                    dateInput: 'LL',
+                },
+                display: {
+                    dateInput: 'DD/MM/YYYY', // Set the desired display format
+                    monthYearLabel: 'MMM YYYY',
+                    dateA11yLabel: 'LL',
+                    monthYearA11yLabel: 'MMMM YYYY',
+                },
+            },
+        },
+    ],
+    standalone: false
 })
 export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   chooseHealthID: any;

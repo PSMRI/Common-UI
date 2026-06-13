@@ -54,9 +54,10 @@ interface Beneficary {
 }
 
 @Component({
-  selector: 'app-search-family',
-  templateUrl: './search-family.component.html',
-  styleUrls: ['./search-family.component.css'],
+    selector: 'app-search-family',
+    templateUrl: './search-family.component.html',
+    styleUrls: ['./search-family.component.css'],
+    standalone: false
 })
 export class SearchFamilyComponent implements OnInit, DoCheck {
   masterData: any;

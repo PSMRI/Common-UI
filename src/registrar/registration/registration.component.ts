@@ -21,9 +21,10 @@ import { ConsentFormComponent } from './consent-form/consent-form.component';
 import { SessionStorageService } from '../services/session-storage.service';
 
 @Component({
-  selector: 'app-registration',
-  templateUrl: './registration.component.html',
-  styleUrls: ['./registration.component.css']
+    selector: 'app-registration',
+    templateUrl: './registration.component.html',
+    styleUrls: ['./registration.component.css'],
+    standalone: false
 })
 export class RegistrationComponent {
 

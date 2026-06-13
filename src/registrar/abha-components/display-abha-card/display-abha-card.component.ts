@@ -6,9 +6,10 @@ import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 
 @Component({
-  selector: 'app-display-abha-card',
-  templateUrl: './display-abha-card.component.html',
-  styleUrls: ['./display-abha-card.component.css']
+    selector: 'app-display-abha-card',
+    templateUrl: './display-abha-card.component.html',
+    styleUrls: ['./display-abha-card.component.css'],
+    standalone: false
 })
 export class DisplayAbhaCardComponent {
 

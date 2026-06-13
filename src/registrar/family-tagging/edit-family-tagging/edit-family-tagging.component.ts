@@ -28,9 +28,10 @@ import { FamilyTaggingService } from '../../services/familytagging.service';
 import { SessionStorageService } from '../../services/session-storage.service';
 
 @Component({
-  selector: 'app-edit-family-tagging',
-  templateUrl: './edit-family-tagging.component.html',
-  styleUrls: ['./edit-family-tagging.component.css'],
+    selector: 'app-edit-family-tagging',
+    templateUrl: './edit-family-tagging.component.html',
+    styleUrls: ['./edit-family-tagging.component.css'],
+    standalone: false
 })
 export class EditFamilyTaggingComponent implements OnInit, DoCheck {
   @ViewChild('editFamilyTaggingForm')

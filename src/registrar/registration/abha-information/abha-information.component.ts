@@ -14,9 +14,10 @@ import { AbhaConsentFormComponent } from '../../abha-components/abha-consent-for
 import { AmritTrackingService } from 'Common-UI/src/tracking';
 
 @Component({
-  selector: 'app-abha-information',
-  templateUrl: './abha-information.component.html',
-  styleUrls: ['./abha-information.component.css']
+    selector: 'app-abha-information',
+    templateUrl: './abha-information.component.html',
+    styleUrls: ['./abha-information.component.css'],
+    standalone: false
 })
 export class AbhaInformationComponent {
 
