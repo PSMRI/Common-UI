@@ -22,7 +22,7 @@
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { HttpClientModule } from "@angular/common/http";
+import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
 
 import { FeedbackRoutingModule } from "./feedback-routing.module";
 import { MaterialModule } from "src/app/app-modules/core/material.module"; // your shared material bundle
@@ -32,17 +32,10 @@ import { FeedbackDialogComponent } from "./shared/feedback-dialog/feedback-dialo
 
 import { FeedbackService } from "./services/feedback.service";
 
-@NgModule({
-  declarations: [FeedbackPublicPageComponent, FeedbackDialogComponent],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    MaterialModule,
-    FeedbackRoutingModule,
-  ],
-  exports: [FeedbackDialogComponent],
-  providers: [FeedbackService],
-})
+@NgModule({ declarations: [FeedbackPublicPageComponent, FeedbackDialogComponent],
+    exports: [FeedbackDialogComponent], imports: [CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MaterialModule,
+        FeedbackRoutingModule], providers: [FeedbackService, provideHttpClient(withInterceptorsFromDi())] })
 export class FeedbackModule {}

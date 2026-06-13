@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FamilyTaggingDetailsComponent } from './family-tagging-details.component';
 
@@ -27,7 +27,7 @@ describe('FamilyTaggingDetailsComponent', () => {
   let component: FamilyTaggingDetailsComponent;
   let fixture: ComponentFixture<FamilyTaggingDetailsComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [FamilyTaggingDetailsComponent],
     }).compileComponents();

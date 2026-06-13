@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BiometricAuthenticationComponent } from './biometric-authentication.component';
 
@@ -6,7 +6,7 @@ describe('BiometricAuthenticationComponent', () => {
   let component: BiometricAuthenticationComponent;
   let fixture: ComponentFixture<BiometricAuthenticationComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [BiometricAuthenticationComponent],
     }).compileComponents();

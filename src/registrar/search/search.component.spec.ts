@@ -21,7 +21,7 @@
  */
 
 import {
-  async,
+  waitForAsync,
   ComponentFixture,
   tick,
   inject,
@@ -261,7 +261,7 @@ describe('SearchComponent', () => {
     },
   ];
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
       imports: [
