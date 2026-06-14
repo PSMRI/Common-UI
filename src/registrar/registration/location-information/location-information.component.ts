@@ -14,10 +14,9 @@ import { AmritTrackingService } from 'Common-UI/src/tracking'
 import { Injector } from '@angular/core';
 
 @Component({
-    selector: 'app-location-information',
-    templateUrl: './location-information.component.html',
-    styleUrls: ['./location-information.component.css'],
-    standalone: false
+  selector: 'app-location-information',
+  templateUrl: './location-information.component.html',
+  styleUrls: ['./location-information.component.css'],
 })
 export class LocationInformationComponent {
   @Input()

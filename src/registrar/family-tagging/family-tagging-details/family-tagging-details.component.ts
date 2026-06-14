@@ -42,10 +42,9 @@ import { environment } from 'src/environments/environment';
 
 
 @Component({
-    selector: 'app-family-tagging-details',
-    templateUrl: './family-tagging-details.component.html',
-    styleUrls: ['./family-tagging-details.component.css'],
-    standalone: false
+  selector: 'app-family-tagging-details',
+  templateUrl: './family-tagging-details.component.html',
+  styleUrls: ['./family-tagging-details.component.css'],
 })
 export class FamilyTaggingDetailsComponent
   implements OnInit, DoCheck, OnDestroy

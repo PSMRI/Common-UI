@@ -40,10 +40,9 @@ import { SessionStorageService } from '../services/session-storage.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
-    selector: 'app-beneficiary-details',
-    templateUrl: './beneficiary-details.component.html',
-    styleUrls: ['./beneficiary-details.component.css'],
-    standalone: false
+  selector: 'app-beneficiary-details',
+  templateUrl: './beneficiary-details.component.html',
+  styleUrls: ['./beneficiary-details.component.css'],
 })
 export class BeneficiaryDetailsComponent implements OnInit, DoCheck, OnDestroy {
   beneficiary: any;

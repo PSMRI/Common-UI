@@ -4,10 +4,9 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { SessionStorageService } from '../../services/session-storage.service';
 
 @Component({
-    selector: 'app-abha-consent-form',
-    templateUrl: './abha-consent-form.component.html',
-    styleUrls: ['./abha-consent-form.component.css'],
-    standalone: false
+  selector: 'app-abha-consent-form',
+  templateUrl: './abha-consent-form.component.html',
+  styleUrls: ['./abha-consent-form.component.css']
 })
 export class AbhaConsentFormComponent {
 

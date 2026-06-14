@@ -9,10 +9,9 @@ import { DisplayAbhaCardComponent } from '../display-abha-card/display-abha-card
 import { AbhaEnterMobileOtpComponentComponent } from '../abha-enter-mobile-otp-component/abha-enter-mobile-otp-component.component';
 
 @Component({
-    selector: 'app-abha-generation-success-component',
-    templateUrl: './abha-generation-success-component.component.html',
-    styleUrls: ['./abha-generation-success-component.component.css'],
-    standalone: false
+  selector: 'app-abha-generation-success-component',
+  templateUrl: './abha-generation-success-component.component.html',
+  styleUrls: ['./abha-generation-success-component.component.css']
 })
 export class AbhaGenerationSuccessComponentComponent {
 

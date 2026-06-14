@@ -10,10 +10,9 @@ import { ConfirmationService } from 'src/app/app-modules/core/services/confirmat
 import { AbhaMobileComponentComponent } from '../abha-mobile-component/abha-mobile-component.component';
 
 @Component({
-    selector: 'app-generate-abha-component',
-    templateUrl: './generate-abha-component.component.html',
-    styleUrls: ['./generate-abha-component.component.css'],
-    standalone: false
+  selector: 'app-generate-abha-component',
+  templateUrl: './generate-abha-component.component.html',
+  styleUrls: ['./generate-abha-component.component.css']
 })
 export class GenerateAbhaComponentComponent {
 

@@ -12,10 +12,9 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConsentFormComponent } from '../consent-form/consent-form.component';
 
 @Component({
-    selector: 'app-other-information',
-    templateUrl: './other-information.component.html',
-    styleUrls: ['./other-information.component.css'],
-    standalone: false
+  selector: 'app-other-information',
+  templateUrl: './other-information.component.html',
+  styleUrls: ['./other-information.component.css'],
 })
 export class OtherInformationComponent {
   @Input('otherInfoFormGroup')

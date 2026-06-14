@@ -8,10 +8,9 @@ import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { SessionStorageService } from '../../services/session-storage.service';
 
 @Component({
-    selector: 'app-abha-mobile-component',
-    templateUrl: './abha-mobile-component.component.html',
-    styleUrls: ['./abha-mobile-component.component.css'],
-    standalone: false
+  selector: 'app-abha-mobile-component',
+  templateUrl: './abha-mobile-component.component.html',
+  styleUrls: ['./abha-mobile-component.component.css']
 })
 export class AbhaMobileComponentComponent {
   generateMobileOTPForm!: FormGroup;

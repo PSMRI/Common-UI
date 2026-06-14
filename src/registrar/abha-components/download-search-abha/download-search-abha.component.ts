@@ -9,10 +9,9 @@ import { AbhaEnterOtpComponentComponent } from '../abha-enter-otp-component/abha
 import { environment } from 'src/environments/environment';
 
 @Component({
-    selector: 'app-download-search-abha',
-    templateUrl: './download-search-abha.component.html',
-    styleUrls: ['./download-search-abha.component.css'],
-    standalone: false
+  selector: 'app-download-search-abha',
+  templateUrl: './download-search-abha.component.html',
+  styleUrls: ['./download-search-abha.component.css']
 })
 export class DownloadSearchAbhaComponent {
   currentLanguageSet: any;

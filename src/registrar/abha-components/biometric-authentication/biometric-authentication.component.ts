@@ -12,10 +12,9 @@ import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-la
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 
 @Component({
-    selector: 'app-biometric-authentication',
-    templateUrl: './biometric-authentication.component.html',
-    styleUrls: ['./biometric-authentication.component.css'],
-    standalone: false
+  selector: 'app-biometric-authentication',
+  templateUrl: './biometric-authentication.component.html',
+  styleUrls: ['./biometric-authentication.component.css'],
 })
 export class BiometricAuthenticationComponent implements OnInit {
   transactionId: any;

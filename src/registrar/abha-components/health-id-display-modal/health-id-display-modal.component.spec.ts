@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HealthIdDisplayModalComponent } from './health-id-display-modal.component';
 
@@ -27,7 +27,7 @@ describe('HealthIdDisplayModalComponent', () => {
   let component: HealthIdDisplayModalComponent;
   let fixture: ComponentFixture<HealthIdDisplayModalComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [HealthIdDisplayModalComponent],
     }).compileComponents();

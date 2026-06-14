@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SearchDialogComponent } from './search-dialog.component';
 
@@ -28,7 +28,7 @@ describe('SearchDialogComponent', () => {
   let component: SearchDialogComponent;
   let fixture: ComponentFixture<SearchDialogComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [SearchDialogComponent],
     }).compileComponents();

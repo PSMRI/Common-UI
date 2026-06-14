@@ -27,10 +27,9 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { Consent, SearchComponent } from 'Common-UI/src/registrar/search/search.component';
 
 @Component({
-    selector: 'app-consent-form',
-    templateUrl: './consent-form.component.html',
-    styleUrls: ['./consent-form.component.css'],
-    standalone: false
+  selector: 'app-consent-form',
+  templateUrl: './consent-form.component.html',
+  styleUrls: ['./consent-form.component.css'],
 })
 export class ConsentFormComponent implements OnInit {
   currentLanguageSet: any;

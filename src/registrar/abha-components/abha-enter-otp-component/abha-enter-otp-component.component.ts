@@ -11,10 +11,9 @@ import { AbhaVerifySuccessComponentComponent } from '../abha-verify-success-comp
 import { GenerateAbhaComponentComponent } from '../generate-abha-component/generate-abha-component.component';
 
 @Component({
-    selector: 'app-abha-enter-otp-component',
-    templateUrl: './abha-enter-otp-component.component.html',
-    styleUrls: ['./abha-enter-otp-component.component.css'],
-    standalone: false
+  selector: 'app-abha-enter-otp-component',
+  templateUrl: './abha-enter-otp-component.component.html',
+  styleUrls: ['./abha-enter-otp-component.component.css']
 })
 export class AbhaEnterOtpComponentComponent {
 

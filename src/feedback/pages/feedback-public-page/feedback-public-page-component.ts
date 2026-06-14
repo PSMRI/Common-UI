@@ -26,8 +26,8 @@ import { map } from "rxjs/operators";
 type SL = "1097" | "104" | "AAM" | "MMU" | "TM" | "ECD";
 
 @Component({
-    selector: "app-feedback-public-page",
-    template: `
+  selector: "app-feedback-public-page",
+  template: `
     <div class="page-wrap">
       <app-feedback-dialog
         [serviceLine]="serviceLine"
@@ -36,15 +36,14 @@ type SL = "1097" | "104" | "AAM" | "MMU" | "TM" | "ECD";
       </app-feedback-dialog>
     </div>
   `,
-    styles: [
-        `
+  styles: [
+    `
       .page-wrap {
         min-height: 100vh;
         background: #f5f7fb;
       }
     `,
-    ],
-    standalone: false
+  ],
 })
 export class FeedbackPublicPageComponent {
   serviceLine: SL = "AAM"; // default fallback

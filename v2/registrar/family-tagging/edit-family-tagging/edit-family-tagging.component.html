@@ -1,0 +1,215 @@
+<section id="editFamilyTaggingDialog" class="container-fluid">
+  <div class="row title info">
+    <div class="col-6">
+      <h4>{{ currentLanguageSet?.EditTheFamilyDetails }}</h4>
+    </div>
+    <div class="col-6">
+      <mat-icon
+        class="pull-right close-btn md-24"
+        (click)="matDialogRef.close(false)"
+        mat-icon-button
+        >close</mat-icon
+      >
+    </div>
+  </div>
+
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 m-t-10">
+    <h5 class="pull-left m-r-10">
+      <strong>{{ currentLanguageSet?.familyId }}: {{ memberFamilyId }}</strong>
+    </h5>
+    <h5 class="pull-right">
+      <strong
+        >{{ currentLanguageSet?.headOfTheFamily }}:
+        {{
+          (headInFamily !== undefined && headInFamily !== null
+            ? headInFamily
+            : "Not Declared"
+          ) | titlecase
+        }}</strong
+      >
+    </h5>
+  </div>
+  <mat-dialog-content style="overflow: hidden; width: inherit">
+    <div class="table-responsive m-t-10" style="overflow: hidden">
+      <table
+        class="table table-striped"
+        mat-table
+        [dataSource]="familyDetails.familyMembers"
+      >
+        <ng-container matColumnDef="sno">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.coreComponents?.sno }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ familyDetails.familyMembers.indexOf(element) + 1 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="memberId">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.memberId }}
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.memberId }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="memberName">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.memberName }}
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.memberName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="familyName">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.relationshipWthHead }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.relationWithHead }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="members">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.members }}
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.noOfmembers }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>
+            {{ currentLanguageSet?.bendetails?.action }}
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <mat-checkbox
+              *ngIf="showCheckbox"
+              (change)="selectMember($event, element)"
+              [checked]="uncheckMember && element.selected"
+            ></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <ng-container *ngIf="familyDetails.familyMembers.length === 0">
+          <td
+            mat-cell
+            *matCellDef="let element"
+            class="text-center text-field-color"
+            style="text-align: center"
+          >
+            {{ currentLanguageSet?.casesheet?.noRecordFound }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns1"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns1"></tr>
+      </table>
+    </div>
+
+    <form #editFamilyTaggingForm="ngForm">
+      <section class="row m-t-10">
+        <div class="col-xs-12 col-sm-6 box">
+          <div class="select-container">
+            <mat-form-field class="familyTagSelect">
+              <mat-label>
+                {{ currentLanguageSet?.isTheBeneficaryHeadOfTheFamily }}
+              </mat-label>
+
+              <mat-select
+                class="p-t-12 text-field-disabled"
+                required
+                [style.width]="'100%'"
+                name="familyHead"
+                [(ngModel)]="familyHead"
+                (selectionChange)="populateRelation(familyHead)"
+                [disabled]="disableForm"
+              >
+                <mat-option value="Yes">Yes</mat-option>
+                <mat-option value="No">No</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-6 box">
+          <div class="select-container">
+            <mat-form-field class="familyTagSelect">
+              <mat-label>
+                {{ currentLanguageSet?.beneficiaryRelationWithHeadOfTheFamily }}
+              </mat-label>
+              <mat-select
+                class="p-t-12 text-field-disabled"
+                required
+                [style.width]="'100%'"
+                name="relationWithHead"
+                [(ngModel)]="relationWithHead"
+                (selectionChange)="checkOtherRelation(relationWithHead)"
+                [disabled]="disableForm"
+              >
+                <mat-option
+                  *ngFor="let relationType of relationShipList"
+                  [value]="relationType.benRelationshipID"
+                  >{{ relationType.benRelationshipType }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="col-xs-12 inputAlign box" *ngIf="enableOther">
+          <mat-form-field [style.width]="'100%'">
+            <mat-label>
+              {{ currentLanguageSet?.other }}
+            </mat-label>
+            <input
+              autocomplete="off"
+              matInput
+              allowText="alphaspace"
+              name="other"
+              [(ngModel)]="other"
+              required
+              #othersValue="ngModel"
+              minlength="2"
+              maxlength="50"
+            />
+            <mat-error *ngIf="othersValue?.errors?.['required']">{{
+              currentLanguageSet?.otherRequired
+            }}</mat-error>
+            <mat-error *ngIf="othersValue?.errors?.['minlength']">{{
+              currentLanguageSet?.common?.pleaseprovideatleast2character
+            }}</mat-error>
+          </mat-form-field>
+        </div>
+      </section>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions class="padding15 margin15 pull-right">
+    <button
+      mat-raised-button
+      class="full-width-login button-reset"
+      type="button"
+      (click)="resetEditFamilyTaggingorm()"
+    >
+      {{ currentLanguageSet?.common?.clear }}
+    </button>
+    <button
+      *ngIf="showCheckbox"
+      [disabled]="disableUntag"
+      (click)="untagFamilyMember()"
+      mat-raised-button
+      class="full-width-login button-reset button-untag-disabled"
+      type="button"
+    >
+      {{ currentLanguageSet?.untag }}
+    </button>
+    <button
+      [disabled]="disableForm || editFamilyTaggingForm.invalid"
+      (click)="saveFamilyTagging()"
+      mat-raised-button
+      color="accent"
+      class="full-width-login background-overall button-save-disabled"
+      type="button"
+    >
+      {{ currentLanguageSet?.coreComponents?.save }}
+    </button>
+  </mat-dialog-actions>
+  <div class="clearfix"></div>
+</section>
