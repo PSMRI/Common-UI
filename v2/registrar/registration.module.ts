@@ -91,11 +91,6 @@ import { AbhaConsentFormComponent } from './abha-components/abha-consent-form/ab
         HealthIdDisplayModalComponent,
         BeneficiaryDetailsComponent,
     ],
-    providers: [
-        RegistrarService,
-        RegistrationService,
-        FamilyTaggingService,
-        RdDeviceService
-    ]
+    providers: [],
 })
 export class RegistrationModule { }
