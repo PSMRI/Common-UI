@@ -1,17 +1,22 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { SessionStorageService } from '../../services/session-storage.service';
+import { MatIcon } from '@angular/material/icon';
+import { NgIf } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatFormField, MatLabel, MatError } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
 
 @Component({
     selector: 'app-abha-mobile-component',
     templateUrl: './abha-mobile-component.component.html',
     styleUrls: ['./abha-mobile-component.component.css'],
-    standalone: false
+    imports: [MatIcon, MatDialogClose, NgIf, MatProgressSpinner, ReactiveFormsModule, MatFormField, MatLabel, MatInput, MatError]
 })
 export class AbhaMobileComponentComponent {
   generateMobileOTPForm!: FormGroup;

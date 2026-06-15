@@ -25,17 +25,16 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
 
 import { FeedbackRoutingModule } from "./feedback-routing.module";
-import { MaterialModule } from "src/app/app-modules/core/material.module"; // your shared material bundle
+ // your shared material bundle
 
 import { FeedbackPublicPageComponent } from "./pages/feedback-public-page/feedback-public-page-component";
 import { FeedbackDialogComponent } from "./shared/feedback-dialog/feedback-dialog.component";
 
 import { FeedbackService } from "./services/feedback.service";
 
-@NgModule({ declarations: [FeedbackPublicPageComponent, FeedbackDialogComponent],
+@NgModule({
     exports: [FeedbackDialogComponent], imports: [CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        MaterialModule,
-        FeedbackRoutingModule], providers: [FeedbackService, provideHttpClient(withInterceptorsFromDi())] })
+    FormsModule,
+    ReactiveFormsModule,
+    FeedbackRoutingModule, FeedbackPublicPageComponent, FeedbackDialogComponent], providers: [FeedbackService, provideHttpClient(withInterceptorsFromDi())] })
 export class FeedbackModule {}

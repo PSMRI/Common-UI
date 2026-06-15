@@ -1,12 +1,5 @@
 import { Component, Input } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
   BeneficiaryDetailsService,
   CameraService,
@@ -29,6 +22,12 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { AmritTrackingService } from 'Common-UI/v2/tracking';
 import { Injector } from '@angular/core';
 import { environment } from 'src/environments/environment';
+import { NgIf, NgFor } from '@angular/common';
+import { MatFormField, MatLabel, MatError, MatSuffix, MatSelect } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
+import { MatDatepickerInput, MatDatepickerToggle, MatDatepicker } from '@angular/material/datepicker';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
 
 
 @Component({
@@ -60,7 +59,7 @@ import { environment } from 'src/environments/environment';
             },
         },
     ],
-    standalone: false
+    imports: [ReactiveFormsModule, NgIf, NgFor, MatFormField, MatLabel, MatInput, MatError, MatDatepickerInput, MatDatepickerToggle, MatSuffix, MatDatepicker, MatSelect, MatOption, MatRadioGroup, MatRadioButton]
 })
 export class PersonalInformationComponent {
   @Input()

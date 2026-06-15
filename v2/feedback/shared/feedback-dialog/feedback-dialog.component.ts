@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, Input, OnInit } from "@angular/core";
-import { FormBuilder, Validators } from "@angular/forms";
+import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import {
   FeedbackService,
@@ -31,12 +31,13 @@ import { finalize } from "rxjs/operators";
 import { SessionStorageService } from "Common-UI/v2/registrar/services/session-storage.service";
 import { HttpServiceService } from "src/app/app-modules/core/services/http-service.service";
 import { SetLanguageComponent } from "src/app/app-modules/core/components/set-language.component";
+import { NgFor, NgIf } from "@angular/common";
 
 @Component({
     selector: "app-feedback-dialog",
     templateUrl: "./feedback-dialog.component.html",
     styleUrls: ["./feedback-dialog.component.scss"],
-    standalone: false
+    imports: [NgFor, NgIf, ReactiveFormsModule]
 })
 export class FeedbackDialogComponent implements OnInit {
   @Input() serviceLine: ServiceLine = "TM";

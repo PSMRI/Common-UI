@@ -6,18 +6,21 @@ import { HealthIdDisplayModalComponent } from '../../abha-components/health-id-d
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { GenerateAbhaComponentComponent } from '../../abha-components/generate-abha-component/generate-abha-component.component';
 import { DownloadSearchAbhaComponent } from '../../abha-components/download-search-abha/download-search-abha.component';
 import { AbhaConsentFormComponent } from '../../abha-components/abha-consent-form/abha-consent-form.component';
 import { AmritTrackingService } from 'Common-UI/v2/tracking';
+import { NgIf, NgFor } from '@angular/common';
+import { MatFormField, MatLabel } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
 
 @Component({
     selector: 'app-abha-information',
     templateUrl: './abha-information.component.html',
     styleUrls: ['./abha-information.component.css'],
-    standalone: false
+    imports: [NgIf, ReactiveFormsModule, NgFor, MatFormField, MatLabel, MatInput]
 })
 export class AbhaInformationComponent {
 

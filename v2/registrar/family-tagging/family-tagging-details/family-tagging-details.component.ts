@@ -39,13 +39,20 @@ import { RegistrarService } from '../../services/registrar.service';
 import { SearchFamilyComponent } from '../../search-family/search-family.component';
 import { SessionStorageService } from '../../services/session-storage.service';
 import { environment } from 'src/environments/environment';
+import { MatIcon } from '@angular/material/icon';
+import { MatSidenavContainer, MatSidenav } from '@angular/material/sidenav';
+import { BeneficiaryDetailsComponent } from '../../beneficiary-details/beneficiary-details.component';
+import { MatCard } from '@angular/material/card';
+import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
+import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { MatTooltip } from '@angular/material/tooltip';
 
 
 @Component({
     selector: 'app-family-tagging-details',
     templateUrl: './family-tagging-details.component.html',
     styleUrls: ['./family-tagging-details.component.css'],
-    standalone: false
+    imports: [MatIcon, MatSidenavContainer, MatSidenav, BeneficiaryDetailsComponent, MatCard, NgIf, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, NgFor, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatTooltip, MatPaginator, TitleCasePipe]
 })
 export class FamilyTaggingDetailsComponent
   implements OnInit, DoCheck, OnDestroy

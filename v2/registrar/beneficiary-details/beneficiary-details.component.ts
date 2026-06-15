@@ -38,12 +38,13 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 import { RegistrarService } from '../services/registrar.service';
 import { SessionStorageService } from '../services/session-storage.service';
 import { environment } from 'src/environments/environment';
+import { NgIf, NgFor, TitleCasePipe, DatePipe } from '@angular/common';
 
 @Component({
     selector: 'app-beneficiary-details',
     templateUrl: './beneficiary-details.component.html',
     styleUrls: ['./beneficiary-details.component.css'],
-    standalone: false
+    imports: [NgIf, NgFor, TitleCasePipe, DatePipe]
 })
 export class BeneficiaryDetailsComponent implements OnInit, DoCheck, OnDestroy {
   beneficiary: any;

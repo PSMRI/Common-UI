@@ -7,7 +7,7 @@ import { LocationInformationComponent } from './registration/location-informatio
 import { OtherInformationComponent } from './registration/other-information/other-information.component';
 import { AbhaInformationComponent } from './registration/abha-information/abha-information.component';
 import { MatStepperModule } from '@angular/material/stepper';
-import { MaterialModule } from 'src/app/app-modules/core/material.module';
+
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { RegistrationComponent } from './registration/registration.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -25,7 +25,7 @@ import { EditFamilyTaggingComponent } from './family-tagging/edit-family-tagging
 import { HealthIdDisplayModalComponent } from './abha-components/health-id-display-modal/health-id-display-modal.component';
 import { SearchFamilyComponent } from './search-family/search-family.component';
 import { BeneficiaryDetailsComponent } from './beneficiary-details/beneficiary-details.component';
-import { SharedModule } from 'src/app/app-modules/core/components/shared/shared.module';
+
 import { FamilyTaggingService } from './services/familytagging.service';
 import { ConsentFormComponent } from './registration/consent-form/consent-form.component';
 import { RdDeviceService } from './services/rddevice.service';
@@ -40,7 +40,15 @@ import { AbhaEnterMobileOtpComponentComponent } from './abha-components/abha-ent
 import { AbhaConsentFormComponent } from './abha-components/abha-consent-form/abha-consent-form.component';
 
 @NgModule({
-  declarations: [
+    imports: [
+    CommonModule,
+    MatStepperModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RegistrationRoutingModule,
+    MatTableModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     PersonalInformationComponent,
     LocationInformationComponent,
     OtherInformationComponent,
@@ -65,41 +73,29 @@ import { AbhaConsentFormComponent } from './abha-components/abha-consent-form/ab
     DisplayAbhaCardComponent,
     AbhaVerifySuccessComponentComponent,
     AbhaEnterMobileOtpComponentComponent,
-    AbhaConsentFormComponent,
-  ],
-  imports: [
-    CommonModule,
-    MaterialModule,
-    MatStepperModule,
-    ReactiveFormsModule,
-    FormsModule,
-    RegistrationRoutingModule,
-    SharedModule,
-    MatTableModule,
-    MatDatepickerModule,
-    MatNativeDateModule
-  ],
-  exports: [
-    PersonalInformationComponent,
-    LocationInformationComponent,
-    OtherInformationComponent,
-    AbhaInformationComponent,
-    RegistrationComponent,
-    SearchComponent,
-    SearchDialogComponent,
-    BiometricAuthenticationComponent,
-    FamilyTaggingDetailsComponent,
-    CreateFamilyTaggingComponent,
-    EditFamilyTaggingComponent,
-    GenerateAbhaComponentComponent,
-    HealthIdDisplayModalComponent,
-    BeneficiaryDetailsComponent,
-  ],
-  providers: [
-    RegistrarService,
-    RegistrationService,
-    FamilyTaggingService,
-    RdDeviceService
-  ]
+    AbhaConsentFormComponent
+],
+    exports: [
+        PersonalInformationComponent,
+        LocationInformationComponent,
+        OtherInformationComponent,
+        AbhaInformationComponent,
+        RegistrationComponent,
+        SearchComponent,
+        SearchDialogComponent,
+        BiometricAuthenticationComponent,
+        FamilyTaggingDetailsComponent,
+        CreateFamilyTaggingComponent,
+        EditFamilyTaggingComponent,
+        GenerateAbhaComponentComponent,
+        HealthIdDisplayModalComponent,
+        BeneficiaryDetailsComponent,
+    ],
+    providers: [
+        RegistrarService,
+        RegistrationService,
+        FamilyTaggingService,
+        RdDeviceService
+    ]
 })
 export class RegistrationModule { }

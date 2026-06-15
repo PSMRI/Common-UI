@@ -1,21 +1,18 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { RegistrarService } from '../../services/registrar.service';
 import { RdDeviceService } from '../../services/rddevice.service';
 import { concatMap } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
     selector: 'app-biometric-authentication',
     templateUrl: './biometric-authentication.component.html',
     styleUrls: ['./biometric-authentication.component.css'],
-    standalone: false
+    imports: [MatIcon, MatDialogClose]
 })
 export class BiometricAuthenticationComponent implements OnInit {
   transactionId: any;
