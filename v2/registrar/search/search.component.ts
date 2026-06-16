@@ -33,7 +33,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SearchDialogComponent } from '../search-dialog/search-dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import {
   ConfirmationService,
@@ -48,6 +48,13 @@ import { SessionStorageService } from '../services/session-storage.service';
 import { HealthIdDisplayModalComponent } from '../abha-components/health-id-display-modal/health-id-display-modal.component';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatIcon } from '@angular/material/icon';
+import { MatCard } from '@angular/material/card';
+import { NgIf, TitleCasePipe } from '@angular/common';
+import { MatFormField, MatSuffix } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
 
 export interface Consent {
   consentGranted: string;
@@ -57,7 +64,7 @@ export interface Consent {
     selector: 'app-search',
     templateUrl: './search.component.html',
     styleUrls: ['./search.component.css'],
-    standalone: false
+    imports: [ReactiveFormsModule, FormsModule, MatTooltip, MatIcon, MatCard, NgIf, MatFormField, MatInput, MatSuffix, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, TitleCasePipe]
 })
 export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
   rowsPerPage = 5;

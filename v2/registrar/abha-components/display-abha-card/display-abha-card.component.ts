@@ -1,15 +1,18 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { MatIcon } from '@angular/material/icon';
+import { NgIf } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-display-abha-card',
     templateUrl: './display-abha-card.component.html',
     styleUrls: ['./display-abha-card.component.css'],
-    standalone: false
+    imports: [MatIcon, MatDialogClose, NgIf, MatProgressSpinner]
 })
 export class DisplayAbhaCardComponent {
 

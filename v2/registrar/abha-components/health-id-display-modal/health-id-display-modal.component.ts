@@ -20,14 +20,10 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, DoCheck, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
-import { DatePipe } from '@angular/common';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-} from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
+import { FormGroup, FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { DatePipe, NgIf } from '@angular/common';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -43,6 +39,12 @@ import {
 } from '@angular/material-moment-adapter';
 import { SessionStorageService } from '../../services/session-storage.service';
 import { DownloadSearchAbhaComponent } from '../download-search-abha/download-search-abha.component';
+import { MatTooltip } from '@angular/material/tooltip';
+import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
+import { MatFormField } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
 
 @Component({
     selector: 'app-health-id-display-modal',
@@ -76,7 +78,7 @@ import { DownloadSearchAbhaComponent } from '../download-search-abha/download-se
             },
         },
     ],
-    standalone: false
+    imports: [NgIf, MatDialogClose, MatTooltip, MatIcon, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRadioGroup, ReactiveFormsModule, FormsModule, MatRadioButton, MatFormField, MatInput, DatePipe]
 })
 export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   chooseHealthID: any;

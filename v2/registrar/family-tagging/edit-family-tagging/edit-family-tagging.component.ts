@@ -20,18 +20,27 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, DoCheck, Inject, OnInit, ViewChild } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { FamilyTaggingService } from '../../services/familytagging.service';
 import { SessionStorageService } from '../../services/session-storage.service';
+import { MatIcon } from '@angular/material/icon';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MatFormField, MatLabel, MatSelect, MatError } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatInput } from '@angular/material/input';
 
 @Component({
     selector: 'app-edit-family-tagging',
     templateUrl: './edit-family-tagging.component.html',
     styleUrls: ['./edit-family-tagging.component.css'],
-    standalone: false
+    imports: [MatIcon, CdkScrollable, MatDialogContent, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, NgIf, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, ReactiveFormsModule, FormsModule, MatFormField, MatLabel, MatSelect, MatOption, NgFor, MatInput, MatError, MatDialogActions, TitleCasePipe]
 })
 export class EditFamilyTaggingComponent implements OnInit, DoCheck {
   @ViewChild('editFamilyTaggingForm')

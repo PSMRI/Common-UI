@@ -28,8 +28,8 @@ import {
   AfterViewChecked,
   DoCheck,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, Validators, FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatDialogRef, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { CommonService } from 'src/app/app-modules/core/services/common-services.service';
@@ -47,6 +47,13 @@ import {
 } from '@angular/material-moment-adapter';
 import { SessionStorageService } from '../services/session-storage.service';
 import { map, Observable, startWith } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { MatFormField, MatLabel, MatError, MatSelect, MatSuffix } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
+import { NgIf, NgFor, AsyncPipe, TitleCasePipe } from '@angular/common';
+import { MatOption, MatAutocompleteTrigger, MatAutocomplete } from '@angular/material/autocomplete';
+import { MatDatepickerInput, MatDatepickerToggle, MatDatepicker } from '@angular/material/datepicker';
 
 interface Beneficary {
   firstName: string;
@@ -90,7 +97,7 @@ interface Beneficary {
             },
         },
     ],
-    standalone: false
+    imports: [MatIcon, CdkScrollable, MatDialogContent, ReactiveFormsModule, MatFormField, MatLabel, MatInput, NgIf, MatError, MatSelect, NgFor, MatOption, MatDatepickerInput, MatDatepickerToggle, MatSuffix, MatDatepicker, MatAutocompleteTrigger, MatAutocomplete, MatDialogActions, MatDialogClose, AsyncPipe, TitleCasePipe]
 })
 export class SearchDialogComponent implements OnInit, DoCheck {
   // for ID Manpulation

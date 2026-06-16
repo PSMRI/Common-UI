@@ -1,16 +1,18 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
 import { DisplayAbhaCardComponent } from '../display-abha-card/display-abha-card.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
+import { NgIf } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-abha-verify-success-component',
     templateUrl: './abha-verify-success-component.component.html',
     styleUrls: ['./abha-verify-success-component.component.css'],
-    standalone: false
+    imports: [NgIf, MatProgressSpinner, MatDialogClose]
 })
 export class AbhaVerifySuccessComponentComponent {
 

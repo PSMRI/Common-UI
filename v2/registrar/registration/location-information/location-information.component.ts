@@ -1,23 +1,22 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import {
-  AbstractControl,
-  FormArray,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RegistrarService } from '../../services/registrar.service';
 import { Subscription } from 'rxjs';
 import { SessionStorageService } from '../../services/session-storage.service';
 import { AmritTrackingService } from 'Common-UI/v2/tracking'
 import { Injector } from '@angular/core';
+import { NgFor, NgIf, TitleCasePipe } from '@angular/common';
+import { MatFormField, MatLabel, MatError, MatSuffix, MatSelect } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
+import { MatDatepickerInput, MatDatepickerToggle, MatDatepicker } from '@angular/material/datepicker';
+import { MatOption, MatAutocompleteTrigger, MatAutocomplete } from '@angular/material/autocomplete';
+import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
 
 @Component({
     selector: 'app-location-information',
     templateUrl: './location-information.component.html',
     styleUrls: ['./location-information.component.css'],
-    standalone: false
+    imports: [ReactiveFormsModule, NgFor, NgIf, MatFormField, MatLabel, MatInput, MatError, MatDatepickerInput, MatDatepickerToggle, MatSuffix, MatDatepicker, MatSelect, MatOption, MatRadioGroup, MatRadioButton, MatAutocompleteTrigger, MatAutocomplete, TitleCasePipe]
 })
 export class LocationInformationComponent {
   @Input()

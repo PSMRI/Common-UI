@@ -1,15 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RegistrarService } from '../services/registrar.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -19,12 +11,19 @@ import * as moment from 'moment';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConsentFormComponent } from './consent-form/consent-form.component';
 import { SessionStorageService } from '../services/session-storage.service';
+import { NgIf } from '@angular/common';
+import { MatStepper, MatStep, MatStepLabel, MatStepperNext, MatStepperPrevious } from '@angular/material/stepper';
+import { MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
+import { PersonalInformationComponent } from './personal-information/personal-information.component';
+import { LocationInformationComponent } from './location-information/location-information.component';
+import { OtherInformationComponent } from './other-information/other-information.component';
+import { AbhaInformationComponent } from './abha-information/abha-information.component';
 
 @Component({
     selector: 'app-registration',
     templateUrl: './registration.component.html',
     styleUrls: ['./registration.component.css'],
-    standalone: false
+    imports: [NgIf, ReactiveFormsModule, MatStepper, MatStep, MatStepLabel, MatCard, MatCardTitle, MatCardContent, PersonalInformationComponent, MatStepperNext, LocationInformationComponent, MatStepperPrevious, OtherInformationComponent, AbhaInformationComponent]
 })
 export class RegistrationComponent {
 

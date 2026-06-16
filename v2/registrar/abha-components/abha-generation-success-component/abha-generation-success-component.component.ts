@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
@@ -7,12 +7,14 @@ import { AbhaEnterOtpComponentComponent } from '../abha-enter-otp-component/abha
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { DisplayAbhaCardComponent } from '../display-abha-card/display-abha-card.component';
 import { AbhaEnterMobileOtpComponentComponent } from '../abha-enter-mobile-otp-component/abha-enter-mobile-otp-component.component';
+import { NgIf } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
     selector: 'app-abha-generation-success-component',
     templateUrl: './abha-generation-success-component.component.html',
     styleUrls: ['./abha-generation-success-component.component.css'],
-    standalone: false
+    imports: [NgIf, MatProgressSpinner, MatDialogClose]
 })
 export class AbhaGenerationSuccessComponentComponent {
 

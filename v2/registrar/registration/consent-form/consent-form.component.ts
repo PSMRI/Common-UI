@@ -20,17 +20,19 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { Consent, SearchComponent } from 'Common-UI/v2/registrar/search/search.component';
+import { MatIcon } from '@angular/material/icon';
+import { CdkScrollable } from '@angular/cdk/scrolling';
 
 @Component({
     selector: 'app-consent-form',
     templateUrl: './consent-form.component.html',
     styleUrls: ['./consent-form.component.css'],
-    standalone: false
+    imports: [MatIcon, CdkScrollable, MatDialogContent, MatDialogActions]
 })
 export class ConsentFormComponent implements OnInit {
   currentLanguageSet: any;

@@ -22,6 +22,7 @@
 import { Component } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { map } from "rxjs/operators";
+import { FeedbackDialogComponent } from "../../shared/feedback-dialog/feedback-dialog.component";
 
 type SL = "1097" | "104" | "AAM" | "MMU" | "TM" | "ECD";
 
@@ -44,7 +45,7 @@ type SL = "1097" | "104" | "AAM" | "MMU" | "TM" | "ECD";
       }
     `,
     ],
-    standalone: false
+    imports: [FeedbackDialogComponent]
 })
 export class FeedbackPublicPageComponent {
   serviceLine: SL = "AAM"; // default fallback

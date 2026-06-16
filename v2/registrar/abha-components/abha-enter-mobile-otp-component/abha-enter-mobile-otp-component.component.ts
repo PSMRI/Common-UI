@@ -1,16 +1,21 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
+import { MatIcon } from '@angular/material/icon';
+import { NgIf } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatFormField, MatLabel } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
 
 @Component({
     selector: 'app-abha-enter-mobile-otp-component',
     templateUrl: './abha-enter-mobile-otp-component.component.html',
     styleUrls: ['./abha-enter-mobile-otp-component.component.css'],
-    standalone: false
+    imports: [MatIcon, MatDialogClose, NgIf, MatProgressSpinner, ReactiveFormsModule, MatFormField, MatLabel, MatInput]
 })
 export class AbhaEnterMobileOtpComponentComponent {
   generateMobileOTPForm!: FormGroup;

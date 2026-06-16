@@ -29,20 +29,22 @@ import {
   HostListener,
   DoCheck,
 } from '@angular/core';
-import {
-  MatDialogRef,
-  MatDialog,
-  MatDialogConfig,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { MatDialogRef, MatDialog, MatDialogConfig, MAT_DIALOG_DATA, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { CommonService } from 'src/app/app-modules/core/services/common-services.service';
 import { RegistrarService } from '../services/registrar.service';
 import { FamilyTaggingService } from '../services/familytagging.service';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
+import { MatIcon } from '@angular/material/icon';
+import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { MatFormField, MatLabel, MatSelect, MatError } from '@angular/material/select';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatInput } from '@angular/material/input';
 
 interface Beneficary {
   village: string;
@@ -57,7 +59,7 @@ interface Beneficary {
     selector: 'app-search-family',
     templateUrl: './search-family.component.html',
     styleUrls: ['./search-family.component.css'],
-    standalone: false
+    imports: [MatIcon, NgIf, MatProgressSpinner, CdkScrollable, MatDialogContent, ReactiveFormsModule, MatFormField, MatLabel, MatSelect, NgFor, MatOption, MatInput, MatError, MatDialogActions, TitleCasePipe]
 })
 export class SearchFamilyComponent implements OnInit, DoCheck {
   masterData: any;

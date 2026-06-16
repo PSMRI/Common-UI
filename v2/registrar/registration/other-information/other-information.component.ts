@@ -1,21 +1,21 @@
 import { Component, Input } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RegistrarService } from '../../services/registrar.service';
 import { Subscription } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConsentFormComponent } from '../consent-form/consent-form.component';
+import { NgFor, NgIf } from '@angular/common';
+import { MatFormField, MatLabel, MatError, MatSuffix, MatSelect } from '@angular/material/select';
+import { MatInput } from '@angular/material/input';
+import { MatDatepickerInput, MatDatepickerToggle, MatDatepicker } from '@angular/material/datepicker';
+import { MatOption } from '@angular/material/autocomplete';
+import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
 
 @Component({
     selector: 'app-other-information',
     templateUrl: './other-information.component.html',
     styleUrls: ['./other-information.component.css'],
-    standalone: false
+    imports: [ReactiveFormsModule, NgFor, NgIf, MatFormField, MatLabel, MatInput, MatError, MatDatepickerInput, MatDatepickerToggle, MatSuffix, MatDatepicker, MatSelect, MatOption, MatRadioGroup, MatRadioButton]
 })
 export class OtherInformationComponent {
   @Input('otherInfoFormGroup')
