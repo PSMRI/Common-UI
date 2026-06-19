@@ -281,6 +281,20 @@ export class RegistrarService {
       reqObjForVerifyOtp,
     );
   }
+
+  generateLinkTokenForCareContext(reqObj: any) {
+    return this.http.post(
+      environment.generateLinkTokenForCareContext,
+      reqObj,
+    );
+  }
+
+  linkCareContextV3(reqObj: any) {
+    return this.http.post(
+      environment.linkCareContext,
+      reqObj,
+    );
+  }
   generateOTPValidateHealthID(healthID: any) {
     return this.http.post(
       environment.generateOTPForHealthIDValidation,
