@@ -423,7 +423,7 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
   private determinePortalWidthOnOpen(portalWidth: number): void {
     runInInjectionContext(this.injector, () => {
       afterNextRender(() => {
-        if (!this.overlayRef || !this.overlayRef.hasAttached()) {
+        if (!this.overlayRef?.hasAttached()) {
           return;
         }
 
@@ -593,10 +593,10 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
       if (index === focusedIndex) {
         item.focus();
         item.setAttribute('aria-selected', 'true');
-        item.setAttribute('data-selected', 'true');
+        item.dataset['selected'] = 'true';
       } else {
         item.removeAttribute('aria-selected');
-        item.removeAttribute('data-selected');
+        delete item.dataset['selected'];
       }
     }
   }

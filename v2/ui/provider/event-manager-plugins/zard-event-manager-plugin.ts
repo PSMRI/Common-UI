@@ -46,7 +46,7 @@ import { EventManagerPlugin } from '@angular/platform-browser';
  * (click.stop)="handler()"
  */
 export class ZardEventManagerPlugin extends EventManagerPlugin {
-  #keywords = ['prevent', 'stop', 'stop-immediate', 'prevent-with-stop'];
+  readonly #keywords = ['prevent', 'stop', 'stop-immediate', 'prevent-with-stop'];
 
   override supports(eventName: string): boolean {
     return this.#keywords.some(keyword => eventName.endsWith(`.${keyword}`));
@@ -57,7 +57,7 @@ export class ZardEventManagerPlugin extends EventManagerPlugin {
     eventName: string,
     handler: (event: Event) => void,
     options?: ListenerOptions,
-    // eslint-disable-next-line
+    // eslint-disable-next-line @typescript-eslint/ban-types
   ): Function {
     const { event, keyword, keys } = this.#provideEventFrom(eventName, this.#keywords);
     return this.manager.addEventListener(
@@ -101,14 +101,13 @@ export class ZardEventManagerPlugin extends EventManagerPlugin {
     for (const substring of eventNameSubstrings) {
       if (substring.startsWith('{')) {
         keys = this.#extractKeys(substring);
-        continue;
       } else if (keywords.includes(substring)) {
         keyword = substring;
         break;
-      } else if (!event) {
-        event = substring;
-      } else {
+      } else if (event) {
         event += `.${substring}`;
+      } else {
+        event = substring;
       }
     }
 
