@@ -20,13 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './dialog';
-export * from './form';
-export * from './input';
-export * from './loader';
-export * from './pagination';
-export * from './provider';
-export * from './select';
-export * from './table';
-export * from './toast';
+import { ZardSelectComponent } from './select.component';
+import { ZardSelectItemComponent } from './select-item.component';
+
+export const ZardSelectImports = [ZardSelectComponent, ZardSelectItemComponent] as const;

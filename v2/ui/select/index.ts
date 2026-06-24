@@ -20,13 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './dialog';
-export * from './form';
-export * from './input';
-export * from './loader';
-export * from './pagination';
-export * from './provider';
-export * from './select';
-export * from './table';
-export * from './toast';
+export * from './select.component';
+export * from './select-item.component';
+export * from './select.imports';
+export * from './select.variants';
