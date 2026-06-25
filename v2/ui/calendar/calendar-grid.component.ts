@@ -154,7 +154,7 @@ export class ZardCalendarGridComponent {
 
     // Fall back to first enabled day of current month
     const firstCurrentMonthIndex = days.findIndex(day => day.isCurrentMonth && !day.isDisabled);
-    return firstCurrentMonthIndex >= 0 ? firstCurrentMonthIndex : 0;
+    return Math.max(firstCurrentMonthIndex, 0);
   }
 
   /**
@@ -278,20 +278,7 @@ export class ZardCalendarGridComponent {
     const clampedStart = Math.max(0, Math.min(start, days.length - 1));
     const clampedFallback = Math.max(0, Math.min(fallback, days.length - 1));
 
-    if (!reverse) {
-      // Search forward from start
-      for (let i = clampedStart; i < days.length; i++) {
-        if (!days[i].isDisabled) {
-          return i;
-        }
-      }
-      // Search backward from start
-      for (let i = clampedStart - 1; i >= 0; i--) {
-        if (!days[i].isDisabled) {
-          return i;
-        }
-      }
-    } else {
+    if (reverse) {
       // Search backward from start
       for (let i = clampedStart; i >= 0; i--) {
         if (!days[i].isDisabled) {
@@ -300,6 +287,19 @@ export class ZardCalendarGridComponent {
       }
       // Search forward from start
       for (let i = clampedStart + 1; i < days.length; i++) {
+        if (!days[i].isDisabled) {
+          return i;
+        }
+      }
+    } else {
+      // Search forward from start
+      for (let i = clampedStart; i < days.length; i++) {
+        if (!days[i].isDisabled) {
+          return i;
+        }
+      }
+      // Search backward from start
+      for (let i = clampedStart - 1; i >= 0; i--) {
         if (!days[i].isDisabled) {
           return i;
         }

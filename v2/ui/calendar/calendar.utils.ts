@@ -241,7 +241,7 @@ export function normalizeCalendarValue(v: CalendarValue): CalendarValue {
  */
 export function toValidDate(value: unknown): Date | null {
   if (value instanceof Date) {
-    return isNaN(value.getTime()) ? null : value;
+    return Number.isNaN(value.getTime()) ? null : value;
   }
 
   if (typeof value === 'number' && value.toString().length === 8) {
@@ -263,7 +263,7 @@ export function toValidDate(value: unknown): Date | null {
 
   const date = new Date(value as string | number | Date);
 
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return null;
   }
 

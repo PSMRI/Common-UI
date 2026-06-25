@@ -356,8 +356,13 @@ export class ZardCalendarComponent implements ControlValueAccessor {
         const todayIndex = days.findIndex(day => day.isToday && day.isCurrentMonth);
         const firstEnabledIndex = days.findIndex(day => day.isCurrentMonth && !day.isDisabled);
 
-        targetIndex =
-          selectedIndex >= 0 ? selectedIndex : todayIndex >= 0 ? todayIndex : Math.max(firstEnabledIndex, 0);
+        if (selectedIndex >= 0) {
+          targetIndex = selectedIndex;
+        } else if (todayIndex >= 0) {
+          targetIndex = todayIndex;
+        } else {
+          targetIndex = Math.max(firstEnabledIndex, 0);
+        }
         break;
       }
     }

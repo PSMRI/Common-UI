@@ -229,9 +229,10 @@ export class ZardPopoverDirective implements OnInit, OnDestroy {
     if (trigger === 'click') {
       this.listeners.push(this.renderer.listen(this.nativeElement, 'click.stop', () => this.toggle()));
     } else if (trigger === 'hover') {
-      this.listeners.push(this.renderer.listen(this.nativeElement, 'mouseenter', () => this.show()));
-
-      this.listeners.push(this.renderer.listen(this.nativeElement, 'mouseleave', () => this.hide()));
+      this.listeners.push(
+        this.renderer.listen(this.nativeElement, 'mouseenter', () => this.show()),
+        this.renderer.listen(this.nativeElement, 'mouseleave', () => this.hide()),
+      );
     }
   }
 
@@ -260,120 +261,44 @@ export class ZardPopoverDirective implements OnInit, OnDestroy {
     // Fallback positions for better positioning when primary doesn't fit
     switch (placement) {
       case 'bottom':
-        // Try top if bottom doesn't fit
-        positions.push({
-          originX: 'center',
-          originY: 'top',
-          overlayX: 'center',
-          overlayY: 'bottom',
-          offsetX: 0,
-          offsetY: -8,
-        });
-        // If neither top nor bottom work, try right
-        positions.push({
-          originX: 'end',
-          originY: 'center',
-          overlayX: 'start',
-          overlayY: 'center',
-          offsetX: 8,
-          offsetY: 0,
-        });
-        // Finally try left
-        positions.push({
-          originX: 'start',
-          originY: 'center',
-          overlayX: 'end',
-          overlayY: 'center',
-          offsetX: -8,
-          offsetY: 0,
-        });
+        positions.push(
+          // Try top if bottom doesn't fit
+          { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetX: 0, offsetY: -8 },
+          // If neither top nor bottom work, try right
+          { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 8, offsetY: 0 },
+          // Finally try left
+          { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -8, offsetY: 0 },
+        );
         break;
       case 'top':
-        // Try bottom if top doesn't fit
-        positions.push({
-          originX: 'center',
-          originY: 'bottom',
-          overlayX: 'center',
-          overlayY: 'top',
-          offsetX: 0,
-          offsetY: 8,
-        });
-        // If neither top nor bottom work, try right
-        positions.push({
-          originX: 'end',
-          originY: 'center',
-          overlayX: 'start',
-          overlayY: 'center',
-          offsetX: 8,
-          offsetY: 0,
-        });
-        // Finally try left
-        positions.push({
-          originX: 'start',
-          originY: 'center',
-          overlayX: 'end',
-          overlayY: 'center',
-          offsetX: -8,
-          offsetY: 0,
-        });
+        positions.push(
+          // Try bottom if top doesn't fit
+          { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetX: 0, offsetY: 8 },
+          // If neither top nor bottom work, try right
+          { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 8, offsetY: 0 },
+          // Finally try left
+          { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -8, offsetY: 0 },
+        );
         break;
       case 'right':
-        // Try left if right doesn't fit
-        positions.push({
-          originX: 'start',
-          originY: 'center',
-          overlayX: 'end',
-          overlayY: 'center',
-          offsetX: -8,
-          offsetY: 0,
-        });
-        // If neither left nor right work, try bottom
-        positions.push({
-          originX: 'center',
-          originY: 'bottom',
-          overlayX: 'center',
-          overlayY: 'top',
-          offsetX: 0,
-          offsetY: 8,
-        });
-        // Finally try top
-        positions.push({
-          originX: 'center',
-          originY: 'top',
-          overlayX: 'center',
-          overlayY: 'bottom',
-          offsetX: 0,
-          offsetY: -8,
-        });
+        positions.push(
+          // Try left if right doesn't fit
+          { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -8, offsetY: 0 },
+          // If neither left nor right work, try bottom
+          { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetX: 0, offsetY: 8 },
+          // Finally try top
+          { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetX: 0, offsetY: -8 },
+        );
         break;
       case 'left':
-        // Try right if left doesn't fit
-        positions.push({
-          originX: 'end',
-          originY: 'center',
-          overlayX: 'start',
-          overlayY: 'center',
-          offsetX: 8,
-          offsetY: 0,
-        });
-        // If neither left nor right work, try bottom
-        positions.push({
-          originX: 'center',
-          originY: 'bottom',
-          overlayX: 'center',
-          overlayY: 'top',
-          offsetX: 0,
-          offsetY: 8,
-        });
-        // Finally try top
-        positions.push({
-          originX: 'center',
-          originY: 'top',
-          overlayX: 'center',
-          overlayY: 'bottom',
-          offsetX: 0,
-          offsetY: -8,
-        });
+        positions.push(
+          // Try right if left doesn't fit
+          { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 8, offsetY: 0 },
+          // If neither left nor right work, try bottom
+          { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetX: 0, offsetY: 8 },
+          // Finally try top
+          { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetX: 0, offsetY: -8 },
+        );
         break;
     }
 
