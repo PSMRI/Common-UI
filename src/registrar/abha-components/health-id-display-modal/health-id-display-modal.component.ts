@@ -20,7 +20,6 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, DoCheck, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import {
   MAT_DIALOG_DATA,
@@ -82,11 +81,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   currentLanguageSet: any;
   healthIDMapped: any;
   benDetails: any;
-  enablehealthIdOTPForm = false;
   healthIDMapping = false;
-  transactionId: any;
   selectedHealthID: any;
-  healthIdOTPForm!: FormGroup;
   showProgressBar = false;
   searchPopup = false;
 
@@ -121,12 +117,11 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     public dialogRef: MatDialogRef<HealthIdDisplayModalComponent>,
     @Inject(MAT_DIALOG_DATA) public input: any,
     public httpServiceService: HttpServiceService,
-    private formBuilder: FormBuilder,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
     private datePipe: DatePipe,
     private dialogMd: MatDialog,
-    private sessionstorage:SessionStorageService,
+    private sessionstorage: SessionStorageService,
   ) {
     dialogRef.disableClose = true;
   }
@@ -159,7 +154,6 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       this.benDetails = this.input.dataList.data.BenHealthDetails;
       console.log("this.benDetails1",this.benDetails)
     }
-    this.healthIdOTPForm = this.createOtpGenerationForm();
     this.createList();
   }
   ngDoCheck() {
@@ -169,11 +163,6 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     const getLanguageJson = new SetLanguageComponent(this.httpServiceService);
     getLanguageJson.setLanguage();
     this.currentLanguageSet = getLanguageJson.currentLanguageObject;
-  }
-  createOtpGenerationForm() {
-    return this.formBuilder.group({
-      otp: null,
-    });
   }
   createList() {
     if (this.benDetails.length > 0) {
@@ -190,129 +179,123 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   onRadioChange(data: any) {
     this.selectedHealthID = data;
   }
-  generateOtpForMapping() {
+  linkCareContextV3() {
     this.showProgressBar = true;
-    const abdmFacilityId = this.sessionstorage.getItem("abdmFacilityId");
-    const abdmFacilityName = this.sessionstorage.getItem("abdmFacilityName");
-    const reqObj = {
-      healthID: this.selectedHealthID.healthId
-        ? this.selectedHealthID.healthId
-        : null,
-      healthIdNumber: this.selectedHealthID.healthIdNumber
+    const abdmFacilityId = this.sessionstorage.getItem('abdmFacilityId');
+    const abdmFacilityName = this.sessionstorage.getItem('abdmFacilityName');
+    const tokenReqObj = {
+      abhaNumber: this.selectedHealthID.healthIdNumber
         ? this.selectedHealthID.healthIdNumber
         : null,
-      authenticationMode: this.selectedHealthID.authenticationMode,
-      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined && abdmFacilityId !== "") ? abdmFacilityId : null,
-      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined && abdmFacilityName !== "") ? abdmFacilityName : null
-    };
-    this.registrarService.generateOtpForMappingCareContext(reqObj).subscribe(
-      (receivedOtpResponse: any) => {
-        if (receivedOtpResponse.statusCode === 200) {
-          this.showProgressBar = false;
-          this.confirmationService.alert(
-            this.currentLanguageSet.OTPSentToRegMobNo,
-            'success',
-          );
-          this.transactionId = receivedOtpResponse.data.txnId;
-          this.enablehealthIdOTPForm = true;
-        } else {
-          this.confirmationService.alert(
-            receivedOtpResponse.errorMessage,
-            'error',
-          );
-          this.enablehealthIdOTPForm = false;
-          this.showProgressBar = false;
-        }
-      },
-      (err) => {
-        this.showProgressBar = false;
-        this.confirmationService.alert(err.errorMessage, 'error');
-        this.enablehealthIdOTPForm = false;
-      },
-    );
-  }
-  numberOnly(event: any): boolean {
-    const charCode = event.which ? event.which : event.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-      return false;
-    }
-    return true;
-  }
-  checkOTP() {
-    const otp = this.healthIdOTPForm.controls['otp'].value;
-    let cflag = false;
-    if (otp !== '' && otp !== undefined && otp !== null) {
-      const hid = otp;
-      if (hid.length >= 4 && hid.length <= 32) {
-        for (let i = 0; i < hid.length; i++) {
-          if (!this.is_numeric(hid.charAt(i))) {
-            cflag = true;
-            break;
-          }
-        }
-        if (cflag) return false;
-      } else return false;
-    } else return false;
-    return true;
-  }
-  isLetter(str: any) {
-    return str.length === 1 && str.match(/[a-z]/i);
-  }
-  is_numeric(str: any) {
-    return /^\d+$/.test(str);
-  }
-
-  verifyOtp() {
-    this.showProgressBar = true;
-    const abdmFacilityId = this.sessionstorage.getItem("abdmFacilityId");
-    const abdmFacilityName = this.sessionstorage.getItem("abdmFacilityName");
-    const verifyOtpData = {
-      otp: this.healthIdOTPForm.controls['otp'].value,
-      txnId: this.transactionId,
-      beneficiaryID: this.selectedHealthID.beneficiaryRegID,
-      healthID: this.selectedHealthID.healthId
+      abhaAddress: this.selectedHealthID.healthId
         ? this.selectedHealthID.healthId
         : null,
-      healthIdNumber: this.selectedHealthID.healthIdNumber
-        ? this.selectedHealthID.healthIdNumber
+      name: this.selectedHealthID.name ? this.selectedHealthID.name : null,
+      gender: this.selectedHealthID.gender
+        ? this.selectedHealthID.gender
         : null,
-      visitCode: this.input.visitCode,
-      visitCategory:
-        this.sessionstorage.getItem('visitCategory') === 'General OPD (QC)'
-          ? 'Emergency'
-          : this.sessionstorage.getItem('visitCategory'),
-      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined && abdmFacilityId !== "") ? abdmFacilityId : null,
-      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined && abdmFacilityName !== "") ? abdmFacilityName : null
+      yearOfBirth: this.selectedHealthID.yearOfBirth
+        ? parseInt(this.selectedHealthID.yearOfBirth, 10)
+        : null,
+      abdmFacilityId:
+        abdmFacilityId !== null &&
+        abdmFacilityId !== undefined &&
+        abdmFacilityId !== ''
+          ? abdmFacilityId
+          : null,
     };
     this.registrarService
-      .verifyOtpForMappingCarecontext(verifyOtpData)
+      .generateLinkTokenForCareContext(tokenReqObj)
       .subscribe(
-        (verifiedMappingData: any) => {
-          if (verifiedMappingData.statusCode === 200) {
-            this.showProgressBar = false;
-            this.confirmationService.alert(
-              verifiedMappingData.data.response,
-              'success',
+        (tokenResponse: any) => {
+          if (tokenResponse.statusCode === 200 && tokenResponse.data) {
+            const linkToken =
+              tokenResponse.data['X-LINK-TOKEN'] ||
+              tokenResponse.data['linkToken'];
+            if (!linkToken) {
+              this.showProgressBar = false;
+              this.confirmationService.alert(
+                tokenResponse.data['error'] ||
+                  'Failed to generate link token',
+                'error',
+              );
+              return;
+            }
+            const visitCategory =
+              this.sessionstorage.getItem('visitCategory') ===
+              'General OPD (QC)'
+                ? 'Emergency'
+                : this.sessionstorage.getItem('visitCategory');
+            const linkReqObj = {
+              beneficiaryID: this.selectedHealthID.beneficiaryRegID,
+              abhaAddress: this.selectedHealthID.healthId
+                ? this.selectedHealthID.healthId
+                : null,
+              abhaNumber: this.selectedHealthID.healthIdNumber
+                ? this.selectedHealthID.healthIdNumber
+                : null,
+              linkToken: linkToken,
+              requestId: tokenResponse.data['requestId'] || null,
+              visitCode: this.input.visitCode,
+              visitCategory: visitCategory,
+              abdmFacilityId:
+                abdmFacilityId !== null &&
+                abdmFacilityId !== undefined &&
+                abdmFacilityId !== ''
+                  ? abdmFacilityId
+                  : null,
+              abdmFacilityName:
+                abdmFacilityName !== null &&
+                abdmFacilityName !== undefined &&
+                abdmFacilityName !== ''
+                  ? abdmFacilityName
+                  : null,
+            };
+            this.registrarService.linkCareContextV3(linkReqObj).subscribe(
+              (linkResponse: any) => {
+                this.showProgressBar = false;
+                if (
+                  linkResponse.statusCode === 200 &&
+                  linkResponse.data?.message
+                ) {
+                  this.confirmationService.alert(
+                    linkResponse.data.message,
+                    'success',
+                  );
+                  this.closeDialog();
+                } else {
+                  this.confirmationService.alert(
+                    linkResponse.errorMessage ||
+                      linkResponse.data?.error ||
+                      'Failed to link care context',
+                    'error',
+                  );
+                }
+              },
+              (err: any) => {
+                this.showProgressBar = false;
+                this.confirmationService.alert(
+                  err.errorMessage || 'Failed to link care context',
+                  'error',
+                );
+              },
             );
-            this.closeDialog();
           } else {
             this.showProgressBar = false;
             this.confirmationService.alert(
-              verifiedMappingData.errorMessage,
+              tokenResponse.errorMessage || 'Failed to generate link token',
               'error',
             );
           }
         },
-        (err) => {
+        (err: any) => {
           this.showProgressBar = false;
-          this.confirmationService.alert(err.errorMessage, 'error');
+          this.confirmationService.alert(
+            err.errorMessage || 'Failed to generate link token',
+            'error',
+          );
         },
       );
-  }
-  resendOtp() {
-    this.healthIdOTPForm.controls['otp'].reset;
-    this.healthIdOTPForm.controls['otp'].patchValue(null);
-    this.generateOtpForMapping();
   }
   closeDialog() {
     this.dialogRef.close();
