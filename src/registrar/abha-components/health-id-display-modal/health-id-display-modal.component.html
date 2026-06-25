@@ -2,7 +2,7 @@
   <div class="title info">
     <h4
       *ngIf="
-        (!healthIDMapping && !enablehealthIdOTPForm && !searchPopup) ||
+        (!healthIDMapping && !searchPopup) ||
         (searchDetails !== undefined &&
           searchDetails !== null &&
           searchDetails.data.length > 0)
@@ -10,7 +10,7 @@
     >
       {{ currentLanguageSet?.abhaDetails }}
     </h4>
-    <h4 *ngIf="(healthIDMapping || enablehealthIdOTPForm) && !searchPopup">
+    <h4 *ngIf="healthIDMapping && !searchPopup">
       {{ currentLanguageSet?.aBHACareContextMapping }}
     </h4>
     <button
@@ -105,7 +105,7 @@
     </section>
     <section
       class="table-responsive vw100"
-      *ngIf="!healthIDMapping && !enablehealthIdOTPForm && !searchPopup"
+      *ngIf="!healthIDMapping && !searchPopup"
     >
       <table
         mat-table
@@ -195,7 +195,7 @@
     <!--Map health ID to care context-->
     <section
       class="table-responsive vw100"
-      *ngIf="healthIDMapping && !enablehealthIdOTPForm && !searchPopup"
+      *ngIf="healthIDMapping && !searchPopup"
     >
       <table
         mat-table
@@ -289,12 +289,12 @@
           mat-raised-button
           class="pull-right mat_blue button-overall-disabled background-overall"
           color="primary"
-          (click)="generateOtpForMapping()"
+          (click)="linkCareContextV3()"
           [disabled]="
             selectedHealthID === undefined || selectedHealthID === null
           "
         >
-          {{ currentLanguageSet?.generateOTP }}
+          {{ currentLanguageSet?.linkCareContext || 'Link Care Context' }}
         </button>
       </div>
 
@@ -307,55 +307,4 @@
       </div>
     </section>
   </section>
-</div>
-<!-- Entering OTP for Health ID Generation-->
-<div
-  *ngIf="enablehealthIdOTPForm && !searchPopup"
-  class="col-xs-12 col-sm-12 container-fluid"
-  [formGroup]="healthIdOTPForm"
->
-  <div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-      <mat-form-field [style.width]="'100%'">
-        <input
-          defaultNull
-          autocomplete="off"
-          required
-          matInput
-          type="text"
-          placeholder="{{ currentLanguageSet?.enterOTP }}"
-          formControlName="otp"
-          minlength="6"
-          maxlength="6"
-          (keypress)="numberOnly($event)"
-          required
-        />
-      </mat-form-field>
-    </div>
-    <div class="col-sm-12 step-btn m-b-20" style="text-align: right">
-      <button
-        id="submitButton"
-        mat-raised-button
-        class="pull-right mat_blue"
-        type="accent"
-        color="accent"
-        [disabled]="!healthIdOTPForm.valid || !checkOTP()"
-        (click)="verifyOtp()"
-      >
-        {{ currentLanguageSet?.common?.submit }}
-      </button>
-      <button
-        id="cancelButton"
-        mat-raised-button
-        type="button"
-        style="margin-right: 3px;"
-        color="primary"
-        class="pull-right mat_blue"
-        (click)="resendOtp()"
-      >
-        {{ currentLanguageSet?.resendOTP }}
-      </button>
-      
-    </div>
-  </div>
 </div>
