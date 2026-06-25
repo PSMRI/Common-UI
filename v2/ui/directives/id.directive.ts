@@ -35,7 +35,7 @@ class ZardIdInternalService {
   exportAs: 'zardId',
 })
 export class ZardIdDirective {
-  private idService = inject(ZardIdInternalService);
+  private readonly idService = inject(ZardIdInternalService);
 
   readonly zardId = input('ssr');
 

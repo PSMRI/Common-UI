@@ -30,6 +30,7 @@ import {
   inject,
   input,
   output,
+  signal,
   ViewEncapsulation,
 } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -50,8 +51,7 @@ type OnChangeType = (value: unknown) => void;
   template: `
     <span
       class="relative flex items-center gap-2"
-      [class]="disabled() ? 'cursor-not-allowed' : 'cursor-pointer'"
-      (mousedown)="onRadioChange()"
+      [class]="isDisabled() ? 'cursor-not-allowed' : 'cursor-pointer'"
       zardId="radio"
       #z="zardId"
     >
@@ -61,7 +61,8 @@ type OnChangeType = (value: unknown) => void;
         [value]="value()"
         [class]="classes()"
         [checked]="checked"
-        [disabled]="disabled()"
+        [disabled]="isDisabled()"
+        (change)="onRadioChange()"
         (blur)="onRadioBlur()"
         [name]="name()"
         [id]="zId() || z.id()"
@@ -86,7 +87,7 @@ type OnChangeType = (value: unknown) => void;
   exportAs: 'zRadio',
 })
 export class ZardRadioComponent implements ControlValueAccessor {
-  private cdr = inject(ChangeDetectorRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly radioChange = output<boolean>();
   readonly class = input<ClassValue>('');
@@ -103,6 +104,10 @@ export class ZardRadioComponent implements ControlValueAccessor {
   protected readonly classes = computed(() => mergeClasses(radioVariants(), this.class()));
   protected readonly labelClasses = computed(() => mergeClasses(radioLabelVariants()));
 
+  // Form-driven disabled state (FormControl.disable()), combined with the input.
+  private readonly formDisabled = signal(false);
+  protected readonly isDisabled = computed(() => this.disabled() || this.formDisabled());
+
   checked = false;
 
   writeValue(val: unknown): void {
@@ -118,9 +123,10 @@ export class ZardRadioComponent implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  setDisabledState(_isDisabled: boolean): void {
-    // This is called by Angular forms when the disabled state changes
-    // The input disabled() signal handles the state
+  setDisabledState(disabledState: boolean): void {
+    // Called by Angular forms (e.g. FormControl.disable()); combined with the
+    // disabled() input via the isDisabled computed.
+    this.formDisabled.set(disabledState);
     this.cdr.markForCheck();
   }
 
@@ -130,7 +136,7 @@ export class ZardRadioComponent implements ControlValueAccessor {
   }
 
   onRadioChange(): void {
-    if (this.disabled()) {
+    if (this.isDisabled()) {
       return;
     }
 
