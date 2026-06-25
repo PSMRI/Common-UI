@@ -20,15 +20,5 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './loader';
-export * from './pagination';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './toast';
+export * from './radio.component';
+export * from './radio.variants';
