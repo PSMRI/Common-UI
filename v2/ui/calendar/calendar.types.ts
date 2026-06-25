@@ -20,16 +20,27 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './calendar';
-export * from './date-picker';
-export * from './dialog';
-export * from './form';
-export * from './input';
-export * from './loader';
-export * from './pagination';
-export * from './popover';
-export * from './provider';
-export * from './select';
-export * from './table';
-export * from './toast';
+export type CalendarMode = 'single' | 'multiple' | 'range';
+export type CalendarValue = Date | Date[] | null;
+
+export interface CalendarDay {
+  date: Date;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  isDisabled: boolean;
+  isRangeStart?: boolean;
+  isRangeEnd?: boolean;
+  isInRange?: boolean;
+  id?: string;
+}
+
+export interface CalendarDayConfig {
+  year: number;
+  month: number;
+  mode: CalendarMode;
+  selectedDates: Date[];
+  minDate: Date | null;
+  maxDate: Date | null;
+  disabled: boolean;
+}
