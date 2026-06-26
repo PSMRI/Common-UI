@@ -126,7 +126,7 @@ export class ZardDatePickerComponent implements ControlValueAccessor {
 
   readonly calendarTemplate = viewChild.required<TemplateRef<unknown>>('calendarTemplate');
   readonly popoverDirective = viewChild.required<ZardPopoverDirective>('popoverDirective');
-  readonly calendar = viewChild.required<ZardCalendarComponent>('calendar');
+  readonly calendar = viewChild<ZardCalendarComponent>('calendar');
 
   readonly class = input<ClassValue>('');
   readonly zType = input<ZardButtonTypeVariants>('outline');
@@ -183,11 +183,12 @@ export class ZardDatePickerComponent implements ControlValueAccessor {
 
   protected onPopoverVisibilityChange(visible: boolean): void {
     if (visible) {
-      setTimeout(() => {
-        if (this.calendar()) {
-          this.calendar().resetNavigation();
-        }
-      });
+      // Optional query + optional chaining: the popover content may be torn
+      // down before this runs.
+      setTimeout(() => this.calendar()?.resetNavigation());
+    } else {
+      // Closing without a selection should still mark the control touched.
+      this.onTouched();
     }
   }
 

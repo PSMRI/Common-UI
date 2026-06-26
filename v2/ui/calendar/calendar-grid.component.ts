@@ -54,14 +54,13 @@ import { calendarDayButtonVariants, calendarDayVariants, calendarWeekdayVariants
       <!-- Calendar Days Grid -->
       <div class="mt-2 grid w-fit auto-rows-min grid-cols-7 gap-0" role="rowgroup">
         @for (day of calendarDays(); track day.date.getTime(); let i = $index) {
-          <div [class]="dayContainerClasses()" role="gridcell">
+          <div [class]="dayContainerClasses()" role="gridcell" [attr.aria-selected]="day.isSelected">
             <button
               type="button"
               [id]="getDayId(i)"
               [class]="dayButtonClasses(day)"
               (click)="onDayClick(day.date, i)"
               [disabled]="day.isDisabled"
-              [attr.aria-selected]="day.isSelected"
               [attr.aria-label]="getDayAriaLabel(day)"
               [attr.tabindex]="getFocusedDayIndex() === i ? 0 : -1"
               role="button"
@@ -249,9 +248,10 @@ export class ZardCalendarGridComponent {
   private navigate(currentIndex: number, step: number, days: CalendarDay[]): number | null {
     const targetIndex = currentIndex + step;
 
-    // If within bounds, find enabled day
+    // If within bounds, find an enabled day searching in the requested
+    // direction (backward for Left/Up so focus never moves the wrong way).
     if (targetIndex >= 0 && targetIndex < days.length) {
-      return this.findEnabledInRange(targetIndex, currentIndex, days);
+      return this.findEnabledInRange(targetIndex, currentIndex, days, step < 0);
     }
 
     // Handle month boundaries

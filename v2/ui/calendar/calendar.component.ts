@@ -154,7 +154,9 @@ export class ZardCalendarComponent implements ControlValueAccessor {
     const navigationDate = makeSafeDate(
       Number.parseInt(this.currentYearValue()),
       Number.parseInt(this.currentMonthValue()),
-      currentDate.getDate(),
+      // Anchor to day 1: only the year/month are used below, and a 29th-31st
+      // day would overflow into the next month for shorter months.
+      1,
     );
     const selectedDate = Number.isNaN(navigationDate.getTime()) ? currentDate : navigationDate;
 

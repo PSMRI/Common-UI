@@ -54,8 +54,20 @@ export function isSameDay(date1: Date, date2: Date): boolean {
  * Checks if a date is disabled based on min/max constraints
  */
 export function isDateDisabled(date: Date, minDate: Date | null, maxDate: Date | null): boolean {
-  if ((minDate && date < minDate) || (maxDate && date > maxDate)) {
-    return true;
+  // Compare at day granularity so a min/max carrying a time-of-day does not
+  // disable its own calendar day.
+  const day = makeSafeDate(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  if (minDate) {
+    const min = makeSafeDate(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()).getTime();
+    if (day < min) {
+      return true;
+    }
+  }
+  if (maxDate) {
+    const max = makeSafeDate(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate()).getTime();
+    if (day > max) {
+      return true;
+    }
   }
   return false;
 }
@@ -208,6 +220,18 @@ export function makeSafeDate(year: number, month: number, day = 1): Date {
 }
 
 /**
+ * Like makeSafeDate, but returns null when the parsed y/m/d do not survive the
+ * Date construction (e.g. 2024-02-31 would silently roll forward to March).
+ */
+export function makeStrictDate(year: number, month: number, day: number): Date | null {
+  const date = makeSafeDate(year, month, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month || date.getDate() !== day) {
+    return null;
+  }
+  return date;
+}
+
+/**
  * Normalizes any calendar value into a valid Date or array of Dates.
  * Returns null for empty values, validates single Dates, converts arrays,
  * and attempts to parse any other type into a Date.
@@ -250,7 +274,7 @@ export function toValidDate(value: unknown): Date | null {
     const m = +s.slice(4, 6) - 1;
     const d = +s.slice(6, 8);
 
-    return makeSafeDate(y, m, d);
+    return makeStrictDate(y, m, d);
   }
 
   if (typeof value === 'string' && /^\d{8}$/.test(value)) {
@@ -258,7 +282,7 @@ export function toValidDate(value: unknown): Date | null {
     const m = +value.slice(4, 6) - 1;
     const d = +value.slice(6, 8);
 
-    return makeSafeDate(y, m, d);
+    return makeStrictDate(y, m, d);
   }
 
   const date = new Date(value as string | number | Date);
