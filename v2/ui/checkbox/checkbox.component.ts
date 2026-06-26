@@ -30,7 +30,6 @@ import {
   inject,
   input,
   model,
-  output,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -49,6 +48,7 @@ type OnTouchedType = () => unknown;
 type OnChangeType = (value: boolean) => void;
 
 @Component({
+  standalone: true,
   selector: 'z-checkbox, [z-checkbox]',
   imports: [NgIcon, ZardIdDirective],
   template: `
@@ -73,16 +73,9 @@ type OnChangeType = (value: boolean) => void;
           (change)="onCheckboxChange($event)"
           (blur)="onCheckboxBlur()"
         />
-        @if (zIndeterminate()) {
+        @if (iconName(); as icon) {
           <ng-icon
-            name="lucideMinus"
-            size="0.75rem"
-            class="text-primary-foreground pointer-events-none relative"
-            aria-hidden="true"
-          />
-        } @else if (zChecked()) {
-          <ng-icon
-            name="lucideCheck"
+            [name]="icon"
             size="0.75rem"
             class="text-primary-foreground pointer-events-none relative"
             aria-hidden="true"
@@ -109,7 +102,6 @@ type OnChangeType = (value: boolean) => void;
 export class ZardCheckboxComponent implements ControlValueAccessor {
   private readonly cdr = inject(ChangeDetectorRef);
 
-  readonly zCheckedChange = output<boolean>();
   readonly class = input<ClassValue>('');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly name = input<string>('checkbox');
@@ -119,10 +111,12 @@ export class ZardCheckboxComponent implements ControlValueAccessor {
   readonly zChecked = model(false);
   readonly zIndeterminate = model(false);
 
-  /* eslint-disable-next-line @typescript-eslint/no-empty-function */
-  private onChange: OnChangeType = () => {};
-  /* eslint-disable-next-line @typescript-eslint/no-empty-function */
-  private onTouched: OnTouchedType = () => {};
+  private onChange: OnChangeType = (_value: boolean) => {
+    // ControlValueAccessor onChange callback
+  };
+  private onTouched: OnTouchedType = () => {
+    // ControlValueAccessor onTouched callback
+  };
 
   protected readonly classes = computed(() => mergeClasses(checkboxVariants(), this.class()));
   protected readonly labelClasses = computed(() =>
@@ -137,6 +131,12 @@ export class ZardCheckboxComponent implements ControlValueAccessor {
   // checkbox is exposed as "mixed" per the WAI-ARIA spec.
   protected readonly ariaChecked = computed(() =>
     this.zIndeterminate() ? 'mixed' : this.zChecked() ? 'true' : 'false',
+  );
+
+  // The overlay icon: a minus for the indeterminate ("mixed") state, a check
+  // when selected, and nothing when unchecked.
+  protected readonly iconName = computed<'lucideMinus' | 'lucideCheck' | null>(() =>
+    this.zIndeterminate() ? 'lucideMinus' : this.zChecked() ? 'lucideCheck' : null,
   );
 
   writeValue(val: unknown): void {
@@ -172,12 +172,12 @@ export class ZardCheckboxComponent implements ControlValueAccessor {
       return;
     }
 
-    const checked = (event.target as HTMLInputElement).checked;
+    const checked = (event.target as HTMLInputElement | null)?.checked ?? false;
     // Any user interaction resolves the indeterminate state.
     this.zIndeterminate.set(false);
+    // Updating the zChecked model automatically emits the zCheckedChange output.
     this.zChecked.set(checked);
     this.onChange(checked);
-    this.zCheckedChange.emit(checked);
     this.cdr.markForCheck();
   }
 }
