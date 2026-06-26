@@ -129,15 +129,21 @@ export class ZardCheckboxComponent implements ControlValueAccessor {
 
   // Reflect the visual state to assistive technology: an indeterminate
   // checkbox is exposed as "mixed" per the WAI-ARIA spec.
-  protected readonly ariaChecked = computed(() =>
-    this.zIndeterminate() ? 'mixed' : this.zChecked() ? 'true' : 'false',
-  );
+  protected readonly ariaChecked = computed(() => {
+    if (this.zIndeterminate()) {
+      return 'mixed';
+    }
+    return this.zChecked() ? 'true' : 'false';
+  });
 
   // The overlay icon: a minus for the indeterminate ("mixed") state, a check
   // when selected, and nothing when unchecked.
-  protected readonly iconName = computed<'lucideMinus' | 'lucideCheck' | null>(() =>
-    this.zIndeterminate() ? 'lucideMinus' : this.zChecked() ? 'lucideCheck' : null,
-  );
+  protected readonly iconName = computed<'lucideMinus' | 'lucideCheck' | null>(() => {
+    if (this.zIndeterminate()) {
+      return 'lucideMinus';
+    }
+    return this.zChecked() ? 'lucideCheck' : null;
+  });
 
   writeValue(val: unknown): void {
     // A concrete form value resolves any prior indeterminate state, otherwise a
