@@ -21,6 +21,7 @@
  */
 
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -63,15 +64,29 @@ export class ZardMenuComponent {
   template: '<ng-content />',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  host: { '[class]': 'classes()', role: 'menuitem', '(click)': 'onClick()' },
+  host: {
+    '[class]': 'classes()',
+    role: 'menuitem',
+    // Roving tabindex: items are programmatically focusable (arrow-key nav), not in tab order.
+    '[attr.tabindex]': 'zDisabled() ? null : -1',
+    '[attr.aria-disabled]': 'zDisabled() || null',
+    '[attr.disabled]': 'zDisabled() ? "" : null',
+    '(click)': 'onClick($event)',
+  },
   exportAs: 'zMenuItem',
 })
 export class ZardMenuItemComponent {
   private readonly menu = inject(ZardMenuComponent, { optional: true });
   readonly class = input<ClassValue>('');
+  readonly zDisabled = input(false, { transform: booleanAttribute });
   protected readonly classes = computed(() => mergeClasses(menuItemVariants(), this.class()));
 
-  onClick(): void {
+  onClick(event: Event): void {
+    if (this.zDisabled()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     this.menu?.requestClose();
   }
 }

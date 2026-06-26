@@ -48,10 +48,11 @@ import { tooltipVariants, type ZardTooltipPosition } from './tooltip.variants';
   template: `{{ text() }}`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  host: { '[class]': 'classes()', role: 'tooltip' },
+  host: { '[class]': 'classes()', '[id]': 'id()', role: 'tooltip' },
 })
 export class ZardTooltipComponent {
   readonly text = input<string>('');
+  readonly id = input<string>('');
   readonly class = input<ClassValue>('');
   protected readonly classes = computed(() => mergeClasses(tooltipVariants(), this.class()));
 }
@@ -62,6 +63,8 @@ const POSITIONS: Record<ZardTooltipPosition, ConnectedPosition[]> = {
   left: [{ originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -8 }],
   right: [{ originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 8 }],
 };
+
+let uniqueId = 0;
 
 @Directive({
   selector: '[zTooltip]',
@@ -78,24 +81,40 @@ export class ZardTooltipDirective implements OnDestroy {
   private readonly positionBuilder = inject(OverlayPositionBuilder);
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private overlayRef?: OverlayRef;
+  private showTimer?: ReturnType<typeof setTimeout>;
+  private readonly tooltipId = `z-tooltip-${uniqueId++}`;
 
   readonly zTooltip = input<string>('');
   readonly zPosition = input<ZardTooltipPosition>('top');
+  /** Delay (ms) before the tooltip appears on hover/focus. */
+  readonly zDelay = input<number>(0);
 
   show(): void {
-    const text = this.zTooltip();
-    if (!text || this.overlayRef?.hasAttached()) {
+    if (!this.zTooltip() || this.overlayRef?.hasAttached()) {
       return;
     }
-    if (!this.overlayRef) {
-      this.createOverlay();
-    }
-    const ref = this.overlayRef!.attach(new ComponentPortal(ZardTooltipComponent));
-    ref.setInput('text', text);
+    clearTimeout(this.showTimer);
+    this.showTimer = setTimeout(() => this.attach(), this.zDelay());
   }
 
   hide(): void {
+    clearTimeout(this.showTimer);
     this.overlayRef?.detach();
+    this.elementRef.nativeElement.removeAttribute('aria-describedby');
+  }
+
+  private attach(): void {
+    if (!this.overlayRef) {
+      this.createOverlay();
+    }
+    if (this.overlayRef!.hasAttached()) {
+      return;
+    }
+    const ref = this.overlayRef!.attach(new ComponentPortal(ZardTooltipComponent));
+    ref.setInput('text', this.zTooltip());
+    ref.setInput('id', this.tooltipId);
+    // Associate the trigger with the tooltip for screen readers (parity with mdTooltip).
+    this.elementRef.nativeElement.setAttribute('aria-describedby', this.tooltipId);
   }
 
   private createOverlay(): void {
@@ -109,6 +128,8 @@ export class ZardTooltipDirective implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearTimeout(this.showTimer);
+    this.elementRef.nativeElement.removeAttribute('aria-describedby');
     this.overlayRef?.dispose();
   }
 }

@@ -36,7 +36,12 @@ import { ZardMenuComponent } from './menu.component';
 @Directive({
   selector: '[zMenuTriggerFor]',
   exportAs: 'zMenuTrigger',
-  host: { '(click)': 'toggle()', '[attr.aria-expanded]': 'isOpen()' },
+  host: {
+    '(click)': 'toggle()',
+    '(keydown)': 'onTriggerKeydown($event)',
+    '[attr.aria-expanded]': 'isOpen()',
+    '[attr.aria-haspopup]': '"menu"',
+  },
 })
 export class ZardMenuTriggerForDirective implements OnDestroy {
   private readonly overlay = inject(Overlay);
@@ -63,6 +68,8 @@ export class ZardMenuTriggerForDirective implements OnDestroy {
     }
     this.overlayRef!.attach(new TemplatePortal(this.menu().templateRef(), this.viewContainerRef));
     this.isOpen.set(true);
+    // Move focus into the menu (parity with Material md-menu).
+    queueMicrotask(() => this.focusItem(0));
   }
 
   close(): void {
@@ -71,6 +78,66 @@ export class ZardMenuTriggerForDirective implements OnDestroy {
     }
     this.overlayRef?.detach();
     this.isOpen.set(false);
+    // Restore focus to the trigger.
+    this.elementRef.nativeElement.focus();
+  }
+
+  onTriggerKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowDown' && !this.isOpen()) {
+      event.preventDefault();
+      this.open();
+    }
+  }
+
+  private onMenuKeydown = (event: KeyboardEvent): void => {
+    if (!this.isOpen()) {
+      return;
+    }
+    const items = this.getItems();
+    const current = items.indexOf(document.activeElement as HTMLElement);
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.focusItem(current + 1);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.focusItem(current - 1);
+        break;
+      case 'Home':
+        event.preventDefault();
+        this.focusItem(0);
+        break;
+      case 'End':
+        event.preventDefault();
+        this.focusItem(items.length - 1);
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.close();
+        break;
+      case 'Tab':
+        this.close();
+        break;
+    }
+  };
+
+  private getItems(): HTMLElement[] {
+    if (!this.overlayRef) {
+      return [];
+    }
+    return Array.from(
+      this.overlayRef.overlayElement.querySelectorAll<HTMLElement>('[role="menuitem"]'),
+    ).filter((el) => el.getAttribute('aria-disabled') !== 'true');
+  }
+
+  private focusItem(index: number): void {
+    const items = this.getItems();
+    if (!items.length) {
+      return;
+    }
+    const i = ((index % items.length) + items.length) % items.length;
+    items[i].focus();
   }
 
   private createOverlay(): void {
@@ -82,6 +149,7 @@ export class ZardMenuTriggerForDirective implements OnDestroy {
       positionStrategy,
       scrollStrategy: this.overlay.scrollStrategies.reposition(),
     });
+    this.overlayRef.overlayElement.addEventListener('keydown', this.onMenuKeydown);
     // Close on outside click (ignore clicks on the trigger itself — its own handler toggles).
     this.overlayRef.outsidePointerEvents().subscribe((event) => {
       if (!this.elementRef.nativeElement.contains(event.target as Node)) {
