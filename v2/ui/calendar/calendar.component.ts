@@ -300,12 +300,13 @@ export class ZardCalendarComponent implements ControlValueAccessor {
       } else if (selectedDates.length === 1) {
         // Second date selected - complete the range
         const start = selectedDates[0];
-        if (date.getTime() < start.getTime()) {
+        if (isSameDay(date, start)) {
+          // Same day clicked, reset (check first so a time-bearing start can't
+          // be mistaken for an earlier date on the same calendar day)
+          this.value.set(null);
+        } else if (date.getTime() < start.getTime()) {
           // New date is before start, swap them
           this.value.set([date, start]);
-        } else if (isSameDay(date, start)) {
-          // Same date clicked, reset
-          this.value.set(null);
         } else {
           // New date is after start
           this.value.set([start, date]);

@@ -134,8 +134,11 @@ export class ZardCalendarNavigationComponent {
     const currentMonth = Number.parseInt(this.currentMonth());
     const currentYear = Number.parseInt(this.currentYear());
     const lastDayOfPreviousMonth = new Date(currentYear, currentMonth, 0);
+    // Compare at day granularity so a min carrying a time-of-day doesn't
+    // disable a month that still contains the boundary day.
+    const min = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
 
-    return lastDayOfPreviousMonth.getTime() < minDate.getTime();
+    return lastDayOfPreviousMonth.getTime() < min.getTime();
   });
 
   protected readonly isNextDisabled = computed(() => {
@@ -151,8 +154,10 @@ export class ZardCalendarNavigationComponent {
     const currentMonth = Number.parseInt(this.currentMonth());
     const currentYear = Number.parseInt(this.currentYear());
     const nextMonth = new Date(currentYear, currentMonth + 1, 1);
+    // Compare at day granularity (ignore any time-of-day on the bound).
+    const max = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
 
-    return nextMonth.getTime() > maxDate.getTime();
+    return nextMonth.getTime() > max.getTime();
   });
 
   protected onPreviousClick(): void {

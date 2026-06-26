@@ -30,6 +30,7 @@ import {
   input,
   model,
   output,
+  signal,
   viewChild,
   ViewEncapsulation,
   type TemplateRef,
@@ -82,7 +83,7 @@ const HEIGHT_BY_SIZE: Record<ZardDatePickerSizeVariants, string> = {
       [zContent]="calendarTemplate"
       zTrigger="click"
       (zVisibleChange)="onPopoverVisibilityChange($event)"
-      [attr.aria-expanded]="false"
+      [attr.aria-expanded]="isOpen()"
       [attr.aria-haspopup]="true"
       aria-label="Choose date"
     >
@@ -181,7 +182,10 @@ export class ZardDatePickerComponent implements ControlValueAccessor {
     this.popoverDirective().hide();
   }
 
+  protected readonly isOpen = signal(false);
+
   protected onPopoverVisibilityChange(visible: boolean): void {
+    this.isOpen.set(visible);
     if (visible) {
       // Optional query + optional chaining: the popover content may be torn
       // down before this runs.

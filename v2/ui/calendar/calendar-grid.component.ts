@@ -199,21 +199,18 @@ export class ZardCalendarGridComponent {
       case 'ArrowDown':
         newIndex = this.navigate(currentIndex, 7, days);
         break;
-      case 'Home':
-        newIndex = this.findEnabledInRange(
-          Math.floor(currentIndex / 7) * 7,
-          Math.floor(currentIndex / 7) * 7 + 6,
-          days,
-        );
+      case 'Home': {
+        const rowStart = Math.floor(currentIndex / 7) * 7;
+        // Stay within the current week (bound the search to this row).
+        newIndex = this.findEnabledInRange(rowStart, rowStart, days, false, rowStart, rowStart + 6);
         break;
-      case 'End':
-        newIndex = this.findEnabledInRange(
-          Math.floor(currentIndex / 7) * 7 + 6,
-          Math.floor(currentIndex / 7) * 7,
-          days,
-          true,
-        );
+      }
+      case 'End': {
+        const rowStart = Math.floor(currentIndex / 7) * 7;
+        const rowEnd = rowStart + 6;
+        newIndex = this.findEnabledInRange(rowEnd, rowEnd, days, true, rowStart, rowEnd);
         break;
+      }
       case 'PageUp':
         if (event.ctrlKey) {
           this.navigateYear.emit(-1);
@@ -274,32 +271,41 @@ export class ZardCalendarGridComponent {
     return null;
   }
 
-  private findEnabledInRange(start: number, fallback: number, days: CalendarDay[], reverse = false): number {
-    const clampedStart = Math.max(0, Math.min(start, days.length - 1));
-    const clampedFallback = Math.max(0, Math.min(fallback, days.length - 1));
+  private findEnabledInRange(
+    start: number,
+    fallback: number,
+    days: CalendarDay[],
+    reverse = false,
+    lo = 0,
+    hi = days.length - 1,
+  ): number {
+    // lo/hi bound the search window (defaults to the whole month; Home/End pass
+    // the current week so focus can't jump into an adjacent row).
+    const clampedStart = Math.max(lo, Math.min(start, hi));
+    const clampedFallback = Math.max(lo, Math.min(fallback, hi));
 
     if (reverse) {
       // Search backward from start
-      for (let i = clampedStart; i >= 0; i--) {
+      for (let i = clampedStart; i >= lo; i--) {
         if (!days[i].isDisabled) {
           return i;
         }
       }
       // Search forward from start
-      for (let i = clampedStart + 1; i < days.length; i++) {
+      for (let i = clampedStart + 1; i <= hi; i++) {
         if (!days[i].isDisabled) {
           return i;
         }
       }
     } else {
       // Search forward from start
-      for (let i = clampedStart; i < days.length; i++) {
+      for (let i = clampedStart; i <= hi; i++) {
         if (!days[i].isDisabled) {
           return i;
         }
       }
       // Search backward from start
-      for (let i = clampedStart - 1; i >= 0; i--) {
+      for (let i = clampedStart - 1; i >= lo; i--) {
         if (!days[i].isDisabled) {
           return i;
         }
