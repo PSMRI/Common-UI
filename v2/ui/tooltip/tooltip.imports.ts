@@ -20,17 +20,6 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './card';
-export * from './dialog';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './provider';
-export * from './select';
-export * from './table';
-export * from './toast';
-export * from './tooltip';
+import { ZardTooltipDirective } from './tooltip.component';
+
+export const tooltipImports = [ZardTooltipDirective] as const;
