@@ -20,23 +20,10 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './calendar';
-export * from './card';
-export * from './date-picker';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './popover';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './tabs';
-export * from './toast';
-export * from './tooltip';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+export const popoverVariants = cva(
+  'z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+);
+
+export type ZardPopoverVariants = VariantProps<typeof popoverVariants>;

@@ -20,23 +20,26 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './calendar';
-export * from './card';
-export * from './date-picker';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './popover';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './tabs';
-export * from './toast';
-export * from './tooltip';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+export const datePickerVariants = cva('', {
+  variants: {
+    zSize: {
+      xs: '',
+      sm: '',
+      default: '',
+      lg: '',
+    },
+    zType: {
+      default: '',
+      outline: '',
+      ghost: '',
+    },
+  },
+  defaultVariants: {
+    zSize: 'default',
+    zType: 'outline',
+  },
+});
+
+export type ZardDatePickerSizeVariants = NonNullable<VariantProps<typeof datePickerVariants>['zSize']>;
