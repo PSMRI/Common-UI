@@ -20,23 +20,11 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './calendar';
-export * from './card';
-export * from './date-picker';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './popover';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './tabs';
-export * from './toast';
-export * from './tooltip';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+export const tooltipVariants = cva(
+  'z-50 w-fit max-w-xs rounded-md bg-primary px-3 py-1.5 text-xs text-balance text-primary-foreground shadow-md',
+);
+export type ZardTooltipVariants = VariantProps<typeof tooltipVariants>;
+
+export type ZardTooltipPosition = 'top' | 'right' | 'bottom' | 'left';
