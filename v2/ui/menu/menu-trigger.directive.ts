@@ -89,7 +89,7 @@ export class ZardMenuTriggerForDirective implements OnDestroy {
     }
   }
 
-  private onMenuKeydown = (event: KeyboardEvent): void => {
+  private readonly onMenuKeydown = (event: KeyboardEvent): void => {
     if (!this.isOpen()) {
       return;
     }
