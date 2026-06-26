@@ -20,15 +20,24 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './loader';
-export * from './pagination';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './toast';
+import { Directive, inject, Injectable, input, computed } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+class ZardIdInternalService {
+  private counter = 0;
+  generate(prefix: string) {
+    return `${prefix}-${++this.counter}`;
+  }
+}
+
+@Directive({
+  selector: '[zardId]',
+  exportAs: 'zardId',
+})
+export class ZardIdDirective {
+  private readonly idService = inject(ZardIdInternalService);
+
+  readonly zardId = input('ssr');
+
+  readonly id = computed(() => this.idService.generate(this.zardId()));
+}

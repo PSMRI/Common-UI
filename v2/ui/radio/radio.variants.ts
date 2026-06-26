@@ -20,15 +20,10 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './loader';
-export * from './pagination';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './toast';
+import { cva } from 'class-variance-authority';
+
+export const radioVariants = cva(
+  'cursor-[unset] peer appearance-none rounded-full border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30 aspect-square shrink-0 size-4',
+);
+
+export const radioLabelVariants = cva('text-sm empty:hidden peer-disabled:opacity-50 peer-disabled:cursor-not-allowed');
