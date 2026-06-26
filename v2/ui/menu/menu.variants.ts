@@ -20,20 +20,12 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './card';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './tabs';
-export * from './toast';
-export * from './tooltip';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+export const menuVariants = cva(
+  'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
+);
+export const menuItemVariants = cva(
+  'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
+);
+export type ZardMenuVariants = VariantProps<typeof menuVariants>;

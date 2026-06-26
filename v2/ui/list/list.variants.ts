@@ -20,20 +20,10 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './card';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './tabs';
-export * from './toast';
-export * from './tooltip';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+export const listVariants = cva('flex w-full flex-col');
+export const listItemVariants = cva(
+  'flex items-center gap-3 rounded-md px-3 py-2 text-sm text-foreground',
+);
+export type ZardListVariants = VariantProps<typeof listVariants>;
