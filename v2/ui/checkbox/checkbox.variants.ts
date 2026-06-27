@@ -20,24 +20,10 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './calendar';
-export * from './card';
-export * from './checkbox';
-export * from './date-picker';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './popover';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './table';
-export * from './tabs';
-export * from './toast';
-export * from './tooltip';
+import { cva } from 'class-variance-authority';
+
+export const checkboxVariants = cva(
+  'peer absolute inset-0 size-4 appearance-none rounded-[4px] border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30 shrink-0 checked:border-primary checked:bg-primary indeterminate:border-primary indeterminate:bg-primary',
+);
+
+export const checkboxLabelVariants = cva('text-sm select-none empty:hidden');
