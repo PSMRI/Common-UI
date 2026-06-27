@@ -9,7 +9,9 @@ import { ConfirmationService } from 'src/app/app-modules/core/services';
 @Component({
   selector: 'app-abha-verify-success-component',
   templateUrl: './abha-verify-success-component.component.html',
-  styleUrls: ['./abha-verify-success-component.component.css']
+  styleUrls: ['./abha-verify-success-component.component.css'],
+
+  standalone: false,
 })
 export class AbhaVerifySuccessComponentComponent {
 

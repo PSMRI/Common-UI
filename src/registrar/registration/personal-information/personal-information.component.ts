@@ -60,6 +60,7 @@ import { environment } from 'src/environments/environment';
       },
     },
   ],
+  standalone: false,
 })
 export class PersonalInformationComponent {
   @Input()

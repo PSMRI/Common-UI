@@ -8,7 +8,9 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
 @Component({
   selector: 'app-display-abha-card',
   templateUrl: './display-abha-card.component.html',
-  styleUrls: ['./display-abha-card.component.css']
+  styleUrls: ['./display-abha-card.component.css'],
+
+  standalone: false,
 })
 export class DisplayAbhaCardComponent {
 
