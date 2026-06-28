@@ -22,7 +22,10 @@
 
 import { cva, type VariantProps } from 'class-variance-authority';
 
-export const formFieldVariants = cva('grid gap-2');
+// grid-cols-1 = minmax(0, 1fr): the field's single column fills its width
+// instead of growing to a control's max-content (e.g. a long z-select label),
+// so wide selects/inputs stay bounded and truncate instead of overflowing.
+export const formFieldVariants = cva('grid grid-cols-1 gap-2');
 
 export const formLabelVariants = cva(
   'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
