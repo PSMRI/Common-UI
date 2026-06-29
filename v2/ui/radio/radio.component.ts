@@ -39,6 +39,7 @@ import type { ClassValue } from 'clsx';
 
 import { ZardIdDirective } from '../directives';
 import { mergeClasses } from '../utils/merge-classes';
+import { ZardRadioGroupComponent } from '../radio-group/radio-group.component';
 
 import { radioLabelVariants, radioVariants } from './radio.variants';
 
@@ -53,23 +54,20 @@ type OnChangeType = (value: unknown) => void;
       class="relative flex items-center gap-2"
       [class]="isDisabled() ? 'cursor-not-allowed' : 'cursor-pointer'"
       zardId="radio"
-      #z="zardId"
-    >
+      #z="zardId">
       <input
         #input
         type="radio"
         [value]="value()"
         [class]="classes()"
-        [checked]="checked"
+        [checked]="isChecked()"
         [disabled]="isDisabled()"
         (change)="onRadioChange()"
         (blur)="onRadioBlur()"
-        [name]="name()"
-        [id]="zId() || z.id()"
-      />
+        [name]="resolvedName()"
+        [id]="zId() || z.id()" />
       <span
-        class="bg-primary pointer-events-none absolute left-1 size-2 rounded-full opacity-0 peer-checked:opacity-100"
-      ></span>
+        class="bg-primary pointer-events-none absolute left-1 size-2 rounded-full opacity-0 peer-checked:opacity-100"></span>
       <label [class]="labelClasses()" [for]="zId() || z.id()">
         <ng-content />
       </label>
@@ -88,6 +86,9 @@ type OnChangeType = (value: unknown) => void;
 })
 export class ZardRadioComponent implements ControlValueAccessor {
   private readonly cdr = inject(ChangeDetectorRef);
+  // Optional parent group: when present it owns the selected value and the
+  // form binding, and this radio reflects/updates it instead of its own CVA.
+  private readonly group = inject(ZardRadioGroupComponent, { optional: true });
 
   readonly radioChange = output<boolean>();
   readonly class = input<ClassValue>('');
@@ -101,17 +102,32 @@ export class ZardRadioComponent implements ControlValueAccessor {
   /* eslint-disable-next-line @typescript-eslint/no-empty-function */
   private onTouched: OnTouchedType = () => {};
 
-  protected readonly classes = computed(() => mergeClasses(radioVariants(), this.class()));
-  protected readonly labelClasses = computed(() => mergeClasses(radioLabelVariants()));
+  protected readonly classes = computed(() =>
+    mergeClasses(radioVariants(), this.class())
+  );
+  protected readonly labelClasses = computed(() =>
+    mergeClasses(radioLabelVariants())
+  );
 
   // Form-driven disabled state (FormControl.disable()), combined with the input.
   private readonly formDisabled = signal(false);
-  protected readonly isDisabled = computed(() => this.disabled() || this.formDisabled());
+  protected readonly isDisabled = computed(
+    () => this.group?.isDisabled() || this.disabled() || this.formDisabled()
+  );
 
-  checked = false;
+  // Checked state: from the parent group when grouped, else from this radio's
+  // own CVA value (standalone use).
+  private readonly standaloneChecked = signal(false);
+  protected readonly isChecked = computed(() =>
+    this.group ? this.group.isSelected(this.value()) : this.standaloneChecked()
+  );
+  // Grouped radios share the group's name so the browser treats them as one set.
+  protected readonly resolvedName = computed(
+    () => this.group?.name() ?? this.name()
+  );
 
   writeValue(val: unknown): void {
-    this.checked = val === this.value();
+    this.standaloneChecked.set(val === this.value());
     this.cdr.markForCheck();
   }
 
@@ -140,9 +156,13 @@ export class ZardRadioComponent implements ControlValueAccessor {
       return;
     }
 
-    this.checked = true;
-    this.onChange(this.value());
-    this.radioChange.emit(this.checked);
+    if (this.group) {
+      this.group.select(this.value());
+    } else {
+      this.standaloneChecked.set(true);
+      this.onChange(this.value());
+    }
+    this.radioChange.emit(true);
     this.cdr.markForCheck();
   }
 }
