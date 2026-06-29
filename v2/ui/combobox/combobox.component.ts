@@ -222,7 +222,14 @@ export class ZardComboboxComponent implements ControlValueAccessor {
     if (typeof option === 'string') {
       return option;
     }
-    return String(option[this.zLabelKey()] ?? '');
+    const raw = option[this.zLabelKey()];
+    if (typeof raw === 'string') {
+      return raw;
+    }
+    if (typeof raw === 'number') {
+      return String(raw);
+    }
+    return '';
   }
 
   protected valueOf(option: ZardComboboxOption): unknown {
@@ -389,9 +396,13 @@ export class ZardComboboxComponent implements ControlValueAccessor {
     this.isOpen.set(true);
     const options = this.filtered();
     const selectedIndex = options.findIndex(option => this.isSelected(option));
-    this.highlightedIndex.set(
-      selectedIndex >= 0 ? selectedIndex : options.length ? 0 : -1
-    );
+    let highlight = -1;
+    if (selectedIndex >= 0) {
+      highlight = selectedIndex;
+    } else if (options.length) {
+      highlight = 0;
+    }
+    this.highlightedIndex.set(highlight);
     this.cdr.markForCheck();
   }
 

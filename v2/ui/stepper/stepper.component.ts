@@ -134,15 +134,15 @@ export class ZardStepComponent {
 
   // Visually-hidden status announced to screen readers, e.g.
   // "Step 2: Vitals — current". The visible indicator/label are aria-hidden.
+  private readonly stateText: Record<ZardStepState, string> = {
+    completed: 'completed',
+    active: 'current',
+    upcoming: 'upcoming',
+  };
+
   protected readonly a11yLabel = computed(() => {
-    const stateText =
-      this.state() === 'completed'
-        ? 'completed'
-        : this.state() === 'active'
-          ? 'current'
-          : 'upcoming';
     const label = this.zLabel();
-    return `Step ${this.index() + 1}${label ? ': ' + label : ''} — ${stateText}`;
+    return `Step ${this.index() + 1}${label ? ': ' + label : ''} — ${this.stateText[this.state()]}`;
   });
 
   protected readonly isLast = computed(

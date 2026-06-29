@@ -142,12 +142,10 @@ export class ZardToggleGroupComponent implements ControlValueAccessor {
       } else {
         normalized = [value];
       }
+    } else if (Array.isArray(value)) {
+      normalized = value.length > 0 ? value[0] : null;
     } else {
-      if (Array.isArray(value)) {
-        normalized = value.length > 0 ? value[0] : null;
-      } else {
-        normalized = value ?? null;
-      }
+      normalized = value ?? null;
     }
     this.value.set(normalized);
     this.cdr.markForCheck();
