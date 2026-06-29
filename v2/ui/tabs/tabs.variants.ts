@@ -38,13 +38,15 @@ export const tabContainerVariants = cva('flex', {
   },
 });
 
-export const tabNavVariants = cva('flex gap-4 overflow-auto', {
+export const tabNavVariants = cva(
+  'inline-flex w-fit items-center overflow-auto rounded-lg bg-muted p-[3px] text-muted-foreground',
+  {
   variants: {
     zPosition: {
-      top: 'flex-row border-b mb-4',
-      bottom: 'flex-row border-t mt-4',
-      left: 'flex-col border-r mr-4 min-h-0',
-      right: 'flex-col border-l ml-4 min-h-0',
+      top: 'flex-row mb-4',
+      bottom: 'flex-row mt-4',
+      left: 'flex-col mr-4 min-h-0',
+      right: 'flex-col ml-4 min-h-0',
     },
     zAlignTabs: {
       start: 'justify-start',
@@ -58,7 +60,9 @@ export const tabNavVariants = cva('flex gap-4 overflow-auto', {
   },
 });
 
-export const tabButtonVariants = cva('hover:bg-transparent rounded-none shrink-0', {
+export const tabButtonVariants = cva(
+  'inline-flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md px-2.5 py-1 text-sm font-medium transition-[color,box-shadow]',
+  {
   variants: {
     zActivePosition: {
       top: '',
@@ -67,34 +71,13 @@ export const tabButtonVariants = cva('hover:bg-transparent rounded-none shrink-0
       right: '',
     },
     isActive: {
-      // The active tab keeps its fill on hover (override the ghost
-      // button's built-in hover:bg-muted so it doesn't read as inactive).
-      true: 'bg-primary/10 text-foreground hover:bg-primary/10!',
-      false: 'text-muted-foreground',
+      // Active = primary-tinted pill + soft shadow on the muted track
+      // (segmented tabs, no divider). Keep the fill on hover so it
+      // doesn't flip back to the ghost button's built-in hover:bg-muted.
+      true: 'bg-primary/10 text-foreground shadow-sm hover:bg-primary/10!',
+      false: 'text-muted-foreground hover:text-foreground',
     },
   },
-  compoundVariants: [
-    {
-      zActivePosition: 'top',
-      isActive: true,
-      class: 'border-t-2 border-t-primary',
-    },
-    {
-      zActivePosition: 'bottom',
-      isActive: true,
-      class: 'border-b-2 border-b-primary',
-    },
-    {
-      zActivePosition: 'left',
-      isActive: true,
-      class: 'border-l-2 border-l-primary',
-    },
-    {
-      zActivePosition: 'right',
-      isActive: true,
-      class: 'border-r-2 border-r-primary',
-    },
-  ],
   defaultVariants: {
     zActivePosition: 'bottom',
     isActive: false,
