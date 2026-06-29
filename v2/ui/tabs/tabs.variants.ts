@@ -67,8 +67,10 @@ export const tabButtonVariants = cva('hover:bg-transparent rounded-none shrink-0
       right: '',
     },
     isActive: {
-      true: '',
-      false: '',
+      // The active tab keeps its fill on hover (override the ghost
+      // button's built-in hover:bg-muted so it doesn't read as inactive).
+      true: 'bg-primary/10 text-foreground hover:bg-primary/10!',
+      false: 'text-muted-foreground',
     },
   },
   compoundVariants: [
