@@ -148,6 +148,7 @@ export class ZardRadioComponent implements ControlValueAccessor {
 
   onRadioBlur(): void {
     this.onTouched();
+    this.group?.markAsTouched();
     this.cdr.markForCheck();
   }
 

@@ -133,7 +133,23 @@ export class ZardToggleGroupComponent implements ControlValueAccessor {
   }
 
   writeValue(value: unknown): void {
-    this.value.set(value);
+    let normalized: unknown;
+    if (this.zType() === 'multiple') {
+      if (Array.isArray(value)) {
+        normalized = value;
+      } else if (value === null || value === undefined) {
+        normalized = [];
+      } else {
+        normalized = [value];
+      }
+    } else {
+      if (Array.isArray(value)) {
+        normalized = value.length > 0 ? value[0] : null;
+      } else {
+        normalized = value ?? null;
+      }
+    }
+    this.value.set(normalized);
     this.cdr.markForCheck();
   }
 

@@ -116,6 +116,12 @@ export class ZardRadioGroupComponent implements ControlValueAccessor {
     return this.value() === value;
   }
 
+  /** Called by a child radio on blur so the control is marked touched even
+   * when selection didn't change. */
+  markAsTouched(): void {
+    this.onTouched();
+  }
+
   writeValue(value: unknown): void {
     this.value.set(value);
     this.cdr.markForCheck();

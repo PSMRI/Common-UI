@@ -57,3 +57,21 @@ export const sheetClosedTransform = cva('', {
     zSide: 'right',
   },
 });
+
+/**
+ * Open-state transform per side: panel is slid into place along the relevant
+ * axis, complementing {@link sheetClosedTransform} so the slide animates.
+ */
+export const sheetOpenTransform = cva('', {
+  variants: {
+    zSide: {
+      right: 'translate-x-0',
+      left: 'translate-x-0',
+      top: 'translate-y-0',
+      bottom: 'translate-y-0',
+    },
+  },
+  defaultVariants: {
+    zSide: 'right',
+  },
+});

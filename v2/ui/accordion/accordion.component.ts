@@ -169,7 +169,10 @@ export class ZardAccordionTriggerComponent {
 @Component({
   selector: 'z-accordion-content, [z-accordion-content]',
   template: `
-    <div class="overflow-hidden">
+    <div
+      class="overflow-hidden"
+      [attr.inert]="open() ? null : ''"
+      [attr.aria-hidden]="open() ? null : 'true'">
       <div class="pb-4 pt-0">
         <ng-content />
       </div>

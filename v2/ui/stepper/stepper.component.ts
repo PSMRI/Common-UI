@@ -50,7 +50,7 @@ import {
   template: `<ng-content />`,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  host: { '[class]': 'classes()' },
+  host: { '[class]': 'classes()', role: 'list' },
 })
 export class ZardStepperComponent {
   // 0-based index of the currently active step.
@@ -60,6 +60,14 @@ export class ZardStepperComponent {
   // Steps register themselves via projection; this gives their document order,
   // which a step uses to resolve its own index (see ZardStepComponent.index()).
   readonly steps = contentChildren(ZardStepComponent);
+
+  // The raw zActiveIndex may be out of bounds (e.g. -1 or >= length). Clamp it
+  // into a valid range so exactly one step is "active" — an out-of-range value
+  // would otherwise make every step upcoming (-1) or completed (>= length).
+  // Guard for an empty stepper so the lower bound never goes negative.
+  readonly activeIndex = computed(() =>
+    Math.max(0, Math.min(this.zActiveIndex(), this.steps().length - 1))
+  );
 
   protected readonly classes = computed(() =>
     mergeClasses(stepperVariants(), this.class())
@@ -72,7 +80,7 @@ export class ZardStepperComponent {
   imports: [NgIcon],
   viewProviders: [provideIcons({ lucideCheck })],
   template: `
-    <span [class]="indicatorClasses()">
+    <span [class]="indicatorClasses()" aria-hidden="true">
       @if (state() === 'completed') {
         <ng-icon name="lucideCheck" />
       } @else {
@@ -81,16 +89,22 @@ export class ZardStepperComponent {
     </span>
 
     @if (zLabel()) {
-      <span [class]="labelClasses()">{{ zLabel() }}</span>
+      <span [class]="labelClasses()" aria-hidden="true">{{ zLabel() }}</span>
     }
 
+    <span class="sr-only">{{ a11yLabel() }}</span>
+
     @if (!isLast()) {
-      <span [class]="connectorClasses()"></span>
+      <span [class]="connectorClasses()" aria-hidden="true"></span>
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  host: { '[class]': 'classes()' },
+  host: {
+    '[class]': 'classes()',
+    role: 'listitem',
+    '[attr.aria-current]': "state() === 'active' ? 'step' : null",
+  },
 })
 export class ZardStepComponent {
   // The parent stepper owns the active index and the ordered list of steps.
@@ -105,7 +119,9 @@ export class ZardStepComponent {
   protected readonly index = computed(() => this.stepper.steps().indexOf(this));
 
   protected readonly state = computed<ZardStepState>(() => {
-    const active = this.stepper.zActiveIndex();
+    // Use the parent's clamped active index so an out-of-range zActiveIndex
+    // can't make every step upcoming/completed.
+    const active = this.stepper.activeIndex();
     const index = this.index();
     if (index < active) {
       return 'completed';
@@ -114,6 +130,19 @@ export class ZardStepComponent {
       return 'active';
     }
     return 'upcoming';
+  });
+
+  // Visually-hidden status announced to screen readers, e.g.
+  // "Step 2: Vitals — current". The visible indicator/label are aria-hidden.
+  protected readonly a11yLabel = computed(() => {
+    const stateText =
+      this.state() === 'completed'
+        ? 'completed'
+        : this.state() === 'active'
+          ? 'current'
+          : 'upcoming';
+    const label = this.zLabel();
+    return `Step ${this.index() + 1}${label ? ': ' + label : ''} — ${stateText}`;
   });
 
   protected readonly isLast = computed(

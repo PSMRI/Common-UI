@@ -26,6 +26,7 @@ import {
   ChangeDetectorRef,
   Component,
   computed,
+  effect,
   ElementRef,
   forwardRef,
   inject,
@@ -52,6 +53,9 @@ import {
 type OnTouchedType = () => void;
 type OnChangeType = (value: unknown) => void;
 
+// Per-instance id counter so multiple comboboxes on one page don't collide.
+let nextId = 0;
+
 export type ZardComboboxOption = string | Record<string, unknown>;
 
 @Component({
@@ -75,7 +79,7 @@ export type ZardComboboxOption = string | Record<string, unknown>;
         [disabled]="isDisabled()"
         [placeholder]="zPlaceholder()"
         [attr.aria-expanded]="isOpen()"
-        [attr.aria-controls]="isOpen() ? 'combobox-listbox' : null"
+        [attr.aria-controls]="isOpen() ? listboxId : null"
         [attr.aria-activedescendant]="activeDescendantId()"
         aria-autocomplete="list"
         (input)="onInput($event)"
@@ -85,7 +89,7 @@ export type ZardComboboxOption = string | Record<string, unknown>;
     </div>
 
     @if (isOpen()) {
-      <div id="combobox-listbox" role="listbox" [class]="contentClasses()">
+      <div [id]="listboxId" role="listbox" [class]="contentClasses()">
         @for (option of filtered(); track labelOf(option); let i = $index) {
           <div
             role="option"
@@ -131,6 +135,12 @@ export class ZardComboboxComponent implements ControlValueAccessor {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
 
+  // Unique per-instance id base so multiple comboboxes on one page don't
+  // collide on listbox/option ids (which aria-controls/aria-activedescendant
+  // would otherwise resolve to the wrong element).
+  private readonly uid = nextId++;
+  protected readonly listboxId = `z-combobox-${this.uid}-listbox`;
+
   readonly class = input<ClassValue>('');
   readonly zOptions = input<ZardComboboxOption[]>([]);
   readonly zLabelKey = input<string>('label');
@@ -150,6 +160,28 @@ export class ZardComboboxComponent implements ControlValueAccessor {
 
   // The currently committed form value (the option's value, not its label).
   private readonly selectedValue = signal<unknown>(null);
+
+  // True while the user is actively typing/editing the input, so the
+  // label-resync effect won't clobber in-progress text.
+  private readonly isEditing = signal<boolean>(false);
+
+  constructor() {
+    // Keep the visible label in sync with the committed value once options
+    // resolve. Handles async options that arrive after writeValue() ran:
+    // writeValue() can't resolve a label from an empty zOptions(), so this
+    // effect fills it in when the matching option appears. Skips while the
+    // user is actively editing to avoid overwriting in-progress text.
+    effect(() => {
+      const value = this.selectedValue();
+      const options = this.zOptions() ?? [];
+      if (this.isEditing()) {
+        return;
+      }
+      const match = options.find(option => this.valueOf(option) === value);
+      this.query.set(match ? this.labelOf(match) : '');
+      this.cdr.markForCheck();
+    });
+  }
 
   /* eslint-disable-next-line @typescript-eslint/no-empty-function */
   private onChange: OnChangeType = () => {};
@@ -201,7 +233,7 @@ export class ZardComboboxComponent implements ControlValueAccessor {
   }
 
   protected optionId(index: number): string {
-    return `combobox-option-${index}`;
+    return `z-combobox-${this.uid}-option-${index}`;
   }
 
   protected itemClasses(index: number): string {
@@ -222,6 +254,7 @@ export class ZardComboboxComponent implements ControlValueAccessor {
       return;
     }
     const text = (event.target as HTMLInputElement).value;
+    this.isEditing.set(true);
     this.query.set(text);
     this.open();
     this.highlightedIndex.set(this.filtered().length ? 0 : -1);
@@ -244,6 +277,20 @@ export class ZardComboboxComponent implements ControlValueAccessor {
 
   protected onBlur(): void {
     this.onTouched();
+    // Defer so a click on an option (mousedown) commits its selection before
+    // we reconcile — otherwise we'd snap back to the old value first.
+    setTimeout(() => {
+      this.close();
+      // Done editing: snap the input text back to the committed option's label
+      // (or clear it when nothing is selected), discarding arbitrary typed text.
+      this.isEditing.set(false);
+      const value = this.selectedValue();
+      const match = (this.zOptions() ?? []).find(
+        option => this.valueOf(option) === value
+      );
+      this.query.set(match ? this.labelOf(match) : '');
+      this.cdr.markForCheck();
+    });
   }
 
   protected onOptionMousedown(event: Event, option: ZardComboboxOption): void {
@@ -319,6 +366,7 @@ export class ZardComboboxComponent implements ControlValueAccessor {
   }
 
   private select(option: ZardComboboxOption): void {
+    this.isEditing.set(false);
     this.query.set(this.labelOf(option));
     this.commit(option, true);
     this.close();
@@ -358,11 +406,10 @@ export class ZardComboboxComponent implements ControlValueAccessor {
 
   // ControlValueAccessor implementation
   writeValue(value: unknown): void {
+    // A programmatic write is never "the user editing"; let the resync effect
+    // resolve the visible label (handles options that load after this call).
+    this.isEditing.set(false);
     this.selectedValue.set(value ?? null);
-    const match = (this.zOptions() ?? []).find(
-      option => this.valueOf(option) === value
-    );
-    this.query.set(match ? this.labelOf(match) : '');
     this.cdr.markForCheck();
   }
 
