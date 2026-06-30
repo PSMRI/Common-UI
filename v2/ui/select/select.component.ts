@@ -651,7 +651,13 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
     // string-vs-number mismatch and the trigger shows the raw id instead of
     // the option label.
     if (this.zMultiple() && Array.isArray(value)) {
-      this.zValue.set(value.map(v => String(v)));
+      this.zValue.set(value.map(String));
+    } else if (this.zMultiple()) {
+      // Multi-select must stay array-backed: a nullish/non-array write (e.g.
+      // a form reset) would otherwise store '' and break the Array.isArray
+      // branch in selectItem()/selectedLabels(), so the next pick stops
+      // accumulating. Reset to an empty array instead.
+      this.zValue.set([]);
     } else {
       this.zValue.set(value === null || value === undefined ? '' : String(value));
     }
