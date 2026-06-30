@@ -13,14 +13,22 @@ import { DownloadSearchAbhaComponent } from '../../abha-components/download-sear
 import { AbhaConsentFormComponent } from '../../abha-components/abha-consent-form/abha-consent-form.component';
 import { AmritTrackingService } from 'Common-UI/v2/tracking';
 import { NgIf, NgFor } from '@angular/common';
-import { MatFormField, MatLabel } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 
 @Component({
     selector: 'app-abha-information',
+    standalone: true,
     templateUrl: './abha-information.component.html',
-    styleUrls: ['./abha-information.component.css'],
-    imports: [NgIf, ReactiveFormsModule, NgFor, MatFormField, MatLabel, MatInput]
+    imports: [
+        NgIf,
+        NgFor,
+        ReactiveFormsModule,
+        ZardFormImports,
+        ZardInputDirective,
+        ZardButtonComponent,
+    ],
 })
 export class AbhaInformationComponent {
 

@@ -1,34 +1,35 @@
-<section class="container-fluid" style="overflow: hidden">
-  <div class="title background_color">
-    <h4>{{ currentLanguageSet?.beneficaryConsent }}</h4>
-    <mat-icon
-      mat-icon-button
-      style="margin: 10px 15px 0px 0px;"
-      class="pull-right close-btn"
-      (click)="closeConsent('1')"
-      >close</mat-icon
-    >
-  </div>
-  <mat-dialog-content>
-    <section>
-      <p class="textFormat">
-        आपको बेहतर सेवा प्रदान करने के लिए, हम आपकी व्यक्तिगत जानकारी का अनुरोध
-        करते हैं। आपके द्वारा प्रदान की जाने वाली जानकारी को गोपनीय रखा जाएगा और
-        इसका उपयोग केवल अनुसंधान और विश्लेषण के लिए किया जाएगा।
-      </p>
-    </section>
-    <section>
-      <p class="textFormat">
-        {{ currentLanguageSet?.consentFormText }}
-      </p>
-    </section>
-  </mat-dialog-content>
-  <mat-dialog-actions class="pull-right">
+<div class="flex flex-col gap-4 p-2">
+  <div class="flex items-start justify-between gap-4">
+    <p class="text-lg font-semibold text-foreground">
+      {{ currentLanguageSet?.beneficaryConsent }}
+    </p>
     <button
-      class="full-width-login mat_blue"
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
       type="button"
-      (click)="acceptConsent('1')">
+      aria-label="Close"
+      (click)="closeConsent('0')"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <div class="flex flex-col gap-3">
+    <p class="text-sm text-muted-foreground">
+      आपको बेहतर सेवा प्रदान करने के लिए, हम आपकी व्यक्तिगत जानकारी का अनुरोध
+      करते हैं। आपके द्वारा प्रदान की जाने वाली जानकारी को गोपनीय रखा जाएगा और
+      इसका उपयोग केवल अनुसंधान और विश्लेषण के लिए किया जाएगा।
+    </p>
+    <p class="text-sm text-muted-foreground">
+      {{ currentLanguageSet?.consentFormText }}
+    </p>
+  </div>
+
+  <div class="flex justify-end">
+    <button z-button type="button" (click)="acceptConsent('1')">
       {{ currentLanguageSet?.tc?.accept || 'Accept' }}
     </button>
-  </mat-dialog-actions>
-</section>
+  </div>
+</div>

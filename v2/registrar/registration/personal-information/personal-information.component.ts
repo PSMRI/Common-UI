@@ -9,57 +9,40 @@ import { RegistrarService } from '../../services/registrar.service';
 import { Subscription } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import * as moment from 'moment';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-} from '@angular/material/core';
-import {
-  MomentDateAdapter,
-  MAT_MOMENT_DATE_ADAPTER_OPTIONS,
-} from '@angular/material-moment-adapter';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { AmritTrackingService } from 'Common-UI/v2/tracking';
 import { Injector } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { NgIf, NgFor } from '@angular/common';
-import { MatFormField, MatLabel, MatError, MatSuffix, MatSelect } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
-import { MatDatepickerInput, MatDatepickerToggle, MatDatepicker } from '@angular/material/datepicker';
-import { MatOption } from '@angular/material/autocomplete';
-import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCamera } from '@ng-icons/lucide';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardSelectImports } from 'Common-UI/v2/ui/select';
+import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
+import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
+import { ZardDatePickerComponent } from 'Common-UI/v2/ui/date-picker';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 
 
 @Component({
     selector: 'app-personal-information',
     templateUrl: './personal-information.component.html',
-    styleUrls: ['./personal-information.component.css'],
-    providers: [
-        {
-            provide: MAT_DATE_LOCALE,
-            useValue: 'en-US', // Set the desired locale (e.g., 'en-GB' for dd/MM/yyyy)
-        },
-        {
-            provide: DateAdapter,
-            useClass: MomentDateAdapter,
-            deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
-        },
-        {
-            provide: MAT_DATE_FORMATS,
-            useValue: {
-                parse: {
-                    dateInput: 'LL',
-                },
-                display: {
-                    dateInput: 'DD/MM/YYYY', // Set the desired display format
-                    monthYearLabel: 'MMM YYYY',
-                    dateA11yLabel: 'LL',
-                    monthYearA11yLabel: 'MMMM YYYY',
-                },
-            },
-        },
+    standalone: true,
+    viewProviders: [provideIcons({ lucideCamera })],
+    imports: [
+        ReactiveFormsModule,
+        NgIf,
+        NgFor,
+        NgIcon,
+        ...ZardFormImports,
+        ZardInputDirective,
+        ...ZardSelectImports,
+        ZardRadioGroupComponent,
+        ZardRadioComponent,
+        ZardDatePickerComponent,
+        ZardButtonComponent,
     ],
-    imports: [ReactiveFormsModule, NgIf, NgFor, MatFormField, MatLabel, MatInput, MatError, MatDatepickerInput, MatDatepickerToggle, MatSuffix, MatDatepicker, MatSelect, MatOption, MatRadioGroup, MatRadioButton]
 })
 export class PersonalInformationComponent {
   @Input()
