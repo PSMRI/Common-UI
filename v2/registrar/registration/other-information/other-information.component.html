@@ -3,7 +3,7 @@
     <ng-container *ngFor="let item of formData">
       <!-- Text field -->
       <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'text'">
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle
         }}</label>
         <z-form-control>
@@ -11,6 +11,7 @@
             z-input
             class="w-full"
             type="text"
+            [id]="item.fieldName"
             (input)="onInputChanged($event, item.allowMax, item.fieldName)"
             placeholder="{{ item.placeholder }}"
             [required]="item.isRequired || false"
@@ -21,7 +22,7 @@
           class="text-destructive"
           *ngIf="
             otherInfoFormGroup.controls[item.fieldName].errors?.['required'] &&
-            otherInfoFormGroup.controls[item.fieldName].value?.dirty
+            otherInfoFormGroup.controls[item.fieldName].dirty
           ">
           Field is Required
         </span>
@@ -37,12 +38,13 @@
 
       <!-- Date field -->
       <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'date'">
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle
         }}</label>
         <z-form-control>
           <z-date-picker
             class="w-full"
+            [id]="item.fieldName"
             formControlName="{{ item.fieldName }}"
             [placeholder]="item.placeholder || 'Pick a date'" />
         </z-form-control>
@@ -50,12 +52,13 @@
 
       <!-- Multiple (multi-select) field -->
       <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle
         }}</label>
         <z-form-control>
           <z-select
             class="w-full"
+            [id]="item.fieldName"
             [zMultiple]="true"
             zPlaceholder="{{ item.placeholder }}"
             formControlName="{{ item.fieldName }}">
@@ -70,32 +73,33 @@
 
       <!-- Radio field -->
       <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'radio'">
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle
         }}</label>
         <z-form-control>
           <z-radio-group
+            [id]="item.fieldName"
             formControlName="{{ item.fieldName }}"
             zOrientation="horizontal"
             class="flex-wrap gap-4">
-            <label
-              z-radio
+            <z-radio
               *ngFor="let option of item.options"
               [value]="option">
               {{ option }}
-            </label>
+            </z-radio>
           </z-radio-group>
         </z-form-control>
       </z-form-field>
 
       <!-- Dropdown (single-select) field -->
       <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle
         }}</label>
         <z-form-control>
           <z-select
             class="w-full"
+            [id]="item.fieldName"
             zPlaceholder="{{ item.placeholder }}"
             formControlName="{{ item.fieldName }}">
             <z-select-item

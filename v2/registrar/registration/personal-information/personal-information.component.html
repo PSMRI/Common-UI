@@ -52,7 +52,7 @@
           zType="error"
           *ngIf="
             personalInfoFormGroup.controls[item.fieldName].errors?.['required'] &&
-            personalInfoFormGroup.controls[item.fieldName].value?.dirty
+            personalInfoFormGroup.controls[item.fieldName].dirty
           ">
           Field is Required
         </z-form-message>
@@ -109,17 +109,18 @@
       <div
         *ngIf="item?.fieldType?.toLowerCase() === 'radio'"
         class="flex flex-col gap-1.5">
-        <label z-form-label [zRequired]="item.isRequired === true">
+        <label z-form-label [zRequired]="item.isRequired === true" [attr.for]="item.fieldName">
           {{ item.fieldTitle }}
         </label>
         <z-radio-group
+          [id]="item.fieldName"
           formControlName="{{ item.fieldName }}"
           zOrientation="horizontal"
           class="flex-wrap gap-4"
           (zChange)="trackFieldInteraction(item.fieldTitle || item.fieldName)">
-          <label z-radio *ngFor="let option of item.options" [value]="option">
+          <z-radio *ngFor="let option of item.options" [value]="option">
             {{ option }}
-          </label>
+          </z-radio>
         </z-radio-group>
       </div>
 

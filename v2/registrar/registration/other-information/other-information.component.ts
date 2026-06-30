@@ -72,9 +72,9 @@ export class OtherInformationComponent {
   consentGranted: any;
 
   constructor(
-    private fb: FormBuilder,
+    private readonly fb: FormBuilder,
     private registrarService: RegistrarService,
-    private dialog: MatDialog,
+    private readonly dialog: MatDialog,
   ) {}
 
   ngOnInit() {

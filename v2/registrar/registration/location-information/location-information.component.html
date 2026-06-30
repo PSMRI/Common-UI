@@ -6,7 +6,7 @@
         class="gap-1.5"
         *ngIf="item?.fieldType?.toLowerCase() === 'text'"
       >
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle | titlecase
         }}</label>
         <z-form-control>
@@ -14,6 +14,7 @@
             z-input
             class="w-full"
             type="text"
+            [id]="item.fieldName"
             [placeholder]="item.placeholder | titlecase"
             [formControlName]="item.fieldName"
             (input)="onInputChanged($event, item.allowMax, item.fieldName)"
@@ -45,12 +46,13 @@
         class="gap-1.5"
         *ngIf="item?.fieldType?.toLowerCase() === 'date'"
       >
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle
         }}</label>
         <z-form-control>
           <z-date-picker
             class="w-full"
+            [id]="item.fieldName"
             [formControlName]="item.fieldName"
             [placeholder]="item.placeholder | titlecase"
           ></z-date-picker>
@@ -62,12 +64,13 @@
         class="gap-1.5"
         *ngIf="item?.fieldType?.toLowerCase() === 'multiple'"
       >
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle | titlecase
         }}</label>
         <z-form-control>
           <z-select
             class="w-full"
+            [id]="item.fieldName"
             [zMultiple]="true"
             [formControlName]="item.fieldName"
             [zPlaceholder]="item.placeholder | titlecase"
@@ -87,21 +90,21 @@
         class="flex flex-col gap-1.5"
         *ngIf="item?.fieldType?.toLowerCase() === 'radio'"
       >
-        <label z-form-label [zRequired]="item.isRequired === true">{{
+        <label z-form-label [zRequired]="item.isRequired === true" [attr.for]="item.fieldName">{{
           item.fieldTitle
         }}</label>
         <z-radio-group
+          [id]="item.fieldName"
           [formControlName]="item.fieldName"
           zOrientation="horizontal"
           class="flex-wrap gap-4"
         >
-          <label
-            z-radio
+          <z-radio
             *ngFor="let option of item.options"
             [value]="option"
           >
             {{ option | titlecase }}
-          </label>
+          </z-radio>
         </z-radio-group>
       </div>
 
@@ -110,11 +113,12 @@
         class="gap-1.5"
         *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'"
       >
-        <label z-form-label [zRequired]="item.isRequired || false">{{
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
           item.fieldTitle | titlecase
         }}</label>
         <z-form-control>
           <z-combobox
+            [id]="item.fieldName"
             [formControlName]="item.fieldName"
             [zOptions]="item.options || []"
             [zPlaceholder]="item.placeholder"
