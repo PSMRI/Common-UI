@@ -39,12 +39,13 @@ import { RegistrarService } from '../services/registrar.service';
 import { SessionStorageService } from '../services/session-storage.service';
 import { environment } from 'src/environments/environment';
 import { NgIf, NgFor, TitleCasePipe, DatePipe } from '@angular/common';
+import { cardImports } from 'Common-UI/v2/ui/card';
 
 @Component({
     selector: 'app-beneficiary-details',
     templateUrl: './beneficiary-details.component.html',
-    styleUrls: ['./beneficiary-details.component.css'],
-    imports: [NgIf, NgFor, TitleCasePipe, DatePipe]
+    standalone: true,
+    imports: [NgIf, NgFor, TitleCasePipe, DatePipe, ...cardImports]
 })
 export class BeneficiaryDetailsComponent implements OnInit, DoCheck, OnDestroy {
   beneficiary: any;

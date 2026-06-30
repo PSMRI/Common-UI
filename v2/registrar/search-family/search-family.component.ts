@@ -22,14 +22,15 @@
 import {
   Component,
   OnInit,
-  ViewChild,
   ChangeDetectorRef,
-  AfterViewChecked,
   Inject,
   HostListener,
   DoCheck,
 } from '@angular/core';
-import { MatDialogRef, MatDialog, MatDialogConfig, MAT_DIALOG_DATA, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
@@ -38,13 +39,14 @@ import { CommonService } from 'src/app/app-modules/core/services/common-services
 import { RegistrarService } from '../services/registrar.service';
 import { FamilyTaggingService } from '../services/familytagging.service';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
-import { MatIcon } from '@angular/material/icon';
 import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { CdkScrollable } from '@angular/cdk/scrolling';
-import { MatFormField, MatLabel, MatSelect, MatError } from '@angular/material/select';
-import { MatOption } from '@angular/material/autocomplete';
-import { MatInput } from '@angular/material/input';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardSelectImports } from 'Common-UI/v2/ui/select';
+import { ZardLoaderComponent } from 'Common-UI/v2/ui/loader';
 
 interface Beneficary {
   village: string;
@@ -56,10 +58,22 @@ interface Beneficary {
 }
 
 @Component({
-    selector: 'app-search-family',
-    templateUrl: './search-family.component.html',
-    styleUrls: ['./search-family.component.css'],
-    imports: [MatIcon, NgIf, MatProgressSpinner, CdkScrollable, MatDialogContent, ReactiveFormsModule, MatFormField, MatLabel, MatSelect, NgFor, MatOption, MatInput, MatError, MatDialogActions, TitleCasePipe]
+  selector: 'app-search-family',
+  templateUrl: './search-family.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    TitleCasePipe,
+    ReactiveFormsModule,
+    NgIcon,
+    ZardButtonComponent,
+    ...ZardFormImports,
+    ZardInputDirective,
+    ...ZardSelectImports,
+    ZardLoaderComponent,
+  ],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class SearchFamilyComponent implements OnInit, DoCheck {
   masterData: any;
@@ -139,6 +153,19 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
     });
   }
 
+  /**
+   * z-select emits string values; coerce the control back to a number so the
+   * service calls and numeric id comparisons keep working as before.
+   */
+  private coerceNumber(value: string | string[] | null): number | null {
+    const raw = Array.isArray(value) ? value[0] : value;
+    if (raw === null || raw === undefined || raw === '') {
+      return null;
+    }
+    const num = Number(raw);
+    return isNaN(num) ? null : num;
+  }
+
   getFamilySearchMaster() {
     const requestObj = {
       villageId: this.familySearchForm.value.villageID,
@@ -179,7 +206,10 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
     this.currentLanguageSet = getLanguageJson.currentLanguageObject;
   }
 
-  onVillageChange() {
+  onVillageChange(value: string | string[]) {
+    this.familySearchForm.controls['villageID'].setValue(
+      this.coerceNumber(value)
+    );
     this.updateVillageName();
   }
 
@@ -193,7 +223,10 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
     });
   }
 
-  onBlockChange() {
+  onBlockChange(value: string | string[]) {
+    this.familySearchForm.controls['blockID'].setValue(
+      this.coerceNumber(value)
+    );
     this.registrarService
       .getVillageList(this.familySearchForm.value.blockID)
       .subscribe((res: any) => {
@@ -237,7 +270,10 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
     });
   }
 
-  onDistrictChange() {
+  onDistrictChange(value: string | string[]) {
+    this.familySearchForm.controls['districtID'].setValue(
+      this.coerceNumber(value)
+    );
     this.fetchBlockSelection();
   }
 
