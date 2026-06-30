@@ -22,7 +22,7 @@
 
 import { cva, type VariantProps } from 'class-variance-authority';
 
-export const paginationContentVariants = cva('flex flex-row items-center gap-1');
+export const paginationContentVariants = cva('flex list-none flex-row items-center gap-1 p-0');
 export type ZardPaginationContentVariants = VariantProps<typeof paginationContentVariants>;
 
 export const paginationPreviousVariants = cva('gap-1 px-2.5 sm:pl-2.5');
