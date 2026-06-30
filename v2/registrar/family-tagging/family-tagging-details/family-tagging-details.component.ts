@@ -19,13 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
-import {
-  Component,
-  DoCheck,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, DoCheck, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
@@ -33,34 +27,58 @@ import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { CreateFamilyTaggingComponent } from '../create-family-tagging/create-family-tagging.component';
 import { EditFamilyTaggingComponent } from '../edit-family-tagging/edit-family-tagging.component';
-import { MatPaginator } from '@angular/material/paginator';
 import { FamilyTaggingService } from '../../services/familytagging.service';
 import { RegistrarService } from '../../services/registrar.service';
 import { SearchFamilyComponent } from '../../search-family/search-family.component';
 import { SessionStorageService } from '../../services/session-storage.service';
 import { environment } from 'src/environments/environment';
-import { MatIcon } from '@angular/material/icon';
-import { MatSidenavContainer, MatSidenav } from '@angular/material/sidenav';
 import { BeneficiaryDetailsComponent } from '../../beneficiary-details/beneficiary-details.component';
-import { MatCard } from '@angular/material/card';
 import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
-import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { MatTooltip } from '@angular/material/tooltip';
-
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideUserRound,
+  lucidePencil,
+  lucidePlus,
+  lucideChevronLeft,
+  lucideChevronRight,
+} from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardSheetComponent } from 'Common-UI/v2/ui/sheet';
+import { cardImports } from 'Common-UI/v2/ui/card';
+import { ZardTableImports } from 'Common-UI/v2/ui/table';
+import { ZardPaginationImports } from 'Common-UI/v2/ui/pagination';
+import { tooltipImports } from 'Common-UI/v2/ui/tooltip';
 
 @Component({
-    selector: 'app-family-tagging-details',
-    templateUrl: './family-tagging-details.component.html',
-    styleUrls: ['./family-tagging-details.component.css'],
-    imports: [MatIcon, MatSidenavContainer, MatSidenav, BeneficiaryDetailsComponent, MatCard, NgIf, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, NgFor, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatTooltip, MatPaginator, TitleCasePipe]
+  selector: 'app-family-tagging-details',
+  templateUrl: './family-tagging-details.component.html',
+  imports: [
+    NgIf,
+    NgFor,
+    TitleCasePipe,
+    NgIcon,
+    BeneficiaryDetailsComponent,
+    ZardButtonComponent,
+    ZardSheetComponent,
+    ...cardImports,
+    ...ZardTableImports,
+    ...ZardPaginationImports,
+    ...tooltipImports,
+  ],
+  viewProviders: [
+    provideIcons({
+      lucideUserRound,
+      lucidePencil,
+      lucidePlus,
+      lucideChevronLeft,
+      lucideChevronRight,
+    }),
+  ],
 })
 export class FamilyTaggingDetailsComponent
   implements OnInit, DoCheck, OnDestroy
 {
-  @ViewChild('sidenav')
-  sidenav: any;
-
-  @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
+  sidenavOpen = true;
 
   displayedColumns = [
     'familyId',
@@ -273,14 +291,44 @@ export class FamilyTaggingDetailsComponent
     );
   }
 
-  sideNavModeChange(sidenav: any) {
-    const deviceHeight = window.screen.height;
-    const deviceWidth = window.screen.width;
+  toggleSidenav() {
+    this.sidenavOpen = !this.sidenavOpen;
+  }
 
-    if (deviceWidth < 700) sidenav.mode = 'over';
-    else sidenav.mode = 'side';
+  // ---- Client-side pagination for the family search list ----
+  pageSize = 5;
+  currentPage = 1;
 
-    sidenav.toggle();
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.familySearchList.length / this.pageSize));
+  }
+
+  get pagedSearchList(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.familySearchList.slice(start, start + this.pageSize);
+  }
+
+  /** A small window of page numbers around the current page (max 5). */
+  get pageNumbers(): number[] {
+    const total = this.totalPages;
+    let start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(total, start + 4);
+    start = Math.max(1, end - 4);
+    const pages: number[] = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
   }
 
   openSearchFamily() {
@@ -304,6 +352,7 @@ export class FamilyTaggingDetailsComponent
         this.searchRequest = result.searchRequest;
         this.enableFamilyCreateTable = false;
         this.createdFamilyList = [];
+        this.currentPage = 1;
 
         this.getBeneficiaryDetailsAfterFamilyTag();
       }
@@ -324,6 +373,7 @@ export class FamilyTaggingDetailsComponent
         } else {
           this.familySearchList = [];
         }
+        this.currentPage = 1;
         (err: string) => {
           this.confirmationService.alert(err, 'error');
         };

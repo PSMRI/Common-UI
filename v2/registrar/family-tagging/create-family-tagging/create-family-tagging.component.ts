@@ -20,25 +20,42 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, DoCheck, Inject, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NgIf, NgFor } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { FamilyTaggingService } from '../../services/familytagging.service';
 import { SessionStorageService } from '../../services/session-storage.service';
-import { MatIcon } from '@angular/material/icon';
-import { CdkScrollable } from '@angular/cdk/scrolling';
-import { MatFormField, MatLabel, MatError, MatSelect } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
-import { NgIf, NgFor } from '@angular/common';
-import { MatOption } from '@angular/material/autocomplete';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardSelectImports } from 'Common-UI/v2/ui/select';
 
 @Component({
-    selector: 'app-create-family-tagging',
-    templateUrl: './create-family-tagging.component.html',
-    styleUrls: ['./create-family-tagging.component.css'],
-    imports: [MatIcon, CdkScrollable, MatDialogContent, ReactiveFormsModule, FormsModule, MatFormField, MatLabel, MatInput, NgIf, MatError, MatSelect, NgFor, MatOption, MatDialogActions]
+  selector: 'app-create-family-tagging',
+  templateUrl: './create-family-tagging.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    ReactiveFormsModule,
+    FormsModule,
+    NgIcon,
+    ZardButtonComponent,
+    ZardInputDirective,
+    ...ZardFormImports,
+    ...ZardSelectImports,
+  ],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
   @ViewChild('newFamilyTaggingForm') form: any;
@@ -70,7 +87,7 @@ export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
     private familyTaggingService: FamilyTaggingService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
-    private sessionstorage:SessionStorageService,
+    private sessionstorage: SessionStorageService,
     @Inject(MAT_DIALOG_DATA) public data: any,
   ) {}
 
@@ -114,11 +131,28 @@ export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
     this.familyName = this.benFamilyName;
   }
 
+  /**
+   * The z-select CVA writes its option value as a string, but the relationship
+   * logic below (createNewFamilyTagging filter, checkOtherRelation, and the
+   * value set in populateRelation) compares against the numeric
+   * benRelationshipID. Coerce the just-selected value back to a number so the
+   * existing strict-equality comparisons keep working unchanged.
+   */
+  coerceRelationNumber(value: string | string[]) {
+    const raw = Array.isArray(value) ? value[0] : value;
+    if (raw !== null && raw !== undefined && raw !== '') {
+      this.relationWithHeadOfFamily = Number(raw);
+    } else {
+      this.relationWithHeadOfFamily = null;
+    }
+  }
+
   createNewFamilyTagging() {
     const typeOfRelation = this.relationShipType.filter((item) => {
       if (item.benRelationshipID === this.relationWithHeadOfFamily) return item;
     });
-    const serviceLineDetails: any = this.sessionstorage.getItem('serviceLineDetails');
+    const serviceLineDetails: any =
+      this.sessionstorage.getItem('serviceLineDetails');
     const vanID = JSON.parse(serviceLineDetails).vanID;
     const parkingPlaceID = JSON.parse(serviceLineDetails).parkingPlaceID;
     const reqObject = {

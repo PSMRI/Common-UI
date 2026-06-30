@@ -20,27 +20,42 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, DoCheck, Inject, OnInit, ViewChild } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { FamilyTaggingService } from '../../services/familytagging.service';
 import { SessionStorageService } from '../../services/session-storage.service';
-import { MatIcon } from '@angular/material/icon';
-import { CdkScrollable } from '@angular/cdk/scrolling';
-import { MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
-import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatFormField, MatLabel, MatSelect, MatError } from '@angular/material/select';
-import { MatOption } from '@angular/material/autocomplete';
-import { MatInput } from '@angular/material/input';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardCheckboxComponent } from 'Common-UI/v2/ui/checkbox';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardSelectImports } from 'Common-UI/v2/ui/select';
+import { ZardTableImports } from 'Common-UI/v2/ui/table';
 
 @Component({
-    selector: 'app-edit-family-tagging',
-    templateUrl: './edit-family-tagging.component.html',
-    styleUrls: ['./edit-family-tagging.component.css'],
-    imports: [MatIcon, CdkScrollable, MatDialogContent, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, NgIf, MatCheckbox, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, ReactiveFormsModule, FormsModule, MatFormField, MatLabel, MatSelect, MatOption, NgFor, MatInput, MatError, MatDialogActions, TitleCasePipe]
+  selector: 'app-edit-family-tagging',
+  templateUrl: './edit-family-tagging.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    TitleCasePipe,
+    ReactiveFormsModule,
+    FormsModule,
+    NgIcon,
+    ZardButtonComponent,
+    ZardCheckboxComponent,
+    ...ZardFormImports,
+    ZardInputDirective,
+    ...ZardSelectImports,
+    ...ZardTableImports,
+  ],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class EditFamilyTaggingComponent implements OnInit, DoCheck {
   @ViewChild('editFamilyTaggingForm')
@@ -79,7 +94,7 @@ export class EditFamilyTaggingComponent implements OnInit, DoCheck {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private confirmationService: ConfirmationService,
     private familyTaggingService: FamilyTaggingService,
-    private sessionstorage:SessionStorageService,
+    private sessionstorage: SessionStorageService,
   ) {}
 
   ngOnInit() {
@@ -124,9 +139,9 @@ export class EditFamilyTaggingComponent implements OnInit, DoCheck {
     }
   }
 
-  selectMember(event: any, item: any) {
+  selectMember(checked: boolean, item: any) {
     this.uncheckMember = true;
-    if (event.checked) {
+    if (checked) {
       item.selected = true;
       this.selectedMembersList.push(item);
     } else {
@@ -189,6 +204,13 @@ export class EditFamilyTaggingComponent implements OnInit, DoCheck {
   }
 
   checkOtherRelation(relationValue: any) {
+    // z-select emits a string; coerce to number to match the numeric
+    // benRelationshipID used throughout the relationship logic.
+    this.relationWithHead =
+      relationValue === null || relationValue === undefined
+        ? relationValue
+        : Number(relationValue);
+    const coercedValue = this.relationWithHead;
     this.other = null;
     const relationTypeValue = this.relationShipType.filter((item) => {
       if (item.benRelationshipType.toLowerCase() === 'other') {
@@ -202,7 +224,7 @@ export class EditFamilyTaggingComponent implements OnInit, DoCheck {
       relationTypeValue.length > 0 &&
       relationTypeValue[0].benRelationshipID !== undefined &&
       relationTypeValue[0].benRelationshipID !== null &&
-      relationTypeValue[0].benRelationshipID === relationValue
+      relationTypeValue[0].benRelationshipID === coercedValue
     ) {
       this.enableOther = true;
     } else {
@@ -317,7 +339,8 @@ export class EditFamilyTaggingComponent implements OnInit, DoCheck {
   untagFamilyMember() {
     const memberList: any[] = [];
 
-    const serviceLineDetails: any = this.sessionstorage.getItem('serviceLineDetails');
+    const serviceLineDetails: any =
+      this.sessionstorage.getItem('serviceLineDetails');
     const vanID = JSON.parse(serviceLineDetails).vanID;
     const parkingPlaceID = JSON.parse(serviceLineDetails).parkingPlaceID;
 
