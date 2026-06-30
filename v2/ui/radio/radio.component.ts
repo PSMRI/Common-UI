@@ -67,7 +67,8 @@ type OnChangeType = (value: unknown) => void;
         [name]="resolvedName()"
         [id]="zId() || z.id()" />
       <span
-        class="bg-primary pointer-events-none absolute left-1 size-2 rounded-full opacity-0 peer-checked:opacity-100"></span>
+        class="bg-primary pointer-events-none absolute left-1 top-1/2 size-2 -translate-y-1/2 rounded-full opacity-0 transition-opacity"
+        [class.opacity-100]="isChecked()"></span>
       <label [class]="labelClasses()" [for]="zId() || z.id()">
         <ng-content />
       </label>

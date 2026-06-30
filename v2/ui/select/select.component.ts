@@ -644,10 +644,16 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
 
   // ControlValueAccessor implementation
   writeValue(value: string | string[] | null): void {
+    // The select is string-valued by contract (its items carry string values
+    // and onChange emits a string). A form may legitimately hold a number
+    // (e.g. a numeric id), so normalize any incoming value to string here —
+    // otherwise label matching (item.zValue() === value) fails on a
+    // string-vs-number mismatch and the trigger shows the raw id instead of
+    // the option label.
     if (this.zMultiple() && Array.isArray(value)) {
-      this.zValue.set(value);
+      this.zValue.set(value.map(v => String(v)));
     } else {
-      this.zValue.set(value ?? '');
+      this.zValue.set(value === null || value === undefined ? '' : String(value));
     }
   }
 
