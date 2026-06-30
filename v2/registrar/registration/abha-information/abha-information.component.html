@@ -1,52 +1,60 @@
-<button
-  mat-raised-button
-  style="margin: 5px"
-  *ngIf="patientRevisit"
-  class="full-width-login pull-right m-r-5 mat_blue"
-  id="viewHealthID"
-  type="accent"
-  (click)="viewHealthIdData(); trackFieldInteraction('ABHA Details')"
->
-  ABHA Details
-</button>
-
-<button
-  id="searchAhaCard"
-  style="margin: 5px"
-  mat-raised-button
-  color="primary"
-  class="full-width-login pull-right m-r-5 mat_blue"
-  (click)="printHealthIDCard(); trackFieldInteraction('Search ABHA')"
-> Search ABHA
-</button>
-<button
-  id="generateAbhaCard"
-  style="margin: 5px"
-  mat-raised-button
-  color="primary"
-  class="full-width-login pull-right m-r-5 mat_blue"
-  (click)="generateAbhaCard(); trackFieldInteraction('Generate ABHA')"
->
-  Generate ABHA Card
-</button>
-<div [formGroup]="abhaInfoFormGroup">
-  <ng-container *ngFor="let item of formData">
-    <div
-      class="col-xs-12 col-sm-6 col-md-3 col-lg-3"
-      *ngIf="item?.fieldType?.toLowerCase() === 'text'"
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap justify-end gap-2">
+    <button
+      *ngIf="patientRevisit"
+      z-button
+      zType="default"
+      type="button"
+      id="viewHealthID"
+      (click)="viewHealthIdData(); trackFieldInteraction('ABHA Details')"
     >
-      <mat-form-field class="input-full-width">
-        <mat-label> {{ item.fieldTitle }}</mat-label>
-        <input
-          matInput
-          type="input"
-          readonly="item.isEditable === false "
-          placeholder="{{ item.placeholder }}"
-          [required]="item.isRequired || false"
-          formControlName="{{ item.fieldName }}"
-          (focus)="trackFieldInteraction('ABHA Number')"
-        />
-      </mat-form-field>
-    </div>
-  </ng-container>
+      ABHA Details
+    </button>
+
+    <button
+      z-button
+      zType="default"
+      type="button"
+      id="searchAhaCard"
+      (click)="printHealthIDCard(); trackFieldInteraction('Search ABHA')"
+    >
+      Search ABHA
+    </button>
+
+    <button
+      z-button
+      zType="default"
+      type="button"
+      id="generateAbhaCard"
+      (click)="generateAbhaCard(); trackFieldInteraction('Generate ABHA')"
+    >
+      Generate ABHA Card
+    </button>
+  </div>
+
+  <div
+    [formGroup]="abhaInfoFormGroup"
+    class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+  >
+    <ng-container *ngFor="let item of formData">
+      <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'text'">
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">
+          {{ item.fieldTitle }}
+        </label>
+        <z-form-control>
+          <input
+            z-input
+            class="w-full"
+            type="text"
+            [id]="item.fieldName"
+            [readonly]="item.isEditable === false"
+            [placeholder]="item.placeholder"
+            [required]="item.isRequired || false"
+            [formControlName]="item.fieldName"
+            (focus)="trackFieldInteraction('ABHA Number')"
+          />
+        </z-form-control>
+      </z-form-field>
+    </ng-container>
+  </div>
 </div>

@@ -1,170 +1,148 @@
-<div class="m-t-10">
-  <form [formGroup]="personalInfoFormGroup" autocomplete="off">
-    <div id="image_row" class="col-md-2 order-md-last text-center">
-      <div class="row">
-        <div class="col-xs-12">
-          <div *ngIf="personalInfoFormGroup.value?.image === null">
-            <a>
-              <img
-                src="assets/images/default-avatar.gif"
-                class="img-circle thumbnail-120"
-                alt="Upload Beneficiary Image" />
-            </a>
-          </div>
-          <div *ngIf="personalInfoFormGroup.value?.image !== null">
-            <a>
-              <img
-                [src]="personalInfoFormGroup.value.image"
-                class="img-circle thumbnail-120"
-                alt="image" />
-            </a>
-          </div>
-          <button
-            mat-button
-            mat-raised-button
-            id="captureButton"
-            class="m-t-10 mat_captureButton"
-            (click)="captureImage(); trackFieldInteraction('Upload Beneficiary Image')"
-            type="button">
-            Capture Photo
-          </button>
-        </div>
+<form
+  [formGroup]="personalInfoFormGroup"
+  autocomplete="off"
+  class="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
+  <!-- Photo / capture -->
+  <div class="flex flex-col items-center gap-3 sm:order-last sm:w-40 sm:shrink-0">
+    <img
+      *ngIf="personalInfoFormGroup.value?.image === null"
+      src="assets/images/default-avatar.gif"
+      class="size-28 rounded-full border border-border object-cover"
+      alt="Beneficiary photo placeholder" />
+    <img
+      *ngIf="personalInfoFormGroup.value?.image !== null"
+      [src]="personalInfoFormGroup.value.image"
+      class="size-28 rounded-full border border-border object-cover"
+      alt="Beneficiary photo" />
+    <button
+      z-button
+      zType="outline"
+      type="button"
+      id="captureButton"
+      (click)="captureImage(); trackFieldInteraction('Upload Beneficiary Image')">
+      <ng-icon name="lucideCamera" aria-hidden="true"></ng-icon>
+      Capture Photo
+    </button>
+  </div>
+
+  <!-- Dynamic fields -->
+  <div class="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ng-container *ngFor="let item of formData">
+      <!-- Text -->
+      <z-form-field
+        *ngIf="item?.fieldType?.toLowerCase() === 'text'"
+        class="gap-1.5">
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">
+          {{ item.fieldTitle }}
+        </label>
+        <z-form-control>
+          <input
+            z-input
+            class="w-full"
+            type="text"
+            [id]="item.fieldName"
+            formControlName="{{ item.fieldName }}"
+            placeholder="{{ item.placeholder }}"
+            [required]="item.isRequired || false"
+            (input)="onInputChanged($event, item.allowMax, item.fieldName)"
+            (focus)="trackFieldInteraction(item.fieldTitle || item.fieldName)"
+            (change)="checkFieldValidations(item)" />
+        </z-form-control>
+        <z-form-message
+          zType="error"
+          *ngIf="
+            personalInfoFormGroup.controls[item.fieldName].errors?.['required'] &&
+            personalInfoFormGroup.controls[item.fieldName].value?.dirty
+          ">
+          Field is Required
+        </z-form-message>
+        <z-form-message
+          zType="error"
+          *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['minlength']">
+          Minimum length should be {{ item.allowMin }} characters
+        </z-form-message>
+      </z-form-field>
+
+      <!-- Date -->
+      <z-form-field
+        *ngIf="item?.fieldType?.toLowerCase() === 'date'"
+        class="gap-1.5">
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">
+          {{ item.fieldTitle }}
+        </label>
+        <z-form-control>
+          <z-date-picker
+            class="w-full"
+            [id]="item.fieldName"
+            formControlName="{{ item.fieldName }}"
+            zFormat="dd/MM/yyyy"
+            [placeholder]="item.placeholder || 'Pick a date'"
+            [minDate]="item?.fieldName?.toLowerCase() === 'dob' ? minDate : null"
+            [maxDate]="item?.fieldName?.toLowerCase() === 'dob' ? today : null"
+            (dateChange)="checkFieldValidations(item); trackFieldInteraction(item.fieldTitle || item.fieldName)"></z-date-picker>
+        </z-form-control>
+      </z-form-field>
+
+      <!-- Multiple select -->
+      <z-form-field
+        *ngIf="item?.fieldType?.toLowerCase() === 'multiple'"
+        class="gap-1.5">
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">
+          {{ item.fieldTitle }}
+        </label>
+        <z-form-control>
+          <z-select
+            class="w-full"
+            [id]="item.fieldName"
+            [zMultiple]="true"
+            formControlName="{{ item.fieldName }}"
+            [zPlaceholder]="item.placeholder || 'Select options'"
+            (zSelectionChange)="trackFieldInteraction(item.fieldTitle || item.fieldName)">
+            <z-select-item *ngFor="let option of item.options" [zValue]="option">
+              {{ option }}
+            </z-select-item>
+          </z-select>
+        </z-form-control>
+      </z-form-field>
+
+      <!-- Radio -->
+      <div
+        *ngIf="item?.fieldType?.toLowerCase() === 'radio'"
+        class="flex flex-col gap-1.5">
+        <label z-form-label [zRequired]="item.isRequired === true">
+          {{ item.fieldTitle }}
+        </label>
+        <z-radio-group
+          formControlName="{{ item.fieldName }}"
+          zOrientation="horizontal"
+          class="flex-wrap gap-4"
+          (zChange)="trackFieldInteraction(item.fieldTitle || item.fieldName)">
+          <label z-radio *ngFor="let option of item.options" [value]="option">
+            {{ option }}
+          </label>
+        </z-radio-group>
       </div>
-    </div>
-    <div id="data_row" class="col-md-10 order-md-first">
-      <div class="row">
-        <ng-container *ngFor="let item of formData">
-          <!-- <div  class="col-xs-12 col-sm-6 col-md-4 col-lg-4" *ngFor="let item of formData"> -->
 
-          <div
-            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-            *ngIf="item?.fieldType?.toLowerCase() === 'text'">
-            <mat-form-field [style.width]="'100%'">
-              <mat-label> {{ item.fieldTitle }}</mat-label>
-              <input
-                matInput
-                type="input"
-                (input)="onInputChanged($event, item.allowMax, item.fieldName)"
-                (focus)="trackFieldInteraction(item.fieldTitle || item.fieldName)"
-                placeholder="{{ item.placeholder }}"
-                [required]="item.isRequired || false"
-                (change)="checkFieldValidations(item)"
-                formControlName="{{ item.fieldName }}" />
-            </mat-form-field>
-            <mat-error
-              *ngIf="
-                personalInfoFormGroup.controls[item.fieldName].errors?.[
-                  'required'
-                ] && personalInfoFormGroup.controls[item.fieldName].value?.dirty
-              ">
-              Field is Required</mat-error
-            >
-            <mat-error
-              *ngIf="
-                personalInfoFormGroup.controls[item.fieldName].errors?.[
-                  'minlength'
-                ]
-              ">
-              Minimum length should be {{ item.allowMin }} characters
-            </mat-error>
-          </div>
-
-          <div
-            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-            *ngIf="item?.fieldType?.toLowerCase() === 'date'">
-            <mat-form-field [style.width]="'100%'">
-              <mat-label> {{ item.fieldTitle }}</mat-label>
-              <input
-                matInput
-                [matDatepicker]="picker"
-                (focus)="trackFieldInteraction(item.fieldTitle || item.fieldName)"
-                formControlName="{{ item.fieldName }}"
-                (dateChange)="checkFieldValidations(item)"
-                placeholder="{{ item.placeholder }}"
-                [required]="item.isRequired || false"
-                [min]="item?.fieldName?.toLowerCase() === 'dob' ? minDate : ''"
-                [max]="item?.fieldName?.toLowerCase() === 'dob' ? today : ''"
-                readonly />
-              <mat-datepicker-toggle
-                matSuffix
-                [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
-          </div>
-
-          <div
-            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-            *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
-            <mat-form-field
-              [style.width]="'100%'"
-              class="backgroundWhite dropdownfontStyle">
-              <mat-label> {{ item.fieldTitle }}</mat-label>
-              <mat-select
-                matInput
-                multiple
-                (selectionChange)="trackFieldInteraction(item.fieldTitle || item.fieldName)"
-                [required]="item.isRequired || false"
-                placeholder="{{ item.placeholder }}"
-                formControlName="{{ item.fieldName }}">
-                <mat-option
-                  *ngFor="let option of item.options"
-                  [value]="option">
-                  {{ option }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <div
-            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-            *ngIf="item?.fieldType?.toLowerCase() === 'radio'"
-            style="margin-top: 20px">
-            <mat-label *ngIf="item.isRequired === true"
-              >{{ item.fieldTitle }}*</mat-label
-            >
-            <mat-label *ngIf="item.isRequired !== true">{{
-              item.fieldTitle
-            }}</mat-label>
-            <mat-radio-group
-              formControlName="{{ item.fieldName }}"
-              (change)="trackFieldInteraction(item.fieldTitle || item.fieldName)"
-              [required]="item.isRequired || false">
-              <mat-radio-button
-                class="radioButtonFontStyle"
-                style="margin-left: 5px"
-                *ngFor="let option of item.options"
-                [value]="option">
-                {{ option }}
-              </mat-radio-button>
-            </mat-radio-group>
-          </div>
-
-          <div
-            class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-            *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
-            <mat-form-field
-              [style.width]="'100%'"
-              class="backgroundWhite fieldForHRP dropdownfontStyle">
-              <mat-label> {{ item.fieldTitle }}</mat-label>
-              <mat-select
-                matInput
-                type="select"
-                (selectionChange)="trackFieldInteraction(item.fieldTitle || item.fieldName)"
-                placeholder="{{ item.placeholder }}"
-                [required]="item.isRequired || false"
-                formControlName="{{ item.fieldName }}">
-                <mat-option
-                  *ngFor="let option of item.options"
-                  [value]="option">
-                  {{ option }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <!-- </div> -->
-        </ng-container>
-      </div>
-    </div>
-  </form>
-</div>
+      <!-- Dropdown -->
+      <z-form-field
+        *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'"
+        class="gap-1.5">
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">
+          {{ item.fieldTitle }}
+        </label>
+        <z-form-control>
+          <z-select
+            class="w-full"
+            [id]="item.fieldName"
+            formControlName="{{ item.fieldName }}"
+            [zPlaceholder]="item.placeholder || 'Select an option'"
+            (zSelectionChange)="trackFieldInteraction(item.fieldTitle || item.fieldName)">
+            <z-select-item *ngFor="let option of item.options" [zValue]="option">
+              {{ option }}
+            </z-select-item>
+          </z-select>
+        </z-form-control>
+      </z-form-field>
+    </ng-container>
+  </div>
+</form>

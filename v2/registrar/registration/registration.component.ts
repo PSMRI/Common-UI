@@ -12,8 +12,9 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConsentFormComponent } from './consent-form/consent-form.component';
 import { SessionStorageService } from '../services/session-storage.service';
 import { NgIf } from '@angular/common';
-import { MatStepper, MatStep, MatStepLabel, MatStepperNext, MatStepperPrevious } from '@angular/material/stepper';
-import { MatCard, MatCardTitle, MatCardContent } from '@angular/material/card';
+import { ZardStepperImports } from 'Common-UI/v2/ui/stepper';
+import { cardImports } from 'Common-UI/v2/ui/card';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { PersonalInformationComponent } from './personal-information/personal-information.component';
 import { LocationInformationComponent } from './location-information/location-information.component';
 import { OtherInformationComponent } from './other-information/other-information.component';
@@ -22,8 +23,7 @@ import { AbhaInformationComponent } from './abha-information/abha-information.co
 @Component({
     selector: 'app-registration',
     templateUrl: './registration.component.html',
-    styleUrls: ['./registration.component.css'],
-    imports: [NgIf, ReactiveFormsModule, MatStepper, MatStep, MatStepLabel, MatCard, MatCardTitle, MatCardContent, PersonalInformationComponent, MatStepperNext, LocationInformationComponent, MatStepperPrevious, OtherInformationComponent, AbhaInformationComponent]
+    imports: [NgIf, ReactiveFormsModule, ...ZardStepperImports, ...cardImports, ZardButtonComponent, PersonalInformationComponent, LocationInformationComponent, OtherInformationComponent, AbhaInformationComponent]
 })
 export class RegistrationComponent {
 
@@ -146,6 +146,41 @@ export class RegistrationComponent {
 
   get abhaInfoFormGroup(): FormGroup{
     return this.mainForm.get('abhaInfoForm') as FormGroup;
+  }
+
+  // Wizard navigation. z-stepper is only the visual indicator, so the active
+  // step is tracked here. enabledStepKeys lists the steps switched on (in
+  // order), and currentStep indexes into it — replacing mat-stepper's
+  // matStepperNext/Previous.
+  currentStep = 0;
+
+  get enabledStepKeys(): string[] {
+    const keys: string[] = [];
+    if (this.enablePersonalInfo) keys.push('personal');
+    if (this.enableLocationInfo) keys.push('location');
+    if (this.enableOtherInfo) keys.push('other');
+    if (this.enableAbhaInfo) keys.push('abha');
+    return keys;
+  }
+
+  get activeStepKey(): string {
+    return this.enabledStepKeys[this.currentStep] ?? '';
+  }
+
+  get isLastStep(): boolean {
+    return this.currentStep >= this.enabledStepKeys.length - 1;
+  }
+
+  nextStep() {
+    if (this.currentStep < this.enabledStepKeys.length - 1) {
+      this.currentStep++;
+    }
+  }
+
+  previousStep() {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+    }
   }
 
   checkPatientRevisit() {

@@ -20,19 +20,21 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { Consent, SearchComponent } from 'Common-UI/v2/registrar/search/search.component';
-import { MatIcon } from '@angular/material/icon';
-import { CdkScrollable } from '@angular/cdk/scrolling';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 
 @Component({
-    selector: 'app-consent-form',
-    templateUrl: './consent-form.component.html',
-    styleUrls: ['./consent-form.component.css'],
-    imports: [MatIcon, CdkScrollable, MatDialogContent, MatDialogActions]
+  selector: 'app-consent-form',
+  templateUrl: './consent-form.component.html',
+  standalone: true,
+  imports: [NgIcon, ZardButtonComponent],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class ConsentFormComponent implements OnInit {
   currentLanguageSet: any;

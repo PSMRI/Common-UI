@@ -1,140 +1,111 @@
-<div>
-  <form [formGroup]="otherInfoFormGroup" autocomplete="off">
-    <div class="row">
-      <ng-container *ngFor="let item of formData">
-        <div
-          class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-          *ngIf="item?.fieldType?.toLowerCase() === 'text'"
-        >
-          <mat-form-field class="input-full-width">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input
-              matInput
-              type="input"
-              (input)="onInputChanged($event, item.allowMax, item.fieldName)"
-              placeholder="{{ item.placeholder }}"
-              [required]="item.isRequired || false"
-              formControlName="{{ item.fieldName }}" />
-          </mat-form-field>
-          <mat-error
-            *ngIf="
-              otherInfoFormGroup.controls[item.fieldName].errors?.[
-                'required'
-              ] && otherInfoFormGroup.controls[item.fieldName].value?.dirty
-            "
-          >
-            Field is Required</mat-error
-          >
-          <mat-error
-            *ngIf="
-              otherInfoFormGroup.controls[item.fieldName].errors?.['minlength']
-            "
-          >
-            Minimum length should be {{ item.allowMin }} characters
-          </mat-error>
-        </div>
-
-        <div
-          class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-          *ngIf="item?.fieldType?.toLowerCase() === 'date'"
-        >
-          <mat-form-field class="input-full-width">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input
-              matInput
-              [matDatepicker]="picker"
-              formControlName="{{ item.fieldName }}"
-              placeholder="{{ item.placeholder }}"
-              [required]="item.isRequired || false"
-              readonly
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="picker"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-        </div>
-
-        <!-- <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'time'">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="time"  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
-          </mat-form-field> -->
-
-        <div
-          class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-          *ngIf="item?.fieldType?.toLowerCase() === 'multiple'"
-        >
-          <mat-form-field
-            class="input-full-width backgroundWhite dropdownfontStyle"
-          >
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <mat-select
-              matInput
-              multiple
-              [required]="item.isRequired || false"
-              placeholder="{{ item.placeholder }}"
-              formControlName="{{ item.fieldName }}"
-            >
-              <mat-option *ngFor="let option of item.options" [value]="option">
-                {{ option }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- <mat-form-field class="input-full-width" *ngIf="item?.fieldType?.toLowerCase() === 'date & time'">
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <input matInput type="datetime-local"  [required]="item.isRequired || false" placeholder="{{ item.placeholder }}" formControlName="{{item.fieldName}}"/>
-          </mat-form-field> -->
-
-        <div
-          class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-          *ngIf="item?.fieldType?.toLowerCase() === 'radio'"
-        >
-          <mat-label *ngIf="item.isRequired === true"
-            >{{ item.fieldTitle }}*</mat-label
-          >
-          <mat-label *ngIf="item.isRequired !== true">{{
-            item.fieldTitle
-          }}</mat-label>
-          <mat-radio-group
-            formControlName="{{ item.fieldName }}"
+<form [formGroup]="otherInfoFormGroup" autocomplete="off">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ng-container *ngFor="let item of formData">
+      <!-- Text field -->
+      <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'text'">
+        <label z-form-label [zRequired]="item.isRequired || false">{{
+          item.fieldTitle
+        }}</label>
+        <z-form-control>
+          <input
+            z-input
+            class="w-full"
+            type="text"
+            (input)="onInputChanged($event, item.allowMax, item.fieldName)"
+            placeholder="{{ item.placeholder }}"
             [required]="item.isRequired || false"
-          >
-            <mat-radio-button
-              class="radioButtonFontStyle"
-              style="margin-left: 5px; margin-right: 5px"
-              *ngFor="let option of item.options"
-              [value]="option"
-            >
-              {{ option }}
-            </mat-radio-button>
-          </mat-radio-group>
-        </div>
+            formControlName="{{ item.fieldName }}" />
+        </z-form-control>
+        <span
+          z-form-message
+          class="text-destructive"
+          *ngIf="
+            otherInfoFormGroup.controls[item.fieldName].errors?.['required'] &&
+            otherInfoFormGroup.controls[item.fieldName].value?.dirty
+          ">
+          Field is Required
+        </span>
+        <span
+          z-form-message
+          class="text-destructive"
+          *ngIf="
+            otherInfoFormGroup.controls[item.fieldName].errors?.['minlength']
+          ">
+          Minimum length should be {{ item.allowMin }} characters
+        </span>
+      </z-form-field>
 
-        <div
-          class="col-xs-12 col-sm-6 col-md-4 col-lg-4"
-          *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'"
-        >
-          <mat-form-field
-            class="input-full-width backgroundWhite fieldForHRP dropdownfontStyle"
-          >
-            <mat-label> {{ item.fieldTitle }}</mat-label>
-            <mat-select
-              matInput
-              type="select"
-              [required]="item.isRequired || false"
-              placeholder="{{ item.placeholder }}"
-              formControlName="{{ item.fieldName }}"
-            >
-              <mat-option *ngFor="let option of item.options" [value]="option">
-                {{ option }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </ng-container>
-    </div>
-  </form>
-</div>
+      <!-- Date field -->
+      <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'date'">
+        <label z-form-label [zRequired]="item.isRequired || false">{{
+          item.fieldTitle
+        }}</label>
+        <z-form-control>
+          <z-date-picker
+            class="w-full"
+            formControlName="{{ item.fieldName }}"
+            [placeholder]="item.placeholder || 'Pick a date'" />
+        </z-form-control>
+      </z-form-field>
+
+      <!-- Multiple (multi-select) field -->
+      <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'multiple'">
+        <label z-form-label [zRequired]="item.isRequired || false">{{
+          item.fieldTitle
+        }}</label>
+        <z-form-control>
+          <z-select
+            class="w-full"
+            [zMultiple]="true"
+            zPlaceholder="{{ item.placeholder }}"
+            formControlName="{{ item.fieldName }}">
+            <z-select-item
+              *ngFor="let option of item.options"
+              [zValue]="option">
+              {{ option }}
+            </z-select-item>
+          </z-select>
+        </z-form-control>
+      </z-form-field>
+
+      <!-- Radio field -->
+      <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'radio'">
+        <label z-form-label [zRequired]="item.isRequired || false">{{
+          item.fieldTitle
+        }}</label>
+        <z-form-control>
+          <z-radio-group
+            formControlName="{{ item.fieldName }}"
+            zOrientation="horizontal"
+            class="flex-wrap gap-4">
+            <label
+              z-radio
+              *ngFor="let option of item.options"
+              [value]="option">
+              {{ option }}
+            </label>
+          </z-radio-group>
+        </z-form-control>
+      </z-form-field>
+
+      <!-- Dropdown (single-select) field -->
+      <z-form-field *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'">
+        <label z-form-label [zRequired]="item.isRequired || false">{{
+          item.fieldTitle
+        }}</label>
+        <z-form-control>
+          <z-select
+            class="w-full"
+            zPlaceholder="{{ item.placeholder }}"
+            formControlName="{{ item.fieldName }}">
+            <z-select-item
+              *ngFor="let option of item.options"
+              [zValue]="option">
+              {{ option }}
+            </z-select-item>
+          </z-select>
+        </z-form-control>
+      </z-form-field>
+    </ng-container>
+  </div>
+</form>

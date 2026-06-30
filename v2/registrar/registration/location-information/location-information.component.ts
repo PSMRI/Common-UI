@@ -6,17 +6,30 @@ import { SessionStorageService } from '../../services/session-storage.service';
 import { AmritTrackingService } from 'Common-UI/v2/tracking'
 import { Injector } from '@angular/core';
 import { NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { MatFormField, MatLabel, MatError, MatSuffix, MatSelect } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
-import { MatDatepickerInput, MatDatepickerToggle, MatDatepicker } from '@angular/material/datepicker';
-import { MatOption, MatAutocompleteTrigger, MatAutocomplete } from '@angular/material/autocomplete';
-import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardSelectImports } from 'Common-UI/v2/ui/select';
+import { ZardComboboxComponent } from 'Common-UI/v2/ui/combobox';
+import { ZardDatePickerComponent } from 'Common-UI/v2/ui/date-picker';
+import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
+import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
 
 @Component({
     selector: 'app-location-information',
     templateUrl: './location-information.component.html',
-    styleUrls: ['./location-information.component.css'],
-    imports: [ReactiveFormsModule, NgFor, NgIf, MatFormField, MatLabel, MatInput, MatError, MatDatepickerInput, MatDatepickerToggle, MatSuffix, MatDatepicker, MatSelect, MatOption, MatRadioGroup, MatRadioButton, MatAutocompleteTrigger, MatAutocomplete, TitleCasePipe]
+    imports: [
+      ReactiveFormsModule,
+      NgFor,
+      NgIf,
+      TitleCasePipe,
+      ...ZardFormImports,
+      ZardInputDirective,
+      ...ZardSelectImports,
+      ZardComboboxComponent,
+      ZardDatePickerComponent,
+      ZardRadioGroupComponent,
+      ZardRadioComponent,
+    ]
 })
 export class LocationInformationComponent {
   @Input()
@@ -99,6 +112,15 @@ export class LocationInformationComponent {
     this.locationInfoFormGroup.addControl('servicePointID', new FormControl());
     console.log('location Data', this.locationInfoFormGroup);
 
+    // The z-combobox commits the picked option's value to its form control via
+    // ControlValueAccessor; programmatic patchValue calls below pass
+    // { emitEvent: false } so these subscriptions fire only on user selection,
+    // replacing the old mat-autocomplete (optionSelected) handler.
+    this.subscribeCascadeSelection('stateName');
+    this.subscribeCascadeSelection('districtName');
+    this.subscribeCascadeSelection('blockName');
+    this.subscribeCascadeSelection('districtBranchName');
+
     const locationData: any = this.sessionstorage.getItem('locationData');
     this.locationDetails = JSON.parse(locationData);
     if (this.patientRevisit) {
@@ -108,6 +130,22 @@ export class LocationInformationComponent {
     }
     this.loadLocationFromStorage();
     console.log('location Form Data', this.formData);
+  }
+
+  /**
+   * Wire a cascading combobox control to onChangeLocation. The combobox only
+   * notifies the form (onChange) when the user actually selects/commits an
+   * option, and every programmatic patchValue uses { emitEvent: false }, so a
+   * value arriving here is a genuine user pick of a known option name.
+   */
+  private subscribeCascadeSelection(fieldName: string) {
+    const control = this.locationInfoFormGroup.get(fieldName);
+    if (!control) return;
+    control.valueChanges.subscribe((selectedValue: any) => {
+      if (selectedValue) {
+        this.onChangeLocation(fieldName, selectedValue);
+      }
+    });
   }
 
   showAllOptions(item: any) {
@@ -201,7 +239,7 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         stateID: stateDetails?.stateID,
         stateName: stateDetails?.stateName,
-      });
+      }, { emitEvent: false });
       this.resetDistrict();
       this.resetBlock();
       this.resetVillage();
@@ -213,7 +251,7 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         districtID: districtDetails?.districtID,
         districtName: districtDetails?.districtName,
-      });
+      }, { emitEvent: false });
       this.resetBlock();
       this.resetVillage();
       this.loadSubDistrict(true);
@@ -224,7 +262,7 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         blockID: blockDetails?.blockID,
         blockName: blockDetails?.blockName,
-      });
+      }, { emitEvent: false });
       this.resetVillage();
       this.loadVillage(true);
     } else if (fieldNamevalue === 'districtBranchName') {
@@ -235,7 +273,7 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         districtBranchID: villageDetails?.districtBranchID,
         districtBranchName: villageDetails?.villageName,
-      });
+      }, { emitEvent: false });
     }
   }
 
@@ -243,7 +281,7 @@ export class LocationInformationComponent {
     this.locationInfoFormGroup.patchValue({
       districtID: null,
       districtName: null,
-    });
+    }, { emitEvent: false });
 
     this.formData.forEach((element: any) => {
       if (element.fieldName === 'districtName') element.options = [];
@@ -254,7 +292,7 @@ export class LocationInformationComponent {
     this.locationInfoFormGroup.patchValue({
       blockID: null,
       blockName: null,
-    });
+    }, { emitEvent: false });
 
     this.formData.forEach((element: any) => {
       if (element.fieldName === 'blockName') element.options = [];
@@ -265,7 +303,7 @@ export class LocationInformationComponent {
     this.locationInfoFormGroup.patchValue({
       districtBranchID: null,
       districtBranchName: null,
-    });
+    }, { emitEvent: false });
 
     this.formData.forEach((element: any) => {
       if (element.fieldName === 'districtBranchName') element.options = [];
@@ -286,7 +324,7 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         stateID: this.locationPatchDetails.stateID,
         stateName: this.locationPatchDetails.stateName,
-      });
+      }, { emitEvent: false });
     } else if (this.patchAbhaLocationDetails) {
       let localStateId;
       let localStateName;
@@ -299,12 +337,12 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         stateID: localStateId,
         stateName: localStateName,
-      });
+      }, { emitEvent: false });
     } else {
       this.locationInfoFormGroup.patchValue({
         stateID: this.locationDetails.stateID,
         stateName: this.locationDetails.stateName,
-      });
+      }, { emitEvent: false });
     }
     this.loadDistrict(false);
   }
@@ -330,7 +368,7 @@ export class LocationInformationComponent {
               this.locationInfoFormGroup.patchValue({
                 districtID: this.locationPatchDetails.districtID,
                 districtName: this.locationPatchDetails.districtName,
-              });
+              }, { emitEvent: false });
             } else if (this.patchAbhaLocationDetails) {
               let localDistrictId;
               let localDistrictName;
@@ -343,12 +381,12 @@ export class LocationInformationComponent {
               this.locationInfoFormGroup.patchValue({
                 districtID: localDistrictId,
                 districtName: localDistrictName,
-              });
+              }, { emitEvent: false });
             } else {
               this.locationInfoFormGroup.patchValue({
                 districtID: this.locationDetails.districtID,
                 districtName: this.locationDetails.districtName,
-              });
+              }, { emitEvent: false });
             }
             this.loadSubDistrict(isLocationSelected);
           }
@@ -380,12 +418,12 @@ export class LocationInformationComponent {
               this.locationInfoFormGroup.patchValue({
                 blockID: this.locationPatchDetails.blockID,
                 blockName: this.locationPatchDetails.blockName,
-              });
+              }, { emitEvent: false });
             } else {
               this.locationInfoFormGroup.patchValue({
                 blockID: this.locationDetails.blockID,
                 blockName: this.locationDetails.blockName,
-              });
+              }, { emitEvent: false });
             }
             this.loadVillage(isLocationSelected);
           }
@@ -414,12 +452,12 @@ export class LocationInformationComponent {
                 districtBranchID: this.locationPatchDetails.districtBranchID,
                 districtBranchName:
                   this.locationPatchDetails.districtBranchName,
-              });
+              }, { emitEvent: false });
             } else {
               this.locationInfoFormGroup.patchValue({
                 districtBranchID: this.locationDetails.subDistrictID,
                 districtBranchName: this.locationDetails.villageName,
-              });
+              }, { emitEvent: false });
             }
             this.loadZone();
           }
@@ -448,12 +486,12 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         zoneID: this.locationPatchDetails.zoneID,
         zoneName: this.locationPatchDetails.zoneName,
-      });
+      }, { emitEvent: false });
     } else {
       this.locationInfoFormGroup.patchValue({
         zoneID: this.demographicsMaster.otherLoc.zoneID,
         zoneName: this.demographicsMaster.otherLoc.zoneName,
-      });
+      }, { emitEvent: false });
     }
     this.loadParkingPlace();
   }
@@ -477,12 +515,12 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         parkingPlace: this.locationPatchDetails.parkingPlaceID,
         parkingPlaceName: this.locationPatchDetails.parkingPlaceName,
-      });
+      }, { emitEvent: false });
     } else {
       this.locationInfoFormGroup.patchValue({
         parkingPlace: this.demographicsMaster.otherLoc.parkingPlaceID,
         parkingPlaceName: this.demographicsMaster.otherLoc.parkingPlaceName,
-      });
+      }, { emitEvent: false });
     }
     this.loadServicePoint();
   }
@@ -506,12 +544,12 @@ export class LocationInformationComponent {
       this.locationInfoFormGroup.patchValue({
         servicePoint: this.locationPatchDetails.servicePointID,
         servicePointName: this.locationPatchDetails.servicePointName,
-      });
+      }, { emitEvent: false });
     } else {
       this.locationInfoFormGroup.patchValue({
         servicePoint: this.demographicsMaster.servicePointID,
         servicePointName: this.demographicsMaster.servicePointName,
-      });
+      }, { emitEvent: false });
     }
   }
 
