@@ -33,13 +33,13 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <!-- District -->
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'districtID'">
+          <label z-form-label [zRequired]="true" for="districtID">
             {{ currentLanguageSet?.district }}
           </label>
           <z-form-control>
             <z-select
               class="w-full"
-              [id]="'districtID'"
+              id="districtID"
               formControlName="districtID"
               [zPlaceholder]="currentLanguageSet?.district"
               (zSelectionChange)="onDistrictChange($event)"
@@ -56,13 +56,13 @@
 
         <!-- Block -->
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'blockID'">
+          <label z-form-label [zRequired]="true" for="blockID">
             {{ currentLanguageSet?.block }}
           </label>
           <z-form-control>
             <z-select
               class="w-full"
-              [id]="'blockID'"
+              id="blockID"
               formControlName="blockID"
               [zPlaceholder]="currentLanguageSet?.block"
               (zSelectionChange)="onBlockChange($event)"
@@ -79,13 +79,13 @@
 
         <!-- Village -->
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'villageID'">
+          <label z-form-label [zRequired]="true" for="villageID">
             {{ currentLanguageSet?.village }}
           </label>
           <z-form-control>
             <z-select
               class="w-full"
-              [id]="'villageID'"
+              id="villageID"
               formControlName="villageID"
               [zPlaceholder]="currentLanguageSet?.village"
               (zSelectionChange)="onVillageChange($event)"
@@ -102,7 +102,7 @@
 
         <!-- Family Name -->
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'surname'">
+          <label z-form-label [zRequired]="true" for="surname">
             {{ currentLanguageSet?.familyName }}
           </label>
           <z-form-control>
@@ -110,7 +110,7 @@
               z-input
               class="w-full"
               type="text"
-              [id]="'surname'"
+              id="surname"
               autocomplete="off"
               allowText="alphaspace"
               formControlName="surname"
@@ -132,7 +132,7 @@
 
         <!-- Family Id -->
         <z-form-field class="gap-1.5">
-          <label z-form-label [attr.for]="'familyId'">
+          <label z-form-label for="familyId">
             {{ currentLanguageSet?.familyId }}
           </label>
           <z-form-control>
@@ -140,7 +140,7 @@
               z-input
               class="w-full"
               type="text"
-              [id]="'familyId'"
+              id="familyId"
               autocomplete="off"
               allowText="alphanumeric"
               formControlName="familyId"

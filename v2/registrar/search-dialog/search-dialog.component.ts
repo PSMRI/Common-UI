@@ -43,8 +43,10 @@ import { lucideX } from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { ZardInputDirective } from 'Common-UI/v2/ui/input';
 import { ZardFormImports } from 'Common-UI/v2/ui/form';
-import { ZardSelectComponent } from 'Common-UI/v2/ui/select';
-import { ZardSelectItemComponent } from 'Common-UI/v2/ui/select';
+import {
+  ZardSelectComponent,
+  ZardSelectItemComponent,
+} from 'Common-UI/v2/ui/select';
 import { ZardComboboxComponent } from 'Common-UI/v2/ui/combobox';
 import { ZardDatePickerComponent } from 'Common-UI/v2/ui/date-picker';
 
@@ -112,7 +114,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
   blockCtrl = new FormControl();
   villageCtrl = new FormControl();
 
-  private cascadeSubscriptions: Subscription[] = [];
+  private readonly cascadeSubscriptions: Subscription[] = [];
 
   constructor(
     private confirmationService: ConfirmationService,
@@ -122,7 +124,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
     private httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private sessionstorage: SessionStorageService,
-    private changeDetectorRef: ChangeDetectorRef,
+    private readonly changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -268,7 +270,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
    */
   onGenderSelected(value: string | string[]) {
     const id = Array.isArray(value) ? value[0] : value;
-    this.newSearchForm.get('gender')?.setValue(id != null ? Number(id) : null);
+    this.newSearchForm.get('gender')?.setValue(id == null ? null : Number(id));
     this.selectGender();
   }
   /**

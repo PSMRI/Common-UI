@@ -1,20 +1,60 @@
+<!-- Shared avatar header: identical markup in both flows -->
+<ng-template #avatar>
+  <img
+    *ngIf="!beneficiary?.benImage"
+    src="assets/images/default-avatar.gif"
+    alt="Default Patient Image"
+    class="size-24 rounded-full border border-border object-cover"
+  />
+  <img
+    *ngIf="beneficiary?.benImage"
+    [src]="beneficiary?.benImage"
+    alt="Patient Image"
+    class="size-24 rounded-full border border-border object-cover"
+  />
+</ng-template>
+
+<!-- Shared label/value detail row -->
+<ng-template #detailRow let-label="label" let-value="value">
+  <div class="flex flex-col gap-0.5">
+    <dt class="text-sm text-muted-foreground">{{ label }}</dt>
+    <dd class="text-sm font-medium text-foreground">{{ value }}</dd>
+  </div>
+</ng-template>
+
+<!-- Shared ABHA row: identical markup/gating in both flows -->
+<ng-template #abhaRow>
+  <div
+    *ngIf="
+      healthIDValue !== undefined &&
+      healthIDValue !== null &&
+      healthIDValue !== '' &&
+      healthIDValue.length > 0
+    "
+    class="flex flex-col gap-0.5"
+  >
+    <dt class="text-sm text-muted-foreground">
+      {{ current_language_set?.aBHA }}
+    </dt>
+    <dd
+      class="text-sm font-medium text-foreground"
+      *ngIf="
+        healthIDArray !== undefined &&
+        healthIDArray !== null &&
+        healthIDArray.length > 0
+      "
+    >
+      <span *ngFor="let healthID of healthIDArray">{{ healthID }} </span>
+    </dd>
+  </div>
+</ng-template>
+
 <z-card
   *ngIf="benFlowStatus"
   class="w-full"
 >
   <z-card-header class="flex flex-col items-center gap-3 text-center">
-    <img
-      *ngIf="!beneficiary?.benImage"
-      src="assets/images/default-avatar.gif"
-      alt="Default Patient Image"
-      class="size-24 rounded-full border border-border object-cover"
-    />
-    <img
-      *ngIf="beneficiary?.benImage"
-      [src]="beneficiary?.benImage"
-      alt="Patient Image"
-      class="size-24 rounded-full border border-border object-cover"
-    />
+    <ng-container *ngTemplateOutlet="avatar"></ng-container>
     <z-card-title class="text-base">
       {{ beneficiary?.benName }}
     </z-card-title>
@@ -22,14 +62,15 @@
 
   <z-card-content>
     <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.bendetails?.beneficiaryName }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{ beneficiary?.benName }}
-        </dd>
-      </div>
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.bendetails?.beneficiaryName,
+            value: beneficiary?.benName
+          }
+        "
+      ></ng-container>
 
       <div class="flex flex-col gap-0.5">
         <dt class="text-sm text-muted-foreground">
@@ -42,56 +83,37 @@
         </dd>
       </div>
 
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.bendetails?.beneficiaryID }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{ beneficiary?.beneficiaryID }}
-        </dd>
-      </div>
-
-      <div
-        *ngIf="
-          healthIDValue !== undefined &&
-          healthIDValue !== null &&
-          healthIDValue !== '' &&
-          healthIDValue.length > 0
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.bendetails?.beneficiaryID,
+            value: beneficiary?.beneficiaryID
+          }
         "
-        class="flex flex-col gap-0.5"
-      >
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.aBHA }}
-        </dt>
-        <dd
-          class="text-sm font-medium text-foreground"
-          *ngIf="
-            healthIDArray !== undefined &&
-            healthIDArray !== null &&
-            healthIDArray.length > 0
-          "
-        >
-          <span *ngFor="let healthID of healthIDArray">{{ healthID }} </span>
-        </dd>
-      </div>
+      ></ng-container>
 
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.bendetails?.registrationDate }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{ beneficiary?.registrationDate | date: "dd/MM/yyyy, h:mm a" }}
-        </dd>
-      </div>
+      <ng-container *ngTemplateOutlet="abhaRow"></ng-container>
 
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.bendetails?.visitDate }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{ today | date: "dd/MM/yyyy, h:mm a" }}
-        </dd>
-      </div>
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.bendetails?.registrationDate,
+            value: (beneficiary?.registrationDate | date: 'dd/MM/yyyy, h:mm a')
+          }
+        "
+      ></ng-container>
+
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.bendetails?.visitDate,
+            value: (today | date: 'dd/MM/yyyy, h:mm a')
+          }
+        "
+      ></ng-container>
 
       <div class="flex flex-col gap-0.5">
         <dt class="text-sm text-muted-foreground">
@@ -110,18 +132,7 @@
   class="w-full"
 >
   <z-card-header class="flex flex-col items-center gap-3 text-center">
-    <img
-      *ngIf="!beneficiary?.benImage"
-      src="assets/images/default-avatar.gif"
-      alt="Default Patient Image"
-      class="size-24 rounded-full border border-border object-cover"
-    />
-    <img
-      *ngIf="beneficiary?.benImage"
-      [src]="beneficiary?.benImage"
-      alt="Patient Image"
-      class="size-24 rounded-full border border-border object-cover"
-    />
+    <ng-container *ngTemplateOutlet="avatar"></ng-container>
     <z-card-title class="text-base">
       {{ beneficiaryName | titlecase }}
     </z-card-title>
@@ -129,27 +140,28 @@
 
   <z-card-content>
     <dl class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.bendetails?.beneficiaryName }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{ beneficiaryName | titlecase }}
-        </dd>
-      </div>
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.bendetails?.beneficiaryName,
+            value: (beneficiaryName | titlecase)
+          }
+        "
+      ></ng-container>
 
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.familyId }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{
-            benFamilyId !== null && benFamilyId !== undefined
-              ? benFamilyId
-              : "NA"
-          }}
-        </dd>
-      </div>
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.familyId,
+            value:
+              benFamilyId !== null && benFamilyId !== undefined
+                ? benFamilyId
+                : 'NA'
+          }
+        "
+      ></ng-container>
 
       <div class="flex flex-col gap-0.5">
         <dt class="text-sm text-muted-foreground">
@@ -162,47 +174,27 @@
         </dd>
       </div>
 
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.bendetails?.beneficiaryID }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{ beneficiary?.beneficiaryID }}
-        </dd>
-      </div>
-
-      <div
-        *ngIf="
-          healthIDValue !== undefined &&
-          healthIDValue !== null &&
-          healthIDValue !== '' &&
-          healthIDValue.length > 0
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.bendetails?.beneficiaryID,
+            value: beneficiary?.beneficiaryID
+          }
         "
-        class="flex flex-col gap-0.5"
-      >
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.aBHA }}
-        </dt>
-        <dd
-          class="text-sm font-medium text-foreground"
-          *ngIf="
-            healthIDArray !== undefined &&
-            healthIDArray !== null &&
-            healthIDArray.length > 0
-          "
-        >
-          <span *ngFor="let healthID of healthIDArray">{{ healthID }} </span>
-        </dd>
-      </div>
+      ></ng-container>
 
-      <div class="flex flex-col gap-0.5">
-        <dt class="text-sm text-muted-foreground">
-          {{ current_language_set?.bendetails?.registrationDate }}
-        </dt>
-        <dd class="text-sm font-medium text-foreground">
-          {{ regDate }}
-        </dd>
-      </div>
+      <ng-container *ngTemplateOutlet="abhaRow"></ng-container>
+
+      <ng-container
+        *ngTemplateOutlet="
+          detailRow;
+          context: {
+            label: current_language_set?.bendetails?.registrationDate,
+            value: regDate
+          }
+        "
+      ></ng-container>
 
       <div class="flex flex-col gap-0.5">
         <dt class="text-sm text-muted-foreground">

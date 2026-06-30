@@ -461,15 +461,13 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
   filterBeneficiaryList(searchTerm?: string) {
     this.filterTerm = searchTerm ?? '';
     const term = (searchTerm || '').toLowerCase().trim();
-    if (!term) {
-      this.filteredBeneficiaryList = this.beneficiaryList ?? [];
-    } else {
+    if (term) {
       this.filteredBeneficiaryList = (this.beneficiaryList ?? []).filter(
         (item: any) => {
           for (const key in item) {
             if (key !== 'benObject') {
               const value: string = '' + item[key];
-              if (value.toLowerCase().indexOf(term) >= 0) {
+              if (value.toLowerCase().includes(term)) {
                 return true;
               }
             }
@@ -477,6 +475,8 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
           return false;
         },
       );
+    } else {
+      this.filteredBeneficiaryList = this.beneficiaryList ?? [];
     }
     this.currentPage = 1;
   }

@@ -19,7 +19,7 @@
     <form [formGroup]="newSearchForm" class="flex flex-col gap-6">
       <section class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'firstName'">{{
+          <label z-form-label [zRequired]="true" for="firstName">{{
             currentLanguageSet?.ro?.personalInfo?.firstName
           }}</label>
           <z-form-control>
@@ -45,7 +45,7 @@
         </z-form-field>
 
         <z-form-field class="gap-1.5">
-          <label z-form-label [attr.for]="'lastName'">{{
+          <label z-form-label for="lastName">{{
             currentLanguageSet?.ro?.personalInfo?.lastName
           }}</label>
           <z-form-control>
@@ -61,7 +61,7 @@
         </z-form-field>
 
         <z-form-field class="gap-1.5">
-          <label z-form-label [attr.for]="'fatherName'">{{
+          <label z-form-label for="fatherName">{{
             currentLanguageSet?.ro?.otherInfo?.fatherName
           }}</label>
           <z-form-control>
@@ -82,7 +82,7 @@
         </z-form-field>
 
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'gender'">{{
+          <label z-form-label [zRequired]="true" for="gender">{{
             currentLanguageSet?.ro?.personalInfo?.gender
           }}</label>
           <z-form-control>
@@ -100,7 +100,7 @@
         </z-form-field>
 
         <z-form-field class="gap-1.5">
-          <label z-form-label [attr.for]="'dob'">{{
+          <label z-form-label for="dob">{{
             currentLanguageSet?.ro?.personalInfo?.dateOfBirth
           }}</label>
           <z-form-control>
@@ -116,7 +116,7 @@
       <section
         class="grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'stateID'">{{
+          <label z-form-label [zRequired]="true" for="stateID">{{
             currentLanguageSet?.travel?.state
           }}</label>
           <z-form-control>
@@ -131,7 +131,7 @@
         </z-form-field>
 
         <z-form-field class="gap-1.5">
-          <label z-form-label [zRequired]="true" [attr.for]="'districtID'">{{
+          <label z-form-label [zRequired]="true" for="districtID">{{
             currentLanguageSet?.travel?.district
           }}</label>
           <z-form-control>
@@ -149,7 +149,7 @@
       <section
         class="grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
         <z-form-field class="gap-1.5">
-          <label z-form-label [attr.for]="'blockID'">{{
+          <label z-form-label for="blockID">{{
             currentLanguageSet?.block
           }}</label>
           <z-form-control>
@@ -164,7 +164,7 @@
         </z-form-field>
 
         <z-form-field class="gap-1.5">
-          <label z-form-label [attr.for]="'villageID'">{{
+          <label z-form-label for="villageID">{{
             currentLanguageSet?.ro?.locInfo?.village
           }}</label>
           <z-form-control>

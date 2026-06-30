@@ -163,7 +163,7 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
       return null;
     }
     const num = Number(raw);
-    return isNaN(num) ? null : num;
+    return Number.isNaN(num) ? null : num;
   }
 
   getFamilySearchMaster() {
