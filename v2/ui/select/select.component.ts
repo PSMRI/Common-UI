@@ -65,7 +65,7 @@ import {
 import { mergeClasses } from '../utils/merge-classes';
 
 type OnTouchedType = () => void;
-type OnChangeType = (value: string) => void;
+type OnChangeType = (value: string | string[]) => void;
 
 const COMPACT_MODE_WIDTH_THRESHOLD = 100;
 
@@ -183,7 +183,7 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
     return this.provideLabelForSingleSelectMode(selectedValue as string);
   });
 
-  private onChange: OnChangeType = (_value: string) => {
+  private onChange: OnChangeType = (_value: string | string[]) => {
     // ControlValueAccessor onChange callback
   };
 
@@ -305,7 +305,9 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
 
       return value;
     });
-    this.onChange(value);
+    // In multiple mode the reactive control must receive the accumulated array
+    // (zValue after the update), not just the single clicked value.
+    this.onChange(this.zValue());
     this.zSelectionChange.emit(this.zValue());
 
     if (this.zMultiple()) {
@@ -663,7 +665,7 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
     }
   }
 
-  registerOnChange(fn: (value: string) => void): void {
+  registerOnChange(fn: (value: string | string[]) => void): void {
     this.onChange = fn;
   }
 
