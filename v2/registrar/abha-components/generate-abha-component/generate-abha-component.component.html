@@ -1,61 +1,108 @@
-<div class="title info">
-  <h4>Generate ABHA CARD</h4>
-  <mat-icon class="pull-right close-btn md-24" matDialogClose (click)="closeDialog()" mat-icon-button>close</mat-icon>
-</div>
-<br />
-<div class="col-xs-12 col-sm-12" style="overflow: hidden;" [formGroup]="abhaGenerateForm">
-  <div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-b-10" style="margin-left: 15px">
-      <label class="control-label" for="modeofAbhaHealthID">ABHA Generation Mode*</label>
-      <mat-radio-group formControlName="modeofAbhaHealthID">
-        <mat-radio-button color="primary" class="radio-button" value="AADHAAR">Aadhaar</mat-radio-button>
-        <mat-radio-button color="primary" value="BIOMETRIC">Biometric</mat-radio-button>
-      </mat-radio-group>
-    </div>
+<div class="flex flex-col gap-6 p-6" [formGroup]="abhaGenerateForm">
+  <div class="flex items-start justify-between gap-4">
+    <p class="text-lg font-semibold text-foreground">Generate ABHA Card</p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
+      type="button"
+      aria-label="Close"
+      (click)="closeDialog()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
 
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 p-t-10" style="margin-left: 15px">
-      <mat-label class="control-label">Aadhaar Number*</mat-label>
-      <br>
-      <br>
-      <div>
-        <mat-form-field appearance="outline" style="width: 110px;">
-          <input matInput [type]="inputType" formControlName="part1" maxlength="4" required #part1
-            (input)="moveToNext($event, part2)" style="text-align: center;"/>
-        </mat-form-field>
-     
-        <span style=" font-size: x-large;
-        padding: 0px 5px 0px 5px;
-        margin-bottom: 17px;">-</span>
-     
-        <mat-form-field appearance="outline" style="width: 110px;">
-          <input matInput [type]="inputType" formControlName="part2" maxlength="4" required #part2
-            (input)="moveToNext($event, part3)" (keydown.backspace)="moveToPrev($event, part1)" style="text-align: center;" />
-        </mat-form-field>
-     
-        <span style=" font-size: x-large;
-        padding: 0px 5px 0px 5px;
-        margin-bottom: 17px;">-</span>
-     
-        <mat-form-field appearance="outline" style="width: 110px;">
-          <input matInput [type]="inputType" formControlName="part3" maxlength="4" required #part3
-            (keydown.backspace)="moveToPrev($event, part2)"  style="text-align: center;"/>
-        </mat-form-field>
-     
-        <mat-icon class="eye-icon" (click)="toggleVisibility()" style="width: 25px; margin-bottom: -5px;">
-          {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
-        </mat-icon>
-        <mat-error style="margin-top: -25px;" *ngIf="isInvalid"> Please enter a valid Aadhaar number</mat-error>
-        
-      </div>
-    </div>    
+  <div class="flex flex-col gap-2">
+    <label z-form-label [zRequired]="true" for="modeofAbhaHealthID">
+      ABHA Generation Mode
+    </label>
+    <z-radio-group
+      id="modeofAbhaHealthID"
+      formControlName="modeofAbhaHealthID"
+      zOrientation="horizontal"
+      class="flex-wrap gap-4"
+    >
+      <z-radio [value]="'AADHAAR'">Aadhaar</z-radio>
+      <z-radio [value]="'BIOMETRIC'">Biometric</z-radio>
+    </z-radio-group>
+  </div>
 
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-      <button (click)="generateABHACard()"
-        [disabled]="!abhaGenerateForm.valid || !abhaGenerateForm.get('modeofAbhaHealthID')?.value" mat-raised-button
-        color="primary" class="pull-right font-regular f-s-18 m-t-8 full-width-search mat_blue"
-        style="margin: 0px 15px 10px 0px">
-        Generate
+  <div class="flex flex-col gap-2">
+    <label z-form-label [zRequired]="true" for="part1">Aadhaar Number</label>
+    <div class="flex items-center gap-2">
+      <input
+        z-input
+        id="part1"
+        class="w-24 text-center"
+        [type]="inputType"
+        formControlName="part1"
+        maxlength="4"
+        required
+        #part1
+        (input)="moveToNext($event, part2)"
+        aria-label="First part of Aadhaar number"
+      />
+      <span class="text-lg text-muted-foreground">-</span>
+      <input
+        z-input
+        id="part2"
+        class="w-24 text-center"
+        [type]="inputType"
+        formControlName="part2"
+        maxlength="4"
+        required
+        #part2
+        (input)="moveToNext($event, part3)"
+        (keydown.backspace)="moveToPrev($event, part1)"
+        aria-label="Second part of Aadhaar number"
+      />
+      <span class="text-lg text-muted-foreground">-</span>
+      <input
+        z-input
+        id="part3"
+        class="w-24 text-center"
+        [type]="inputType"
+        formControlName="part3"
+        maxlength="4"
+        required
+        #part3
+        (keydown.backspace)="moveToPrev($event, part2)"
+        aria-label="Third part of Aadhaar number"
+      />
+      <button
+        type="button"
+        class="inline-flex appearance-none items-center justify-center border-0 bg-transparent p-0 text-muted-foreground hover:text-foreground"
+        (click)="toggleVisibility()"
+        [attr.aria-label]="
+          inputType === 'password'
+            ? 'Show Aadhaar number'
+            : 'Hide Aadhaar number'
+        "
+      >
+        <ng-icon
+          [name]="inputType === 'password' ? 'lucideEyeOff' : 'lucideEye'"
+          size="20"
+        ></ng-icon>
       </button>
     </div>
+    <p *ngIf="isInvalid" class="text-sm text-destructive">
+      Please enter a valid Aadhaar number
+    </p>
+  </div>
+
+  <div class="flex justify-end">
+    <button
+      z-button
+      type="button"
+      (click)="generateABHACard()"
+      [disabled]="
+        !abhaGenerateForm.valid ||
+        !abhaGenerateForm.get('modeofAbhaHealthID')?.value
+      "
+    >
+      Generate
+    </button>
   </div>
 </div>

@@ -20,65 +20,66 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, DoCheck, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { DatePipe, NgIf } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+  FormGroup,
+  FormBuilder,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
+import { DatePipe, NgIf, NgFor } from '@angular/common';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-} from '@angular/material/core';
-import {
-  MomentDateAdapter,
-  MAT_MOMENT_DATE_ADAPTER_OPTIONS,
-} from '@angular/material-moment-adapter';
 import { SessionStorageService } from '../../services/session-storage.service';
 import { DownloadSearchAbhaComponent } from '../download-search-abha/download-search-abha.component';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatIcon } from '@angular/material/icon';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
-import { MatFormField } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX, lucidePrinter } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardTableImports } from 'Common-UI/v2/ui/table';
+import { ZardLoaderComponent } from 'Common-UI/v2/ui/loader';
+import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
+import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
+import { tooltipImports } from 'Common-UI/v2/ui/tooltip';
 
 @Component({
-    selector: 'app-health-id-display-modal',
-    templateUrl: './health-id-display-modal.component.html',
-    styleUrls: ['./health-id-display-modal.component.css'],
-    providers: [
-        {
-            provide: DatePipe,
-        },
-        {
-            provide: MAT_DATE_LOCALE,
-            useValue: 'en-US', // Set the desired locale (e.g., 'en-GB' for dd/MM/yyyy)
-        },
-        {
-            provide: DateAdapter,
-            useClass: MomentDateAdapter,
-            deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
-        },
-        {
-            provide: MAT_DATE_FORMATS,
-            useValue: {
-                parse: {
-                    dateInput: 'LL',
-                },
-                display: {
-                    dateInput: 'DD/MM/YYYY', // Set the desired display format
-                    monthYearLabel: 'MMM YYYY',
-                    dateA11yLabel: 'LL',
-                    monthYearA11yLabel: 'MMMM YYYY',
-                },
-            },
-        },
-    ],
-    imports: [NgIf, MatDialogClose, MatTooltip, MatIcon, MatProgressSpinner, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatRadioGroup, ReactiveFormsModule, FormsModule, MatRadioButton, MatFormField, MatInput, DatePipe]
+  selector: 'app-health-id-display-modal',
+  standalone: true,
+  templateUrl: './health-id-display-modal.component.html',
+  providers: [
+    {
+      provide: DatePipe,
+    },
+  ],
+  imports: [
+    NgIf,
+    NgFor,
+    ReactiveFormsModule,
+    FormsModule,
+    DatePipe,
+    NgIcon,
+    ZardButtonComponent,
+    ZardInputDirective,
+    ...ZardFormImports,
+    ...ZardTableImports,
+    ZardLoaderComponent,
+    ZardRadioComponent,
+    ZardRadioGroupComponent,
+    ...tooltipImports,
+  ],
+  viewProviders: [
+    provideIcons({
+      lucideX,
+      lucidePrinter,
+    }),
+  ],
 })
 export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   chooseHealthID: any;
@@ -93,32 +94,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   showProgressBar = false;
   searchPopup = false;
 
-  displayedColumns: any = [
-    'sno',
-    'abhaNumber',
-    'abha',
-    'dateOfCreation',
-    'abhaMode',
-  ];
-  searchDetails = new MatTableDataSource<any>();
-
-  displayedColumns1: any = [
-    'sno',
-    'abhaNumber',
-    'abha',
-    'dateOfCreation',
-    'abhaMode',
-    'action',
-  ];
-  displayedColumns2: any = [
-    'sno',
-    'healthIDNo',
-    'healthID',
-    'createdDate',
-    'healthIDMode',
-    'rblMode',
-  ];
-  healthIDArray = new MatTableDataSource<any>();
+  searchDetails: any[] = [];
+  healthIDArray: any[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<HealthIdDisplayModalComponent>,
@@ -129,38 +106,34 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     private confirmationService: ConfirmationService,
     private datePipe: DatePipe,
     private dialogMd: MatDialog,
-    private sessionstorage:SessionStorageService,
+    private sessionstorage: SessionStorageService
   ) {
     dialogRef.disableClose = true;
   }
 
   ngOnInit() {
-    console.log("this.input", this.input);
-    this.searchDetails.data = [];
+    console.log('this.input', this.input);
+    this.searchDetails = [];
     this.selectedHealthID = null;
     this.searchPopup = false;
     this.assignSelectedLanguage();
     this.searchPopup =
       this.input.search !== undefined ? this.input.search : false;
     this.healthIDMapping = this.input.healthIDMapping;
-    console.log("this.healthIDMapping", this.healthIDMapping);
+    console.log('this.healthIDMapping', this.healthIDMapping);
+    if (this.input.dataList !== undefined && this.input.search === true) {
+      const tempVal: any = this.input.dataList;
+      this.benDetails = this.input.dataList;
+      console.log('tempVal', tempVal);
+      this.searchDetails.push(tempVal);
+      console.log('this.searchDetails%%', this.searchDetails);
+    }
     if (
       this.input.dataList !== undefined &&
-      this.input.search === true
-    ) {
-      let tempVal: any = this.input.dataList;
-      this.benDetails = this.input.dataList;
-      let tempCreatDate: any = this.input.dataList.createdDate;
-      console.log("tempVal", tempVal);
-        this.searchDetails.data.push(tempVal);
-        console.log("this.searchDetails.data%%", this.searchDetails.data)
-
-    }
-    if (this.input.dataList !== undefined &&
       this.input.dataList.data?.BenHealthDetails !== undefined
-    ){
+    ) {
       this.benDetails = this.input.dataList.data.BenHealthDetails;
-      console.log("this.benDetails1",this.benDetails)
+      console.log('this.benDetails1', this.benDetails);
     }
     this.healthIdOTPForm = this.createOtpGenerationForm();
     this.createList();
@@ -183,9 +156,9 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       this.benDetails.forEach((healthID: any) => {
         healthID.createdDate = this.datePipe.transform(
           healthID.createdDate,
-          'yyyy-MM-dd hh:mm:ss a',
+          'yyyy-MM-dd hh:mm:ss a'
         );
-        this.healthIDArray.data.push(healthID);
+        this.healthIDArray.push(healthID);
       });
     }
   }
@@ -195,8 +168,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   }
   generateOtpForMapping() {
     this.showProgressBar = true;
-    const abdmFacilityId = this.sessionstorage.getItem("abdmFacilityId");
-    const abdmFacilityName = this.sessionstorage.getItem("abdmFacilityName");
+    const abdmFacilityId = this.sessionstorage.getItem('abdmFacilityId');
+    const abdmFacilityName = this.sessionstorage.getItem('abdmFacilityName');
     const reqObj = {
       healthID: this.selectedHealthID.healthId
         ? this.selectedHealthID.healthId
@@ -205,8 +178,18 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         ? this.selectedHealthID.healthIdNumber
         : null,
       authenticationMode: this.selectedHealthID.authenticationMode,
-      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined && abdmFacilityId !== "") ? abdmFacilityId : null,
-      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined && abdmFacilityName !== "") ? abdmFacilityName : null
+      abdmFacilityId:
+        abdmFacilityId !== null &&
+        abdmFacilityId !== undefined &&
+        abdmFacilityId !== ''
+          ? abdmFacilityId
+          : null,
+      abdmFacilityName:
+        abdmFacilityName !== null &&
+        abdmFacilityName !== undefined &&
+        abdmFacilityName !== ''
+          ? abdmFacilityName
+          : null,
     };
     this.registrarService.generateOtpForMappingCareContext(reqObj).subscribe(
       (receivedOtpResponse: any) => {
@@ -214,14 +197,14 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
           this.showProgressBar = false;
           this.confirmationService.alert(
             this.currentLanguageSet.OTPSentToRegMobNo,
-            'success',
+            'success'
           );
           this.transactionId = receivedOtpResponse.data.txnId;
           this.enablehealthIdOTPForm = true;
         } else {
           this.confirmationService.alert(
             receivedOtpResponse.errorMessage,
-            'error',
+            'error'
           );
           this.enablehealthIdOTPForm = false;
           this.showProgressBar = false;
@@ -231,7 +214,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         this.showProgressBar = false;
         this.confirmationService.alert(err.errorMessage, 'error');
         this.enablehealthIdOTPForm = false;
-      },
+      }
     );
   }
   numberOnly(event: any): boolean {
@@ -267,8 +250,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
 
   verifyOtp() {
     this.showProgressBar = true;
-    const abdmFacilityId = this.sessionstorage.getItem("abdmFacilityId");
-    const abdmFacilityName = this.sessionstorage.getItem("abdmFacilityName");
+    const abdmFacilityId = this.sessionstorage.getItem('abdmFacilityId');
+    const abdmFacilityName = this.sessionstorage.getItem('abdmFacilityName');
     const verifyOtpData = {
       otp: this.healthIdOTPForm.controls['otp'].value,
       txnId: this.transactionId,
@@ -284,8 +267,18 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
         this.sessionstorage.getItem('visitCategory') === 'General OPD (QC)'
           ? 'Emergency'
           : this.sessionstorage.getItem('visitCategory'),
-      abdmFacilityId: (abdmFacilityId !== null && abdmFacilityId !== undefined && abdmFacilityId !== "") ? abdmFacilityId : null,
-      abdmFacilityName: (abdmFacilityName !== null && abdmFacilityName !== undefined && abdmFacilityName !== "") ? abdmFacilityName : null
+      abdmFacilityId:
+        abdmFacilityId !== null &&
+        abdmFacilityId !== undefined &&
+        abdmFacilityId !== ''
+          ? abdmFacilityId
+          : null,
+      abdmFacilityName:
+        abdmFacilityName !== null &&
+        abdmFacilityName !== undefined &&
+        abdmFacilityName !== ''
+          ? abdmFacilityName
+          : null,
     };
     this.registrarService
       .verifyOtpForMappingCarecontext(verifyOtpData)
@@ -295,21 +288,21 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
             this.showProgressBar = false;
             this.confirmationService.alert(
               verifiedMappingData.data.response,
-              'success',
+              'success'
             );
             this.closeDialog();
           } else {
             this.showProgressBar = false;
             this.confirmationService.alert(
               verifiedMappingData.errorMessage,
-              'error',
+              'error'
             );
           }
         },
         (err) => {
           this.showProgressBar = false;
           this.confirmationService.alert(err.errorMessage, 'error');
-        },
+        }
       );
   }
   resendOtp() {
@@ -325,11 +318,11 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     const dialogRefValue = this.dialogMd.open(DownloadSearchAbhaComponent, {
       height: '330px',
       width: '500px',
-      disableClose: true, 
+      disableClose: true,
       data: {
         printCard: true,
-        healthId: data.healthId 
-      }
+        healthId: data.healthId,
+      },
     });
   }
 }

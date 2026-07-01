@@ -1,18 +1,42 @@
+/*
+ * AMRIT – Accessible Medical Records via Integrated Technologies
+ * Integrated EHR (Electronic Health Records) Solution
+ *
+ * Copyright (C) "Piramal Swasthya Management and Research Institute"
+ *
+ * This file is part of AMRIT.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
+ */
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { RegistrarService } from '../../services/registrar.service';
 import { RdDeviceService } from '../../services/rddevice.service';
 import { concatMap } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { MatIcon } from '@angular/material/icon';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX, lucideFingerprint } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 
 @Component({
-    selector: 'app-biometric-authentication',
-    templateUrl: './biometric-authentication.component.html',
-    styleUrls: ['./biometric-authentication.component.css'],
-    imports: [MatIcon, MatDialogClose]
+  selector: 'app-biometric-authentication',
+  templateUrl: './biometric-authentication.component.html',
+  standalone: true,
+  imports: [NgIcon, ZardButtonComponent],
+  viewProviders: [provideIcons({ lucideX, lucideFingerprint })],
 })
 export class BiometricAuthenticationComponent implements OnInit {
   transactionId: any;
@@ -50,7 +74,7 @@ export class BiometricAuthenticationComponent implements OnInit {
     getLanguageJson.setLanguage();
     this.currentLanguageSet = getLanguageJson.currentLanguageObject;
   }
-  
+
   captureData() {
     this.rddeviceService
       .discoverAvdm()
@@ -64,7 +88,7 @@ export class BiometricAuthenticationComponent implements OnInit {
           if (captureres != null) {
             // Assign captureres to capturePID
             this.rddeviceService.capturePID = captureres;
-            console.log("rdservice captures:", this.rddeviceService.capturePID)
+            console.log('rdservice captures:', this.rddeviceService.capturePID);
             this.matDialogRef.close(this.rddeviceService.capturePID);
           }
         },

@@ -1,361 +1,292 @@
-<div>
-  <div class="title info">
-    <h4
+<div class="flex flex-col gap-4 p-6">
+  <!-- Header -->
+  <div class="flex items-start justify-between gap-4">
+    <p
       *ngIf="
         (!healthIDMapping && !enablehealthIdOTPForm && !searchPopup) ||
         (searchDetails !== undefined &&
           searchDetails !== null &&
-          searchDetails.data.length > 0)
+          searchDetails.length > 0)
       "
+      class="text-lg font-semibold text-foreground"
     >
       {{ currentLanguageSet?.abhaDetails }}
-    </h4>
-    <h4 *ngIf="(healthIDMapping || enablehealthIdOTPForm) && !searchPopup">
-      {{ currentLanguageSet?.aBHACareContextMapping }}
-    </h4>
-    <button
-      class="pull-right close-btn mat_icon_white"
-      matTooltip="{{ currentLanguageSet?.common?.close }}"
-      matDialogClose
-      (click)="closeDialog()"
-      mat-icon-button
+    </p>
+    <p
+      *ngIf="(healthIDMapping || enablehealthIdOTPForm) && !searchPopup"
+      class="text-lg font-semibold text-foreground"
     >
-      <mat-icon>close</mat-icon>
+      {{ currentLanguageSet?.aBHACareContextMapping }}
+    </p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
+      type="button"
+      [zTooltip]="currentLanguageSet?.common?.close"
+      zPosition="bottom"
+      aria-label="Close"
+      (click)="closeDialog()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
     </button>
   </div>
-  <div class="overlay" *ngIf="showProgressBar">
-    <div class="overlay-content">
-      <mat-spinner></mat-spinner>
-    </div>
+
+  <!-- Loading overlay -->
+  <div
+    *ngIf="showProgressBar"
+    class="fixed inset-0 z-[1001] flex items-center justify-center bg-foreground/30"
+  >
+    <z-loader></z-loader>
   </div>
-  <!--List the health ID details-->
-  <section class="message">
-    <section
-      class="table-responsive vw100"
-      class="table table-striped"
+
+  <!-- Body -->
+  <div class="flex flex-col gap-4">
+    <!-- Searched health ID details -->
+    <div
       *ngIf="
         searchDetails !== undefined &&
         searchDetails !== null &&
-        searchDetails.data.length > 0
+        searchDetails.length > 0
       "
+      class="w-full overflow-x-auto"
     >
-      <table
-        mat-table
-        class="table table-striped"
-        [dataSource]="searchDetails"
-      >
-        <!-- sno Column -->
-        <ng-container matColumnDef="sno">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.coreComponents?.sno }}
-          </th>
-          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
-        </ng-container>
-
-        <!-- abhaNumber Column -->
-        <ng-container matColumnDef="abhaNumber">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.abhaNumber }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.healthIDNumber ? element?.healthIDNumber : "" }}
-          </td>
-        </ng-container>
-
-        <!-- abha Column -->
-        <ng-container matColumnDef="abha">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.abha }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.healthID ? element?.healthID : "" }}
-          </td>
-        </ng-container>
-
-        <!-- dateOfCreation Column -->
-        <ng-container matColumnDef="dateOfCreation">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.dateOfCreation }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.createdDate | date: "yyyy-MM-dd hh:mm:ss a" }}
-          </td>
-        </ng-container>
-
-        <!-- abhaMode Column -->
-        <ng-container matColumnDef="abhaMode">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.abhaMode }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.AuthenticationMode }}
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <table z-table aria-label="Searched ABHA details">
+        <thead z-table-header>
+          <tr z-table-row>
+            <th z-table-head id="search-sno">
+              {{ currentLanguageSet?.coreComponents?.sno }}
+            </th>
+            <th z-table-head id="search-abhaNumber">
+              {{ currentLanguageSet?.abhaNumber }}
+            </th>
+            <th z-table-head id="search-abha">
+              {{ currentLanguageSet?.abha }}
+            </th>
+            <th z-table-head id="search-dateOfCreation">
+              {{ currentLanguageSet?.dateOfCreation }}
+            </th>
+            <th z-table-head id="search-abhaMode">
+              {{ currentLanguageSet?.abhaMode }}
+            </th>
+          </tr>
+        </thead>
+        <tbody z-table-body>
+          <tr
+            z-table-row
+            *ngFor="let element of searchDetails; let i = index"
+          >
+            <td z-table-cell>{{ i + 1 }}</td>
+            <td z-table-cell>
+              {{ element?.healthIDNumber ? element?.healthIDNumber : "" }}
+            </td>
+            <td z-table-cell>
+              {{ element?.healthID ? element?.healthID : "" }}
+            </td>
+            <td z-table-cell>
+              {{ element?.createdDate | date: "yyyy-MM-dd hh:mm:ss a" }}
+            </td>
+            <td z-table-cell>{{ element?.AuthenticationMode }}</td>
+          </tr>
+        </tbody>
       </table>
-      <div
-        class="pull-center"
-        style="margin-top: 5px; text-align: center"
-        *ngIf="searchDetails === null || searchDetails?.data?.length === 0"
+      <p
+        *ngIf="searchDetails === null || searchDetails?.length === 0"
+        class="mt-2 text-center text-sm font-semibold text-muted-foreground"
       >
-        <strong>{{ currentLanguageSet?.casesheet?.noRecordFound }}</strong>
-      </div>
-    </section>
-    <section
-      class="table-responsive vw100"
+        {{ currentLanguageSet?.casesheet?.noRecordFound }}
+      </p>
+    </div>
+
+    <!-- Listed health ID details with print action -->
+    <div
       *ngIf="!healthIDMapping && !enablehealthIdOTPForm && !searchPopup"
+      class="w-full overflow-x-auto"
     >
-      <table
-        mat-table
-        class="table table-striped"
-        [dataSource]="healthIDArray"
-      >
-        <!-- sno Column -->
-        <ng-container matColumnDef="sno">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.coreComponents?.sno }}
-          </th>
-          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
-        </ng-container>
-
-        <!-- abhaNumber Column -->
-        <ng-container matColumnDef="abhaNumber">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.abhaNumber }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.healthIdNumber ? element?.healthIdNumber : "" }}
-          </td>
-        </ng-container>
-
-        <!-- abha Column -->
-        <ng-container matColumnDef="abha">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.aBHA }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.healthId ? element?.healthId : "" }}
-          </td>
-        </ng-container>
-
-        <!-- dateOfCreation Column -->
-        <ng-container matColumnDef="dateOfCreation">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.dateOfCreation }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.createdDate }}
-          </td>
-        </ng-container>
-
-        <!-- abhaMode Column -->
-        <ng-container matColumnDef="abhaMode">
-          <th mat-header-cell *matHeaderCellDef>
-            {{ currentLanguageSet?.aBHAMode }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.authenticationMode }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="action">
-          <th
-            mat-header-cell
-            style="border-bottom: none"
-            *matHeaderCellDef
-            mat-sort-header
-          >
-            {{ currentLanguageSet?.bendetails?.action }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            <button
-              mat-icon-button
-              matTooltip="{{ currentLanguageSet?.printABHACard }}"
-              (click)="printHealthIDCard(element)"
-              class="pull-right width-20px"
-            >
-              <mat-icon>print</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns1"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns1"></tr>
-      </table>
-      <div
-        class="pull-center"
-        style="margin-top: 5px; text-align: center"
-        *ngIf="healthIDArray?.data?.length === 0"
-      >
-        <strong>{{ currentLanguageSet?.casesheet?.noRecordFound }}</strong>
-      </div>
-    </section>
-    <!--Map health ID to care context-->
-    <section
-      class="table-responsive vw100"
-      *ngIf="healthIDMapping && !enablehealthIdOTPForm && !searchPopup"
-    >
-      <table
-        mat-table
-        class="table table-striped"
-        [dataSource]="healthIDArray"
-      >
-      <ng-container matColumnDef="sno">
-        <th mat-header-cell *matHeaderCellDef>
-          {{ currentLanguageSet?.coreComponents?.sno }}
-        </th>
-        <td mat-cell *matCellDef="let element; let i = index">1</td>
-      </ng-container>
-
-        <ng-container matColumnDef="healthIDNo">
-          <th
-            mat-header-cell
-            style="border-bottom: none"
-            *matHeaderCellDef
-            mat-sort-header
-          >
-            {{ currentLanguageSet?.abhaNumber }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.healthIdNumber ? element?.healthIdNumber : null }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="healthID">
-          <th
-            mat-header-cell
-            style="border-bottom: none"
-            *matHeaderCellDef
-            mat-sort-header
-          >
-            {{ currentLanguageSet?.aBHA }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.healthId ? element?.healthId : null }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="createdDate">
-          <th
-            mat-header-cell
-            style="border-bottom: none"
-            *matHeaderCellDef
-            mat-sort-header
-          >
-            {{ currentLanguageSet?.dateOfCreation }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.createdDate }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="healthIDMode">
-          <th
-            mat-header-cell
-            style="border-bottom: none"
-            *matHeaderCellDef
-            mat-sort-header
-          >
-            {{ currentLanguageSet?.aBHAMode }}
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element?.authenticationMode }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="rblMode">
-          <th
-            mat-header-cell
-            style="border-bottom: none"
-            *matHeaderCellDef
-            mat-sort-header
-          ></th>
-          <td mat-cell *matCellDef="let element">
-            <mat-radio-group [(ngModel)]="chooseHealthID">
-              <mat-radio-button
-                color="primary"
-                class="radio-btnn"
-                [value]="element"
-                (change)="onRadioChange(element)"
+      <table z-table aria-label="ABHA details">
+        <thead z-table-header>
+          <tr z-table-row>
+            <th z-table-head id="list-sno">
+              {{ currentLanguageSet?.coreComponents?.sno }}
+            </th>
+            <th z-table-head id="list-abhaNumber">
+              {{ currentLanguageSet?.abhaNumber }}
+            </th>
+            <th z-table-head id="list-abha">
+              {{ currentLanguageSet?.aBHA }}
+            </th>
+            <th z-table-head id="list-dateOfCreation">
+              {{ currentLanguageSet?.dateOfCreation }}
+            </th>
+            <th z-table-head id="list-abhaMode">
+              {{ currentLanguageSet?.aBHAMode }}
+            </th>
+            <th z-table-head id="list-action">
+              {{ currentLanguageSet?.bendetails?.action }}
+            </th>
+          </tr>
+        </thead>
+        <tbody z-table-body>
+          <tr z-table-row *ngFor="let element of healthIDArray; let i = index">
+            <td z-table-cell>{{ i + 1 }}</td>
+            <td z-table-cell>
+              {{ element?.healthIdNumber ? element?.healthIdNumber : "" }}
+            </td>
+            <td z-table-cell>
+              {{ element?.healthId ? element?.healthId : "" }}
+            </td>
+            <td z-table-cell>{{ element?.createdDate }}</td>
+            <td z-table-cell>{{ element?.authenticationMode }}</td>
+            <td z-table-cell>
+              <button
+                z-button
+                zType="ghost"
+                zSize="icon-sm"
+                class="p-0"
+                type="button"
+                [zTooltip]="currentLanguageSet?.printABHACard"
+                aria-label="Print ABHA card"
+                (click)="printHealthIDCard(element)"
               >
-              </mat-radio-button>
-            </mat-radio-group>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns2"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns2"></tr>
+                <ng-icon name="lucidePrinter"></ng-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
       </table>
-      <div *ngIf="healthIDArray?.data?.length !== 0">
+      <p
+        *ngIf="healthIDArray?.length === 0"
+        class="mt-2 text-center text-sm font-semibold text-muted-foreground"
+      >
+        {{ currentLanguageSet?.casesheet?.noRecordFound }}
+      </p>
+    </div>
+
+    <!-- Map health ID to care context -->
+    <div
+      *ngIf="healthIDMapping && !enablehealthIdOTPForm && !searchPopup"
+      class="flex flex-col gap-4"
+    >
+      <div class="w-full overflow-x-auto">
+        <z-radio-group
+          [(ngModel)]="chooseHealthID"
+          (zChange)="onRadioChange($event)"
+        >
+          <table z-table aria-label="Select ABHA to map to care context">
+            <thead z-table-header>
+              <tr z-table-row>
+                <th z-table-head id="map-sno">
+                  {{ currentLanguageSet?.coreComponents?.sno }}
+                </th>
+                <th z-table-head id="map-healthIDNo">
+                  {{ currentLanguageSet?.abhaNumber }}
+                </th>
+                <th z-table-head id="map-healthID">
+                  {{ currentLanguageSet?.aBHA }}
+                </th>
+                <th z-table-head id="map-createdDate">
+                  {{ currentLanguageSet?.dateOfCreation }}
+                </th>
+                <th z-table-head id="map-healthIDMode">
+                  {{ currentLanguageSet?.aBHAMode }}
+                </th>
+                <th z-table-head id="map-select">
+                  <span class="sr-only">Select</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody z-table-body>
+              <tr z-table-row *ngFor="let element of healthIDArray">
+                <td z-table-cell>1</td>
+                <td z-table-cell>
+                  {{ element?.healthIdNumber ? element?.healthIdNumber : null }}
+                </td>
+                <td z-table-cell>
+                  {{ element?.healthId ? element?.healthId : null }}
+                </td>
+                <td z-table-cell>{{ element?.createdDate }}</td>
+                <td z-table-cell>{{ element?.authenticationMode }}</td>
+                <td z-table-cell>
+                  <z-radio
+                    [value]="element"
+                    aria-label="Select ABHA"
+                  ></z-radio>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </z-radio-group>
+      </div>
+
+      <div *ngIf="healthIDArray?.length !== 0" class="flex justify-end">
         <button
-          mat-raised-button
-          class="pull-right mat_blue button-overall-disabled background-overall"
-          color="primary"
+          z-button
+          zType="default"
+          type="button"
           (click)="generateOtpForMapping()"
-          [disabled]="
-            selectedHealthID === undefined || selectedHealthID === null
-          "
+          [disabled]="selectedHealthID === undefined || selectedHealthID === null"
         >
           {{ currentLanguageSet?.generateOTP }}
         </button>
       </div>
 
-      <div
-        class="pull-center"
-        style="margin-top: 5px; text-align: center"
-        *ngIf="healthIDArray?.data?.length === 0"
+      <p
+        *ngIf="healthIDArray?.length === 0"
+        class="mt-2 text-center text-sm font-semibold text-muted-foreground"
       >
-        <strong>{{ currentLanguageSet?.casesheet?.noRecordFound }}</strong>
-      </div>
-    </section>
-  </section>
-</div>
-<!-- Entering OTP for Health ID Generation-->
-<div
-  *ngIf="enablehealthIdOTPForm && !searchPopup"
-  class="col-xs-12 col-sm-12 container-fluid"
-  [formGroup]="healthIdOTPForm"
->
-  <div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-      <mat-form-field [style.width]="'100%'">
-        <input
-          defaultNull
-          autocomplete="off"
-          required
-          matInput
-          type="text"
-          placeholder="{{ currentLanguageSet?.enterOTP }}"
-          formControlName="otp"
-          minlength="6"
-          maxlength="6"
-          (keypress)="numberOnly($event)"
-          required
-        />
-      </mat-form-field>
+        {{ currentLanguageSet?.casesheet?.noRecordFound }}
+      </p>
     </div>
-    <div class="col-sm-12 step-btn m-b-20" style="text-align: right">
-      <button
-        id="submitButton"
-        mat-raised-button
-        class="pull-right mat_blue"
-        type="accent"
-        color="accent"
-        [disabled]="!healthIdOTPForm.valid || !checkOTP()"
-        (click)="verifyOtp()"
-      >
-        {{ currentLanguageSet?.common?.submit }}
-      </button>
-      <button
-        id="cancelButton"
-        mat-raised-button
-        type="button"
-        style="margin-right: 3px;"
-        color="primary"
-        class="pull-right mat_blue"
-        (click)="resendOtp()"
-      >
-        {{ currentLanguageSet?.resendOTP }}
-      </button>
-      
+
+    <!-- Entering OTP for care context mapping -->
+    <div
+      *ngIf="enablehealthIdOTPForm && !searchPopup"
+      [formGroup]="healthIdOTPForm"
+      class="flex flex-col gap-4"
+    >
+      <z-form-field>
+        <label z-form-label [zRequired]="true" for="otp">
+          {{ currentLanguageSet?.enterOTP }}
+        </label>
+        <z-form-control>
+          <input
+            z-input
+            class="w-full"
+            id="otp"
+            type="text"
+            autocomplete="off"
+            required
+            [placeholder]="currentLanguageSet?.enterOTP"
+            formControlName="otp"
+            minlength="6"
+            maxlength="6"
+            (keypress)="numberOnly($event)"
+          />
+        </z-form-control>
+      </z-form-field>
+
+      <div class="flex justify-end gap-2">
+        <button
+          id="cancelButton"
+          z-button
+          zType="outline"
+          type="button"
+          (click)="resendOtp()"
+        >
+          {{ currentLanguageSet?.resendOTP }}
+        </button>
+        <button
+          id="submitButton"
+          z-button
+          zType="default"
+          type="button"
+          [disabled]="!healthIdOTPForm.valid || !checkOTP()"
+          (click)="verifyOtp()"
+        >
+          {{ currentLanguageSet?.common?.submit }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

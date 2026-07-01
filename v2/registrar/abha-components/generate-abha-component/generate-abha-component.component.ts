@@ -1,6 +1,27 @@
+/*
+ * AMRIT – Accessible Medical Records via Integrated Technologies
+ * Integrated EHR (Electronic Health Records) Solution
+ *
+ * Copyright (C) "Piramal Swasthya Management and Research Institute"
+ *
+ * This file is part of AMRIT.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
+ */
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
@@ -8,17 +29,30 @@ import { BiometricAuthenticationComponent } from '../biometric-authentication/bi
 import { AbhaEnterOtpComponentComponent } from '../abha-enter-otp-component/abha-enter-otp-component.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { AbhaMobileComponentComponent } from '../abha-mobile-component/abha-mobile-component.component';
-import { MatIcon } from '@angular/material/icon';
-import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
-import { MatLabel, MatFormField, MatError } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
 import { NgIf } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX, lucideEye, lucideEyeOff } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
+import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
 
 @Component({
-    selector: 'app-generate-abha-component',
-    templateUrl: './generate-abha-component.component.html',
-    styleUrls: ['./generate-abha-component.component.css'],
-    imports: [MatIcon, MatDialogClose, ReactiveFormsModule, MatRadioGroup, MatRadioButton, MatLabel, MatFormField, MatInput, NgIf, MatError]
+  selector: 'app-generate-abha-component',
+  templateUrl: './generate-abha-component.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    ReactiveFormsModule,
+    NgIcon,
+    ZardButtonComponent,
+    ZardFormImports,
+    ZardInputDirective,
+    ZardRadioGroupComponent,
+    ZardRadioComponent,
+  ],
+  viewProviders: [provideIcons({ lucideX, lucideEye, lucideEyeOff })],
 })
 export class GenerateAbhaComponentComponent {
 
