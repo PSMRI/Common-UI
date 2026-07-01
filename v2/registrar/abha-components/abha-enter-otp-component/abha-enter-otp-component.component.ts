@@ -1,5 +1,10 @@
 import { Component, Inject } from '@angular/core';
-import { FormGroup, FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormGroup,
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
@@ -84,7 +89,14 @@ export class AbhaEnterOtpComponentComponent {
 
   createOtpGenerationForm() {
     return this.fb.group({
-      otp: null
+      otp: [
+        null,
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.maxLength(6),
+        ],
+      ],
     });
   }
 

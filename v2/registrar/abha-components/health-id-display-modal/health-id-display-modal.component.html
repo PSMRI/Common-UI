@@ -45,14 +45,14 @@
   <div class="flex flex-col gap-4">
     <!-- Searched health ID details -->
     <div
-      *ngIf="
-        searchDetails !== undefined &&
-        searchDetails !== null &&
-        searchDetails.length > 0
-      "
+      *ngIf="searchDetails !== undefined && searchDetails !== null"
       class="w-full overflow-x-auto"
     >
-      <table z-table aria-label="Searched ABHA details">
+      <table
+        *ngIf="searchDetails.length > 0"
+        z-table
+        aria-label="Searched ABHA details"
+      >
         <thead z-table-header>
           <tr z-table-row>
             <th z-table-head id="search-sno">
@@ -92,7 +92,7 @@
         </tbody>
       </table>
       <p
-        *ngIf="searchDetails === null || searchDetails?.length === 0"
+        *ngIf="searchDetails.length === 0"
         class="mt-2 text-center text-sm font-semibold text-muted-foreground"
       >
         {{ currentLanguageSet?.casesheet?.noRecordFound }}
@@ -197,8 +197,8 @@
               </tr>
             </thead>
             <tbody z-table-body>
-              <tr z-table-row *ngFor="let element of healthIDArray">
-                <td z-table-cell>1</td>
+              <tr z-table-row *ngFor="let element of healthIDArray; let i = index">
+                <td z-table-cell>{{ i + 1 }}</td>
                 <td z-table-cell>
                   {{ element?.healthIdNumber ? element?.healthIdNumber : null }}
                 </td>

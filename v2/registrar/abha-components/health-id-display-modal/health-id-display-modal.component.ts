@@ -106,13 +106,12 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     private confirmationService: ConfirmationService,
     private datePipe: DatePipe,
     private dialogMd: MatDialog,
-    private sessionstorage: SessionStorageService
+    private readonly sessionstorage: SessionStorageService
   ) {
     dialogRef.disableClose = true;
   }
 
   ngOnInit() {
-    console.log('this.input', this.input);
     this.searchDetails = [];
     this.selectedHealthID = null;
     this.searchPopup = false;
@@ -120,20 +119,16 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     this.searchPopup =
       this.input.search !== undefined ? this.input.search : false;
     this.healthIDMapping = this.input.healthIDMapping;
-    console.log('this.healthIDMapping', this.healthIDMapping);
     if (this.input.dataList !== undefined && this.input.search === true) {
       const tempVal: any = this.input.dataList;
       this.benDetails = this.input.dataList;
-      console.log('tempVal', tempVal);
       this.searchDetails.push(tempVal);
-      console.log('this.searchDetails%%', this.searchDetails);
     }
     if (
       this.input.dataList !== undefined &&
       this.input.dataList.data?.BenHealthDetails !== undefined
     ) {
       this.benDetails = this.input.dataList.data.BenHealthDetails;
-      console.log('this.benDetails1', this.benDetails);
     }
     this.healthIdOTPForm = this.createOtpGenerationForm();
     this.createList();
@@ -321,7 +316,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
       disableClose: true,
       data: {
         printCard: true,
-        healthId: data.healthId,
+        healthId: data.healthIdNumber,
       },
     });
   }

@@ -12,7 +12,7 @@
         zSize="icon"
         class="p-0"
         type="button"
-        aria-label="Close"
+        [attr.aria-label]="currentLanguageSet?.common?.close || 'Close'"
         (click)="closeSuccessDialog()"
       >
         <ng-icon name="lucideX"></ng-icon>
@@ -99,7 +99,7 @@
         zSize="icon"
         class="p-0"
         type="button"
-        aria-label="Close"
+        [attr.aria-label]="currentLanguageSet?.common?.close || 'Close'"
         (click)="closeSuccessDialog()"
       >
         <ng-icon name="lucideX"></ng-icon>

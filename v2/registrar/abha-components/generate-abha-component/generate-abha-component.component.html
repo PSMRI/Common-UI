@@ -29,68 +29,11 @@
     </z-radio-group>
   </div>
 
-  <div class="flex flex-col gap-2">
-    <label z-form-label [zRequired]="true" for="part1">Aadhaar Number</label>
-    <div class="flex items-center gap-2">
-      <input
-        z-input
-        id="part1"
-        class="w-24 text-center"
-        [type]="inputType"
-        formControlName="part1"
-        maxlength="4"
-        required
-        #part1
-        (input)="moveToNext($event, part2)"
-        aria-label="First part of Aadhaar number"
-      />
-      <span class="text-lg text-muted-foreground">-</span>
-      <input
-        z-input
-        id="part2"
-        class="w-24 text-center"
-        [type]="inputType"
-        formControlName="part2"
-        maxlength="4"
-        required
-        #part2
-        (input)="moveToNext($event, part3)"
-        (keydown.backspace)="moveToPrev($event, part1)"
-        aria-label="Second part of Aadhaar number"
-      />
-      <span class="text-lg text-muted-foreground">-</span>
-      <input
-        z-input
-        id="part3"
-        class="w-24 text-center"
-        [type]="inputType"
-        formControlName="part3"
-        maxlength="4"
-        required
-        #part3
-        (keydown.backspace)="moveToPrev($event, part2)"
-        aria-label="Third part of Aadhaar number"
-      />
-      <button
-        type="button"
-        class="inline-flex appearance-none items-center justify-center border-0 bg-transparent p-0 text-muted-foreground hover:text-foreground"
-        (click)="toggleVisibility()"
-        [attr.aria-label]="
-          inputType === 'password'
-            ? 'Show Aadhaar number'
-            : 'Hide Aadhaar number'
-        "
-      >
-        <ng-icon
-          [name]="inputType === 'password' ? 'lucideEyeOff' : 'lucideEye'"
-          size="20"
-        ></ng-icon>
-      </button>
-    </div>
-    <p *ngIf="isInvalid" class="text-sm text-destructive">
-      Please enter a valid Aadhaar number
-    </p>
-  </div>
+  <app-aadhaar-input
+    [formGroup]="abhaGenerateForm"
+    label="Aadhaar Number"
+    [invalid]="isInvalid"
+  ></app-aadhaar-input>
 
   <div class="flex justify-end">
     <button

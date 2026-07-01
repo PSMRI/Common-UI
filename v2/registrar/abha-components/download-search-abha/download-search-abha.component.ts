@@ -30,12 +30,13 @@ import { AbhaEnterOtpComponentComponent } from '../abha-enter-otp-component/abha
 import { environment } from 'src/environments/environment';
 import { NgIf } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideX, lucideEye, lucideEyeOff } from '@ng-icons/lucide';
+import { lucideX } from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { ZardFormImports } from 'Common-UI/v2/ui/form';
 import { ZardInputDirective } from 'Common-UI/v2/ui/input';
 import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
 import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
+import { AadhaarInputComponent } from '../aadhaar-input/aadhaar-input.component';
 
 @Component({
   selector: 'app-download-search-abha',
@@ -50,8 +51,9 @@ import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
     ZardInputDirective,
     ZardRadioGroupComponent,
     ZardRadioComponent,
+    AadhaarInputComponent,
   ],
-  viewProviders: [provideIcons({ lucideX, lucideEye, lucideEyeOff })],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class DownloadSearchAbhaComponent {
   currentLanguageSet: any;
@@ -66,7 +68,6 @@ export class DownloadSearchAbhaComponent {
   enableAuthMethodForAbha = false;
   hide = true;
   allowAuthIdCharacters: number = 0;
-  inputType: string = 'password';
 
   constructor(
     public dialogRef: MatDialogRef<DownloadSearchAbhaComponent>,
@@ -295,22 +296,6 @@ export class DownloadSearchAbhaComponent {
     // If none of the conditions match, show error
     this.idErrorText = 'Please enter a valid Health ID / Aadhaar Number / Mobile Number';
     return false; // Invalid
-  }
-
-  moveToNext(event: any, nextElement: any) {
-    if (event.target.value.length === 4) {
-      nextElement.focus();
-    }
-  }
-
-  moveToPrev(event: any, prevElement: any) {
-    if (event.target.value.length === 0) {
-      prevElement.focus();
-    }
-  }
-
-  toggleVisibility() {
-    this.inputType = this.inputType === 'password' ? 'text' : 'password';
   }
 
   get isInvalid() {

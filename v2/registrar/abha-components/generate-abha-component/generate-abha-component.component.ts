@@ -31,12 +31,12 @@ import { ConfirmationService } from 'src/app/app-modules/core/services/confirmat
 import { AbhaMobileComponentComponent } from '../abha-mobile-component/abha-mobile-component.component';
 import { NgIf } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideX, lucideEye, lucideEyeOff } from '@ng-icons/lucide';
+import { lucideX } from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { ZardFormImports } from 'Common-UI/v2/ui/form';
-import { ZardInputDirective } from 'Common-UI/v2/ui/input';
 import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
 import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
+import { AadhaarInputComponent } from '../aadhaar-input/aadhaar-input.component';
 
 @Component({
   selector: 'app-generate-abha-component',
@@ -48,11 +48,11 @@ import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
     NgIcon,
     ZardButtonComponent,
     ZardFormImports,
-    ZardInputDirective,
     ZardRadioGroupComponent,
     ZardRadioComponent,
+    AadhaarInputComponent,
   ],
-  viewProviders: [provideIcons({ lucideX, lucideEye, lucideEyeOff })],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class GenerateAbhaComponentComponent {
 
@@ -62,7 +62,6 @@ export class GenerateAbhaComponentComponent {
   aadharNumber: any;
   hide = true;
   maskedAadharNumber: string = '';
-  inputType: string = 'password';
 
   constructor(
     public dialogRef: MatDialogRef<GenerateAbhaComponentComponent>,
@@ -130,22 +129,6 @@ export class GenerateAbhaComponentComponent {
     } else if (this.modeofAbhaHealthID === 'BIOMETRIC') {
       this.captureBioAuthentication();
     }
-  }
-
-  moveToNext(event: any, nextElement: any) {
-    if (event.target.value.length === 4) {
-      nextElement.focus();
-    }
-  }
-
-  moveToPrev(event: any, prevElement: any) {
-    if (event.target.value.length === 0) {
-      prevElement.focus();
-    }
-  }
-
-  toggleVisibility() {
-    this.inputType = this.inputType === 'password' ? 'text' : 'password';
   }
 
   routeToOtpPage(txnId: any) {

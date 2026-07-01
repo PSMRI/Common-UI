@@ -29,7 +29,7 @@
             {{ currentLanguageSet?.casesheet?.name }}
           </span>
           <span class="text-sm font-medium text-foreground">
-            {{ (abhaDetails.name !== undefined && abhaDetails.name !== null) ? abhaDetails.name : abhaDetails?.fullName }}
+            {{ (abhaDetails?.name !== undefined && abhaDetails?.name !== null) ? abhaDetails?.name : abhaDetails?.fullName }}
           </span>
         </div>
         <div class="flex flex-col gap-0.5">
@@ -37,7 +37,7 @@
             {{ currentLanguageSet?.abhaAddress }}
           </span>
           <span class="text-sm font-medium text-foreground">
-            {{ (abhaDetails.preferredAbhaAddress !== undefined && abhaDetails.preferredAbhaAddress !== null) ? abhaDetails.preferredAbhaAddress : abhaDetails?.abhaAddress }}
+            {{ (abhaDetails?.preferredAbhaAddress !== undefined && abhaDetails?.preferredAbhaAddress !== null) ? abhaDetails?.preferredAbhaAddress : abhaDetails?.abhaAddress }}
           </span>
         </div>
         <div class="flex flex-col gap-0.5">
@@ -45,7 +45,7 @@
             {{ currentLanguageSet?.abhaNumber }}
           </span>
           <span class="text-sm font-medium text-foreground">
-            {{ (abhaDetails.ABHANumber !== undefined && abhaDetails.ABHANumber !== null) ? abhaDetails.ABHANumber : abhaDetails?.abhaNumber }}
+            {{ (abhaDetails?.ABHANumber !== undefined && abhaDetails?.ABHANumber !== null) ? abhaDetails?.ABHANumber : abhaDetails?.abhaNumber }}
           </span>
         </div>
       </div>

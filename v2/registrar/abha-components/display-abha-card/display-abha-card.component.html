@@ -9,7 +9,7 @@
       zSize="icon"
       class="p-0"
       type="button"
-      aria-label="Close"
+      [attr.aria-label]="currentLanguageSet?.common?.close || 'Close'"
       (click)="closeDialog()"
     >
       <ng-icon name="lucideX"></ng-icon>
@@ -26,12 +26,12 @@
   <div class="flex flex-col items-center gap-4">
     <img
       [src]="blobUrl"
-      alt="abha Image"
+      [attr.alt]="currentLanguageSet?.aBHACard || 'ABHA card'"
       class="w-full max-w-[800px] rounded-lg"
     />
     <div class="flex justify-center">
       <button z-button type="button" (click)="downloadImage()">
-        Download
+        {{ currentLanguageSet?.common?.download || 'Download' }}
       </button>
     </div>
   </div>
