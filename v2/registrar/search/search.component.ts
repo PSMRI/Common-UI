@@ -24,16 +24,13 @@ import {
   Component,
   OnInit,
   ChangeDetectorRef,
-  ViewChild,
   DoCheck,
   AfterViewChecked,
   OnDestroy,
 } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { SearchDialogComponent } from '../search-dialog/search-dialog.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import {
   ConfirmationService,
@@ -49,54 +46,75 @@ import { HealthIdDisplayModalComponent } from '../abha-components/health-id-disp
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatIcon } from '@angular/material/icon';
-import { MatCard } from '@angular/material/card';
-import { NgIf, TitleCasePipe } from '@angular/common';
-import { MatFormField, MatSuffix } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
+import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideSearch,
+  lucidePencil,
+  lucideUserPlus,
+  lucideSlidersHorizontal,
+  lucideChevronLeft,
+  lucideChevronRight,
+} from '@ng-icons/lucide';
+import { cardImports } from 'Common-UI/v2/ui/card';
+import { ZardTableImports } from 'Common-UI/v2/ui/table';
+import { ZardPaginationImports } from 'Common-UI/v2/ui/pagination';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardSelectImports } from 'Common-UI/v2/ui/select';
+import { tooltipImports } from 'Common-UI/v2/ui/tooltip';
 
 export interface Consent {
   consentGranted: string;
 }
 
 @Component({
-    selector: 'app-search',
-    templateUrl: './search.component.html',
-    styleUrls: ['./search.component.css'],
-    imports: [ReactiveFormsModule, FormsModule, MatTooltip, MatIcon, MatCard, NgIf, MatFormField, MatInput, MatSuffix, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow, MatPaginator, TitleCasePipe]
+  selector: 'app-search',
+  templateUrl: './search.component.html',
+  imports: [
+    ReactiveFormsModule,
+    FormsModule,
+    NgIf,
+    NgFor,
+    TitleCasePipe,
+    NgIcon,
+    ZardButtonComponent,
+    ZardInputDirective,
+    ...cardImports,
+    ...ZardTableImports,
+    ...ZardPaginationImports,
+    ...ZardSelectImports,
+    ...tooltipImports,
+  ],
+  viewProviders: [
+    provideIcons({
+      lucideSearch,
+      lucidePencil,
+      lucideUserPlus,
+      lucideSlidersHorizontal,
+      lucideChevronLeft,
+      lucideChevronRight,
+    }),
+  ],
 })
 export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
-  rowsPerPage = 5;
-  activePage = 1;
-  pagedList = [];
   rotate = true;
   beneficiaryList: any;
-  filteredBeneficiaryList: any = [];
+  filteredBeneficiaryList: any[] = [];
   quicksearchTerm: any;
   advanceSearchTerm: any;
-  blankTable = [1, 2, 3, 4, 5];
+  filterTerm = '';
   languageComponent!: SetLanguageComponent;
   currentLanguageSet: any;
   searchPattern!: string;
   consentGranted: any;
   isEnableES: boolean = false;
-  displayedColumns: string[] = [
-    'edit',
-    'beneficiaryID',
-    'benName',
-    'genderName',
-    'age',
-    'fatherName',
-    'districtVillage',
-    'phoneNo',
-    'registeredOn',
-    'abhaAddress',
-    'image',
-  ];
-  @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
-  dataSource = new MatTableDataSource<any>();
   searchCategory: any;
+
+  // Client-side pagination state (replaces MatPaginator / MatTableDataSource)
+  pageSizeOptions = [5, 10, 20];
+  pageSize = 5;
+  currentPage = 1;
 
   // Add these for debounced search
   private searchSubject$ = new Subject<string>();
@@ -218,10 +236,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
         'info'
       );
     } else {
-      this.beneficiaryList = this.searchRestructES(response.data);
-      this.filteredBeneficiaryList = this.beneficiaryList;
-      this.dataSource.data = this.beneficiaryList;
-      this.dataSource.paginator = this.paginator;
+      this.setResults(this.searchRestructES(response.data));
       this.changeDetectorRef.detectChanges();
     }
   }
@@ -257,8 +272,57 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
   resetWorklist() {
     this.beneficiaryList = [];
     this.filteredBeneficiaryList = [];
-    this.dataSource.data = [];
-    this.pagedList = [];
+    this.currentPage = 1;
+  }
+
+  /** Set the result list and reset filter + pagination to the first page. */
+  setResults(list: any[]) {
+    this.beneficiaryList = list;
+    this.filteredBeneficiaryList = list;
+    this.filterTerm = '';
+    this.currentPage = 1;
+  }
+
+  // ---- Client-side pagination (replaces MatPaginator) ----
+  get totalPages(): number {
+    return Math.max(
+      1,
+      Math.ceil(this.filteredBeneficiaryList.length / this.pageSize),
+    );
+  }
+
+  get pagedList(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredBeneficiaryList.slice(start, start + this.pageSize);
+  }
+
+  /** A small window of page numbers around the current page (max 5). */
+  get pageNumbers(): number[] {
+    const total = this.totalPages;
+    let start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(total, start + 4);
+    start = Math.max(1, end - 4);
+    const pages: number[] = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  changePageSize(size: string | string[]) {
+    const value = Array.isArray(size) ? size[0] : size;
+    this.pageSize = Number(value);
+    this.currentPage = 1;
   }
 
   identityQuickSearch(searchTerm: any) {
@@ -302,25 +366,15 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
         this.registrarService.identityQuickSearch(searchObject).subscribe(
           (beneficiaryList: any) => {
             if (!beneficiaryList || beneficiaryList.length <= 0) {
-              this.beneficiaryList = [];
-              this.filteredBeneficiaryList = [];
-              this.dataSource.data = [];
-              console.log('this.dataSource.data1', this.dataSource.data);
-              this.dataSource.paginator = this.paginator;
+              this.resetWorklist();
               this.confirmationService.alert(
                 this.currentLanguageSet.alerts.info.beneficiarynotfound,
                 'info',
               );
             } else {
-              this.beneficiaryList = this.searchRestruct(
-                beneficiaryList,
-                searchObject,
+              this.setResults(
+                this.searchRestruct(beneficiaryList, searchObject),
               );
-              console.log('this.beneficiaryList2', this.beneficiaryList);
-              this.filteredBeneficiaryList = this.beneficiaryList;
-              this.dataSource.data = this.beneficiaryList;
-              console.log('this.dataSource.data2', this.dataSource.data);
-              this.dataSource.paginator = this.paginator;
             }
             console.log('hi', JSON.stringify(beneficiaryList, null, 4));
           },
@@ -388,14 +442,6 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
     return requiredBenData;
   }
 
-  pageChanged(event: any): void {
-    console.log('called', event);
-    const startItem = (event.page - 1) * event.itemsPerPage;
-    const endItem = event.page * event.itemsPerPage;
-    this.pagedList = this.filteredBeneficiaryList.slice(startItem, endItem);
-    console.log('list', this.pagedList);
-  }
-
   getCorrectPhoneNo(phoneMaps: any[], benObject: any): string {
     if (!phoneMaps || !phoneMaps.length) {
       return 'Not Available';
@@ -413,30 +459,26 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
   }
 
   filterBeneficiaryList(searchTerm?: string) {
-    if (!searchTerm) this.filteredBeneficiaryList = this.beneficiaryList;
-    else {
-      this.filteredBeneficiaryList = [];
-      this.dataSource.data = [];
-      this.dataSource.paginator = this.paginator;
-      this.beneficiaryList.forEach((item: any) => {
-        for (const key in item) {
-          if (key !== 'benObject') {
-            const value: string = '' + item[key];
-            if (value.toLowerCase().indexOf(searchTerm.toLowerCase()) >= 0) {
-              (this.filteredBeneficiaryList as any[]).push(item);
-              this.dataSource.data.push(item);
-              this.dataSource.paginator = this.paginator;
-              this.dataSource.data.forEach(
-                (sectionCount: any, index: number) => {
-                  sectionCount.sno = index + 1;
-                },
-              );
-              break;
+    this.filterTerm = searchTerm ?? '';
+    const term = (searchTerm || '').toLowerCase().trim();
+    if (term) {
+      this.filteredBeneficiaryList = (this.beneficiaryList ?? []).filter(
+        (item: any) => {
+          for (const key in item) {
+            if (key !== 'benObject') {
+              const value: string = '' + item[key];
+              if (value.toLowerCase().includes(term)) {
+                return true;
+              }
             }
           }
-        }
-      });
+          return false;
+        },
+      );
+    } else {
+      this.filteredBeneficiaryList = this.beneficiaryList ?? [];
     }
+    this.currentPage = 1;
   }
 
   patientRevisited(benObject: any) {
@@ -559,15 +601,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
                   'info',
                 );
               } else {
-                this.beneficiaryList = this.searchRestructES(response.data);
-                this.filteredBeneficiaryList = this.beneficiaryList;
-                this.dataSource.data = this.beneficiaryList;
-                this.dataSource.paginator = this.paginator;
-                this.dataSource.data.forEach(
-                  (sectionCount: any, index: number) => {
-                    sectionCount.sno = index + 1;
-                  },
-                );
+                this.setResults(this.searchRestructES(response.data));
                 this.changeDetectorRef.detectChanges();
               }
               console.log('ES Advanced Search Result:', JSON.stringify(response, null, 4));
@@ -586,27 +620,14 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
                 !beneficiaryList ||
                 (beneficiaryList.data && beneficiaryList.data.length <= 0)
               ) {
-                this.beneficiaryList = [];
-                this.filteredBeneficiaryList = [];
-                this.dataSource.data = [];
-                console.log('this.dataSource.data3', this.dataSource.data);
-                this.dataSource.paginator = this.paginator;
+                this.resetWorklist();
                 this.quicksearchTerm = null;
                 this.confirmationService.alert(
                   this.currentLanguageSet.alerts.info.beneficiaryNotFound,
                   'info',
                 );
               } else {
-                this.beneficiaryList = this.searchRestruct(beneficiaryList, {});
-                this.filteredBeneficiaryList = this.beneficiaryList;
-                this.dataSource.data = this.beneficiaryList;
-                console.log('this.dataSource.data4', this.dataSource.data);
-                this.dataSource.paginator = this.paginator;
-                this.dataSource.data.forEach(
-                  (sectionCount: any, index: number) => {
-                    sectionCount.sno = index + 1;
-                  },
-                );
+                this.setResults(this.searchRestruct(beneficiaryList, {}));
               }
               console.log(JSON.stringify(beneficiaryList, null, 4));
             },

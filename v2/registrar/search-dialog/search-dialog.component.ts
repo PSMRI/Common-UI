@@ -20,40 +20,35 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
+import { Component, OnInit, ChangeDetectorRef, DoCheck } from '@angular/core';
 import {
-  Component,
-  OnInit,
-  ViewChild,
-  ChangeDetectorRef,
-  AfterViewChecked,
-  DoCheck,
-} from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MatDialogContent, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormControl,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { CommonService } from 'src/app/app-modules/core/services/common-services.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from 'Common-UI/v2/registrar/services/registrar.service';
 import { environment } from 'src/environments/environment';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-} from '@angular/material/core';
-import {
-  MomentDateAdapter,
-  MAT_MOMENT_DATE_ADAPTER_OPTIONS,
-} from '@angular/material-moment-adapter';
 import { SessionStorageService } from '../services/session-storage.service';
-import { map, Observable, startWith } from 'rxjs';
-import { MatIcon } from '@angular/material/icon';
-import { CdkScrollable } from '@angular/cdk/scrolling';
-import { MatFormField, MatLabel, MatError, MatSelect, MatSuffix } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
-import { NgIf, NgFor, AsyncPipe, TitleCasePipe } from '@angular/common';
-import { MatOption, MatAutocompleteTrigger, MatAutocomplete } from '@angular/material/autocomplete';
-import { MatDatepickerInput, MatDatepickerToggle, MatDatepicker } from '@angular/material/datepicker';
+import { Subscription } from 'rxjs';
+import { NgIf, NgFor } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import {
+  ZardSelectComponent,
+  ZardSelectItemComponent,
+} from 'Common-UI/v2/ui/select';
+import { ZardComboboxComponent } from 'Common-UI/v2/ui/combobox';
+import { ZardDatePickerComponent } from 'Common-UI/v2/ui/date-picker';
 
 interface Beneficary {
   firstName: string;
@@ -69,35 +64,23 @@ interface Beneficary {
 }
 
 @Component({
-    selector: 'app-search-dialog',
-    templateUrl: './search-dialog.component.html',
-    styleUrls: ['./search-dialog.component.css'],
-    providers: [
-        {
-            provide: MAT_DATE_LOCALE,
-            useValue: 'en-US', // Set the desired locale (e.g., 'en-GB' for dd/MM/yyyy)
-        },
-        {
-            provide: DateAdapter,
-            useClass: MomentDateAdapter,
-            deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
-        },
-        {
-            provide: MAT_DATE_FORMATS,
-            useValue: {
-                parse: {
-                    dateInput: 'LL',
-                },
-                display: {
-                    dateInput: 'DD/MM/YYYY', // Set the desired display format
-                    monthYearLabel: 'MMM YYYY',
-                    dateA11yLabel: 'LL',
-                    monthYearA11yLabel: 'MMMM YYYY',
-                },
-            },
-        },
-    ],
-    imports: [MatIcon, CdkScrollable, MatDialogContent, ReactiveFormsModule, MatFormField, MatLabel, MatInput, NgIf, MatError, MatSelect, NgFor, MatOption, MatDatepickerInput, MatDatepickerToggle, MatSuffix, MatDatepicker, MatAutocompleteTrigger, MatAutocomplete, MatDialogActions, MatDialogClose, AsyncPipe, TitleCasePipe]
+  selector: 'app-search-dialog',
+  templateUrl: './search-dialog.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    ReactiveFormsModule,
+    NgIcon,
+    ZardButtonComponent,
+    ZardInputDirective,
+    ...ZardFormImports,
+    ZardSelectComponent,
+    ZardSelectItemComponent,
+    ZardComboboxComponent,
+    ZardDatePickerComponent,
+  ],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class SearchDialogComponent implements OnInit, DoCheck {
   // for ID Manpulation
@@ -131,10 +114,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
   blockCtrl = new FormControl();
   villageCtrl = new FormControl();
 
-  filteredStates!: Observable<any[]>;
-  filteredDistricts!: Observable<any[]>;
-  filteredBlocks!: Observable<any[]>;
-  filteredVillages!: Observable<any[]>;
+  private readonly cascadeSubscriptions: Subscription[] = [];
 
   constructor(
     private confirmationService: ConfirmationService,
@@ -144,8 +124,8 @@ export class SearchDialogComponent implements OnInit, DoCheck {
     private httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private sessionstorage: SessionStorageService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) { }
+    private readonly changeDetectorRef: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     this.fetchLanguageResponse();
@@ -155,85 +135,77 @@ export class SearchDialogComponent implements OnInit, DoCheck {
     this.getStatesData(); //to be called from masterobservable method layter
     this.today = new Date();
 
-    // initialize filtering
-    this.filteredStates = this.stateCtrl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value, this.states, 'stateName'))
-    );
-
-    this.filteredDistricts = this.districtCtrl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value, this.districts, 'districtName'))
-    );
-
-    this.filteredBlocks = this.blockCtrl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value, this.blockList, 'blockName'))
-    );
-
-    this.filteredVillages = this.villageCtrl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value, this.villageList, 'villageName'))
-    );
-  }
-
-  private _filter(value: any, list: any[], key: string): any[] {
-    if (!value || !list) return list;
-
-    let filterValue: string;
-    if (typeof value === 'string') {
-      filterValue = value.toLowerCase();
-    } else if (value && value[key]) {
-      // If an object was selected, use its label
-      filterValue = value[key].toLowerCase();
-    } else {
-      return list;
-    }
-
-    return list.filter(option =>
-      option[key]?.toLowerCase().includes(filterValue)
+    // The z-combobox commits the picked option's value (the *Name string, via
+    // zValueKey) to its FormControl through ControlValueAccessor; subscribing to
+    // valueChanges and resolving the full object replaces the old
+    // mat-autocomplete (optionSelected) handler.
+    this.cascadeSubscriptions.push(
+      this.stateCtrl.valueChanges.subscribe((name: any) =>
+        this.onStateSelected(this.findByKey(this.states, 'stateName', name)),
+      ),
+      this.districtCtrl.valueChanges.subscribe((name: any) =>
+        this.onDistrictSelected(
+          this.findByKey(this.districts, 'districtName', name),
+        ),
+      ),
+      this.blockCtrl.valueChanges.subscribe((name: any) =>
+        this.onBlockSelected(this.findByKey(this.blockList, 'blockName', name)),
+      ),
+      this.villageCtrl.valueChanges.subscribe((name: any) =>
+        this.onVillageSelected(
+          this.findByKey(this.villageList, 'villageName', name),
+        ),
+      ),
     );
   }
 
+  private findByKey(list: any[], key: string, value: any): any {
+    if (!value || !list) return null;
+    return list.find(option => option[key] === value);
+  }
 
   onStateSelected(state: any) {
     if (!state) return;
     this.newSearchForm.get('stateID')?.setValue(state.stateID);
     // Call service directly
-    this.registrarService.getDistrictList(state.stateID).subscribe((res: any) => {
-      if (res && res.statusCode === 200) {
-        this.districts = res.data;
-        this.districtCtrl.setValue(''); // clear district field
-        this.blockCtrl.setValue(''); // clear block field
-        this.villageCtrl.setValue(''); // clear village field
-        this.blockList = [];
-        this.villageList = [];
-      } else {
-        this.confirmationService.alert(
-          this.currentLanguageSet.alerts.info.issueFetching,
-          'error'
-        );
-      }
-    });
+    this.registrarService
+      .getDistrictList(state.stateID)
+      .subscribe((res: any) => {
+        if (res && res.statusCode === 200) {
+          this.districts = res.data;
+          this.districtCtrl.setValue(''); // clear district field
+          this.blockCtrl.setValue(''); // clear block field
+          this.villageCtrl.setValue(''); // clear village field
+          this.blockList = [];
+          this.villageList = [];
+        } else {
+          this.confirmationService.alert(
+            this.currentLanguageSet.alerts.info.issueFetching,
+            'error',
+          );
+        }
+      });
   }
 
   onDistrictSelected(district: any) {
     if (!district) return;
     this.newSearchForm.get('districtID')?.setValue(district.districtID);
     // Call service directly
-    this.registrarService.getSubDistrictList(district.districtID).subscribe((res: any) => {
-      if (res && res.statusCode === 200) {
-        this.blockList = res.data;
-        this.blockCtrl.setValue(''); // clear block field
-        this.villageCtrl.setValue(''); // clear village field
-        this.villageList = [];
-      } else {
-        this.confirmationService.alert(
-          this.currentLanguageSet.alerts.info.IssuesInFetchingDemographics,
-          'error'
-        );
-      }
-    });
+    this.registrarService
+      .getSubDistrictList(district.districtID)
+      .subscribe((res: any) => {
+        if (res && res.statusCode === 200) {
+          this.blockList = res.data;
+          this.blockCtrl.setValue(''); // clear block field
+          this.villageCtrl.setValue(''); // clear village field
+          this.villageList = [];
+        } else {
+          this.confirmationService.alert(
+            this.currentLanguageSet.alerts.info.IssuesInFetchingDemographics,
+            'error',
+          );
+        }
+      });
   }
 
   onBlockSelected(block: any) {
@@ -247,7 +219,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
       } else {
         this.confirmationService.alert(
           this.currentLanguageSet.alerts.info.IssuesInFetchingLocationDetails,
-          'error'
+          'error',
         );
       }
     });
@@ -256,22 +228,6 @@ export class SearchDialogComponent implements OnInit, DoCheck {
   onVillageSelected(village: any) {
     if (!village) return;
     this.newSearchForm.get('villageID')?.setValue(village.districtBranchID);
-  }
-
-  displayStateFn(state?: any): string {
-    return state ? state.stateName : '';
-  }
-
-  displayDistrictFn(district?: any): string {
-    return district ? district.districtName : '';
-  }
-
-  displayBlockFn(block?: any): string {
-    return block ? block.blockName : '';
-  }
-
-  displayVillageFn(village?: any): string {
-    return village ? village.villageName : '';
   }
 
   AfterViewChecked() {
@@ -294,7 +250,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
   resetBeneficiaryForm() {
     this.newSearchForm.reset();
 
-    // Reset the autocomplete FormControls
+    // Reset the combobox FormControls
     this.stateCtrl.setValue('');
     this.districtCtrl.setValue('');
     this.blockCtrl.setValue('');
@@ -306,6 +262,16 @@ export class SearchDialogComponent implements OnInit, DoCheck {
     this.villageList = [];
 
     this.getStatesData();
+  }
+
+  /**
+   * Coerce the z-select string value back to a number so the genderID stored in
+   * the form matches the numeric IDs the search payload expects.
+   */
+  onGenderSelected(value: string | string[]) {
+    const id = Array.isArray(value) ? value[0] : value;
+    this.newSearchForm.get('gender')?.setValue(id == null ? null : Number(id));
+    this.selectGender();
   }
   /**
    *
@@ -359,7 +325,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
     this.govtIDs = govID;
   }
 
-  onIDCardSelected() { }
+  onIDCardSelected() {}
 
   /**
    * get states from localstorage and set default state
@@ -378,7 +344,6 @@ export class SearchDialogComponent implements OnInit, DoCheck {
       }
     }
   }
-
 
   getDistricts(stateID: any) {
     this.commonService.getDistricts(stateID).subscribe(res => {
