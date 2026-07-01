@@ -4,10 +4,13 @@
       <label class="sr-only" for="quick-search">{{
         currentLanguageSet?.quickSearch
       }}</label>
-      <ng-icon
-        class="pointer-events-none absolute left-2.5 text-muted-foreground"
-        name="lucideSearch"
-        size="18"></ng-icon>
+      <button
+        type="button"
+        class="absolute left-2.5 inline-flex appearance-none items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
+        (click)="onSearchButtonClick(quicksearchTerm)"
+        [attr.aria-label]="currentLanguageSet?.quickSearch || 'Search'">
+        <ng-icon name="lucideSearch" size="18"></ng-icon>
+      </button>
       <input
         z-input
         id="quick-search"
@@ -28,14 +31,6 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-      <button
-        z-button
-        zType="outline"
-        type="button"
-        (click)="onSearchButtonClick(quicksearchTerm)">
-        <ng-icon name="lucideSearch"></ng-icon>
-        {{ currentLanguageSet?.quickSearch }}
-      </button>
       <button z-button type="button" (click)="navigateTORegistrar()">
         <ng-icon name="lucideUserPlus"></ng-icon>
         {{ currentLanguageSet?.ro?.registration }}
