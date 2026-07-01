@@ -1,23 +1,52 @@
+/*
+ * AMRIT – Accessible Medical Records via Integrated Technology
+ * Integrated EHR (Electronic Health Records) Solution
+ *
+ * Copyright (C) "Piramal Swasthya Management and Research Institute"
+ *
+ * This file is part of AMRIT.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
+ */
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatDialogRef, MatDialogClose, MatDialogContent, MatDialogActions } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
 import { SessionStorageService } from '../../services/session-storage.service';
-import { MatIcon } from '@angular/material/icon';
-import { CdkScrollable } from '@angular/cdk/scrolling';
-import { MatCheckbox } from '@angular/material/checkbox';
+import { ZardCheckboxComponent } from 'Common-UI/v2/ui/checkbox';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 
 @Component({
-    selector: 'app-abha-consent-form',
-    templateUrl: './abha-consent-form.component.html',
-    styleUrls: ['./abha-consent-form.component.css'],
-    imports: [MatIcon, MatDialogClose, CdkScrollable, MatDialogContent, ReactiveFormsModule, FormsModule, MatCheckbox, MatDialogActions]
+  selector: 'app-abha-consent-form',
+  templateUrl: './abha-consent-form.component.html',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    NgIcon,
+    ZardCheckboxComponent,
+    ZardButtonComponent,
+  ],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class AbhaConsentFormComponent {
-
-
   // Define the checkboxes as FormControl for handling the checkbox logic
   consent = new FormControl(false);
-  consent1 = new FormControl(false);  // Initially unchecked
+  consent1 = new FormControl(false); // Initially unchecked
   consent2 = new FormControl(false);
   consent3 = new FormControl(false);
   consent4 = new FormControl(false);
@@ -28,9 +57,8 @@ export class AbhaConsentFormComponent {
 
   constructor(
     public dialogRef: MatDialogRef<AbhaConsentFormComponent>,
-    private sessionstorage:SessionStorageService,
-    
-  ) {};
+    private sessionstorage: SessionStorageService,
+  ) {}
 
   // Function to close the dialog
   closeDialog() {
@@ -49,15 +77,18 @@ export class AbhaConsentFormComponent {
     }
   }
 
-
   // Function to check if all checkboxes are checked
   allConsentsChecked() {
-    return this.consent1.value && this.consent4.value 
-    && this.consent5.value && (this.consent5one.value || this.consent5two.value);
+    return (
+      this.consent1.value &&
+      this.consent4.value &&
+      this.consent5.value &&
+      (this.consent5one.value || this.consent5two.value)
+    );
   }
 
-  checkBenConsent(){
-    if(this.consent5.value){
+  checkBenConsent() {
+    if (this.consent5.value) {
       this.consent5one.setValue(true);
       this.consent5two.setValue(true);
     } else {
@@ -66,21 +97,19 @@ export class AbhaConsentFormComponent {
     }
   }
 
-
-  checkBenDoubleConsent(){
-    if(this.consent5one.value || this.consent5two.value){
+  checkBenDoubleConsent() {
+    if (this.consent5one.value || this.consent5two.value) {
       this.consent5.setValue(true);
     }
   }
 
   submitConsent() {
     if (this.allConsentsChecked()) {
-      console.log("Consent Submitted Successfully!");
+      console.log('Consent Submitted Successfully!');
       this.dialogRef.close(true);
     } else {
-      console.log("Please review and accept all consents.");
+      console.log('Please review and accept all consents.');
       this.dialogRef.close(false);
     }
   }
-
 }

@@ -1,18 +1,45 @@
+/*
+ * AMRIT – Accessible Medical Records via Integrated Technologies
+ * Integrated EHR (Electronic Health Records) Solution
+ *
+ * Copyright (C) "Piramal Swasthya Management and Research Institute"
+ *
+ * This file is part of AMRIT.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
+ */
+
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleCheck, lucideX } from '@ng-icons/lucide';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
 import { DisplayAbhaCardComponent } from '../display-abha-card/display-abha-card.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { NgIf } from '@angular/common';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardLoaderComponent } from 'Common-UI/v2/ui/loader';
+import { cardImports } from 'Common-UI/v2/ui/card';
 
 @Component({
-    selector: 'app-abha-verify-success-component',
-    templateUrl: './abha-verify-success-component.component.html',
-    styleUrls: ['./abha-verify-success-component.component.css'],
-    imports: [NgIf, MatProgressSpinner, MatDialogClose]
+  selector: 'app-abha-verify-success-component',
+  templateUrl: './abha-verify-success-component.component.html',
+  standalone: true,
+  imports: [NgIf, NgIcon, ZardButtonComponent, ZardLoaderComponent, ...cardImports],
+  viewProviders: [provideIcons({ lucideCircleCheck, lucideX })],
 })
 export class AbhaVerifySuccessComponentComponent {
 

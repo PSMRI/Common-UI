@@ -1,23 +1,59 @@
+/*
+ * AMRIT – Accessible Medical Records via Integrated Technologies
+ * Integrated EHR (Electronic Health Records) Solution
+ *
+ * Copyright (C) "Piramal Swasthya Management and Research Institute"
+ *
+ * This file is part of AMRIT.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
+ */
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { AbhaEnterOtpComponentComponent } from '../abha-enter-otp-component/abha-enter-otp-component.component';
 import { environment } from 'src/environments/environment';
-import { MatIcon } from '@angular/material/icon';
 import { NgIf } from '@angular/common';
-import { MatRadioGroup, MatRadioButton } from '@angular/material/radio';
-import { MatFormField, MatLabel, MatError } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
+import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
+import { AadhaarInputComponent } from '../aadhaar-input/aadhaar-input.component';
 
 @Component({
-    selector: 'app-download-search-abha',
-    templateUrl: './download-search-abha.component.html',
-    styleUrls: ['./download-search-abha.component.css'],
-    imports: [MatDialogClose, MatIcon, ReactiveFormsModule, NgIf, MatRadioGroup, MatRadioButton, MatFormField, MatLabel, MatInput, MatError]
+  selector: 'app-download-search-abha',
+  templateUrl: './download-search-abha.component.html',
+  standalone: true,
+  imports: [
+    NgIf,
+    ReactiveFormsModule,
+    NgIcon,
+    ZardButtonComponent,
+    ZardFormImports,
+    ZardInputDirective,
+    ZardRadioGroupComponent,
+    ZardRadioComponent,
+    AadhaarInputComponent,
+  ],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class DownloadSearchAbhaComponent {
   currentLanguageSet: any;
@@ -32,7 +68,6 @@ export class DownloadSearchAbhaComponent {
   enableAuthMethodForAbha = false;
   hide = true;
   allowAuthIdCharacters: number = 0;
-  inputType: string = 'password';
 
   constructor(
     public dialogRef: MatDialogRef<DownloadSearchAbhaComponent>,
@@ -64,7 +99,7 @@ export class DownloadSearchAbhaComponent {
       this.enableOnlyAuthMode = false;
     }
   }
-  
+
   createAbhaAuthMethod() {
     return this.fb.group({
       modeofAuthMethod: null,
@@ -83,7 +118,7 @@ export class DownloadSearchAbhaComponent {
       part3: ['', [Validators.required, Validators.pattern('^[0-9]{4}$')]]
     });
   }
-  
+
   closeDialogAuth() {
     this.dialogRef.close();
     this.abhaAuthMethodForm.reset();
@@ -239,11 +274,11 @@ export class DownloadSearchAbhaComponent {
       healthidval = this.abhaAuthMethodForm.controls['abhaAuthId'].value;
     }
     const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
-  
+
     if (authMode === "AADHAAR" && healthidval?.length === 12 && /^\d{12}$/.test(healthidval)) {
-      return true; 
+      return true;
     }  else if (authMode === "MOBILE" && healthidval?.length === 10 && /^\d{10}$/.test(healthidval)) {
-      return true; 
+      return true;
     } else if (authMode === "ABHANUMBER" && healthidval?.length === 17 && /^(\d{2})-(\d{4})-(\d{4})-(\d{4})$/.test(healthidval)) {
       return true; // Valid Health ID with hyphens
     }
@@ -253,30 +288,14 @@ export class DownloadSearchAbhaComponent {
     } else {
     healthIDPattern =  /^([a-zA-Z0-9])+(\.[a-zA-Z0-9]+)?@([a-zA-Z]{3})$/;  // ABHA pattern with 3 letter domain - i.e., sbx
     }
-  
+
     if (healthIDPattern.test(healthidval)) {
-      return true; 
+      return true;
     }
-  
+
     // If none of the conditions match, show error
     this.idErrorText = 'Please enter a valid Health ID / Aadhaar Number / Mobile Number';
     return false; // Invalid
-  }
-
-  moveToNext(event: any, nextElement: any) {
-    if (event.target.value.length === 4) {
-      nextElement.focus();
-    }
-  }
-
-  moveToPrev(event: any, prevElement: any) {
-    if (event.target.value.length === 0) {
-      prevElement.focus();
-    }
-  }
-
-  toggleVisibility() {
-    this.inputType = this.inputType === 'password' ? 'text' : 'password';
   }
 
   get isInvalid() {
@@ -285,15 +304,15 @@ export class DownloadSearchAbhaComponent {
 
   abhaNumberInputValidation(event: any) {
     const authMode = this.abhaAuthMethodForm.controls['modeofAuthMethod'].value;
-  
+
     if (authMode === "ABHANUMBER") {
       // Get the value entered by the user and remove all non-numeric characters (including hyphens)
       let value = event.target.value.replace(/\D/g, '');
-  
+
       if (value.length > 14) {
         value = value.slice(0, 14); // Truncate to 14 digits
       }
-  
+
       let formattedValue = '';
       for (let i = 0; i < value.length; i++) {
         if (i === 2 || i === 6 || i === 10) {
@@ -301,11 +320,11 @@ export class DownloadSearchAbhaComponent {
         }
         formattedValue += value[i];
       }
-  
+
       this.abhaAuthMethodForm.controls['abhaAuthId'].setValue(formattedValue, { emitEvent: false });
     }
   }
-  
-  
+
+
 
 }

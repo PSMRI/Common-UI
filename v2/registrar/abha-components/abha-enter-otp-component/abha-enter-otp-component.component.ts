@@ -1,6 +1,11 @@
 import { Component, Inject } from '@angular/core';
-import { FormGroup, FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog, MatDialogClose } from '@angular/material/dialog';
+import {
+  FormGroup,
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -10,16 +15,27 @@ import { AbhaGenerationSuccessComponentComponent } from '../abha-generation-succ
 import { AbhaVerifySuccessComponentComponent } from '../abha-verify-success-component/abha-verify-success-component.component';
 import { GenerateAbhaComponentComponent } from '../generate-abha-component/generate-abha-component.component';
 import { NgIf } from '@angular/common';
-import { MatIcon } from '@angular/material/icon';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatFormField, MatLabel } from '@angular/material/select';
-import { MatInput } from '@angular/material/input';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardLoaderComponent } from 'Common-UI/v2/ui/loader';
 
 @Component({
     selector: 'app-abha-enter-otp-component',
     templateUrl: './abha-enter-otp-component.component.html',
-    styleUrls: ['./abha-enter-otp-component.component.css'],
-    imports: [NgIf, MatIcon, MatDialogClose, MatProgressSpinner, ReactiveFormsModule, MatFormField, MatLabel, MatInput]
+    standalone: true,
+    imports: [
+      NgIf,
+      ReactiveFormsModule,
+      NgIcon,
+      ZardButtonComponent,
+      ...ZardFormImports,
+      ZardInputDirective,
+      ZardLoaderComponent,
+    ],
+    viewProviders: [provideIcons({ lucideX })],
 })
 export class AbhaEnterOtpComponentComponent {
 
@@ -73,7 +89,14 @@ export class AbhaEnterOtpComponentComponent {
 
   createOtpGenerationForm() {
     return this.fb.group({
-      otp: null
+      otp: [
+        null,
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.maxLength(6),
+        ],
+      ],
     });
   }
 

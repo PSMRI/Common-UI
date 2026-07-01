@@ -1,48 +1,71 @@
-<div class="title info">
-    <h4>{{ currentLanguageSet?.generateABHA }}</h4>
-    <mat-icon class="md-24 pull-right close-btn" matDialogClose (click)="closeDialog()" mat-icon-button>close</mat-icon>
-</div>
-<br />
+<div class="flex flex-col gap-4 p-6">
+  <div class="flex items-start justify-between gap-4">
+    <p class="text-lg font-semibold text-foreground">
+      {{ currentLanguageSet?.generateABHA }}
+    </p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
+      type="button"
+      aria-label="Close"
+      (click)="closeDialog()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
 
-<div class="overlay" *ngIf="showProgressBar">
-    <div class="overlay-content">
-        <mat-spinner></mat-spinner>
-    </div>
-</div>
-<br />
+  <div
+    *ngIf="showProgressBar"
+    class="flex items-center justify-center py-4"
+  >
+    <z-loader></z-loader>
+  </div>
 
-<div class="col-xs-12 col-sm-12" [formGroup]="generateMobileOTPForm" novalidate>
-    <div class="row">
-        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="margin-left: 20px;">
-            <mat-form-field [style.width]="'90%'">
-                <mat-label>
-                    {{ currentLanguageSet?.enterMobileNumberToBeLinkedWithAbha }}
-                </mat-label>
-                <!-- <input defaultNull autocomplete="off" myMobileNumber required matInput formControlName="mobileNo" /> -->
-                <input
-                defaultNull
-                autocomplete="off"
-                matInput
-                type="text"
-                required
-                formControlName="mobileNo"
-                myMobileNumber
-                minlength="10"
-                maxlength="10"
-                (keypress)="numberOnly($event)"
-              />
-                <mat-error *ngIf="generateMobileOTPForm.controls['mobileNo'].errors?.['required']">
-                    {{ currentLanguageSet?.benDetailsAlert?.mobNoMandatory }}</mat-error>
-                <mat-error *ngIf="generateMobileOTPForm.controls['mobileNo'].errors?.['minlength']">
-                    {{ currentLanguageSet?.benDetailsAlert?.minDigitsRequired }}</mat-error>
-            </mat-form-field>
-        </div>
-        <div class="col-sm-12 step-btn m-b-20" style="text-align: right; margin-left: -15px">
-            <button id="submitButton" mat-raised-button type="accent" color="accent"
-                class="mat_green" [disabled]="!generateMobileOTPForm.valid"
-                (click)="onSubmitOfMobileNo()">
-                {{ currentLanguageSet?.common?.submit }}
-            </button>
-        </div>
+  <form [formGroup]="generateMobileOTPForm" novalidate class="flex flex-col gap-4">
+    <z-form-field>
+      <label z-form-label for="mobileNo">
+        {{ currentLanguageSet?.enterMobileNumberToBeLinkedWithAbha }}
+      </label>
+      <z-form-control>
+        <input
+          z-input
+          id="mobileNo"
+          class="w-full"
+          autocomplete="off"
+          type="text"
+          required
+          formControlName="mobileNo"
+          minlength="10"
+          maxlength="10"
+          (keypress)="numberOnly($event)"
+        />
+      </z-form-control>
+      <z-form-message
+        zType="error"
+        *ngIf="generateMobileOTPForm.controls['mobileNo'].errors?.['required']"
+      >
+        {{ currentLanguageSet?.benDetailsAlert?.mobNoMandatory }}
+      </z-form-message>
+      <z-form-message
+        zType="error"
+        *ngIf="generateMobileOTPForm.controls['mobileNo'].errors?.['minlength']"
+      >
+        {{ currentLanguageSet?.benDetailsAlert?.minDigitsRequired }}
+      </z-form-message>
+    </z-form-field>
+
+    <div class="flex justify-end gap-2">
+      <button
+        id="submitButton"
+        z-button
+        type="button"
+        [disabled]="!generateMobileOTPForm.valid"
+        (click)="onSubmitOfMobileNo()"
+      >
+        {{ currentLanguageSet?.common?.submit }}
+      </button>
     </div>
+  </form>
 </div>

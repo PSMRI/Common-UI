@@ -1,18 +1,43 @@
+/*
+ * AMRIT – Accessible Medical Records via Integrated Technologies
+ * Integrated EHR (Electronic Health Records) Solution
+ *
+ * Copyright (C) "Piramal Swasthya Management and Research Institute"
+ *
+ * This file is part of AMRIT.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
+ */
+
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogClose } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { MatIcon } from '@angular/material/icon';
 import { NgIf } from '@angular/common';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardLoaderComponent } from 'Common-UI/v2/ui/loader';
 
 @Component({
-    selector: 'app-display-abha-card',
-    templateUrl: './display-abha-card.component.html',
-    styleUrls: ['./display-abha-card.component.css'],
-    imports: [MatIcon, MatDialogClose, NgIf, MatProgressSpinner]
+  selector: 'app-display-abha-card',
+  templateUrl: './display-abha-card.component.html',
+  standalone: true,
+  imports: [NgIf, NgIcon, ZardButtonComponent, ZardLoaderComponent],
+  viewProviders: [provideIcons({ lucideX })],
 })
 export class DisplayAbhaCardComponent {
 
