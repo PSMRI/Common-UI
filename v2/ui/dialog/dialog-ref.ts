@@ -59,7 +59,9 @@ export class ZardDialogRef<T = any, R = any, U = any> {
       this.overlayRef
         .outsidePointerEvents()
         .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.close());
+        .subscribe(() => {
+          if (!this.disableClose) this.close();
+        });
     }
 
     if (isPlatformBrowser(this.platformId)) {
@@ -68,7 +70,9 @@ export class ZardDialogRef<T = any, R = any, U = any> {
           filter(event => event.key === 'Escape'),
           takeUntil(this.destroy$),
         )
-        .subscribe(() => this.close());
+        .subscribe(() => {
+          if (!this.disableClose) this.close();
+        });
     }
   }
 
