@@ -6,16 +6,12 @@ import { PersonalInformationComponent } from './registration/personal-informatio
 import { LocationInformationComponent } from './registration/location-information/location-information.component';
 import { OtherInformationComponent } from './registration/other-information/other-information.component';
 import { AbhaInformationComponent } from './registration/abha-information/abha-information.component';
-import { MatStepperModule } from '@angular/material/stepper';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { RegistrationComponent } from './registration/registration.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SearchDialogComponent } from './search-dialog/search-dialog.component';
 import { SearchComponent } from './search/search.component';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 import { RegistrarService } from './services/registrar.service';
 import { RegistrationService } from './services/registration.service';
 import { BiometricAuthenticationComponent } from './abha-components/biometric-authentication/biometric-authentication.component';
@@ -42,13 +38,9 @@ import { AbhaConsentFormComponent } from './abha-components/abha-consent-form/ab
 @NgModule({
     imports: [
     CommonModule,
-    MatStepperModule,
     ReactiveFormsModule,
     FormsModule,
     RegistrationRoutingModule,
-    MatTableModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
     PersonalInformationComponent,
     LocationInformationComponent,
     OtherInformationComponent,
