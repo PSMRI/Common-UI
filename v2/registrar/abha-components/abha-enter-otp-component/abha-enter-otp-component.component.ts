@@ -1,11 +1,11 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewContainerRef } from '@angular/core';
 import {
   FormGroup,
   FormBuilder,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA, ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -52,12 +52,13 @@ export class AbhaEnterOtpComponentComponent {
 
   constructor(
     private fb: FormBuilder,
-    public dialogRef: MatDialogRef<AbhaEnterOtpComponentComponent>,
+    public dialogRef: ZardDialogRef<AbhaEnterOtpComponentComponent>,
     public httpServiceService: HttpServiceService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Inject(Z_MODAL_DATA) public data: any,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
-    private dialog: MatDialog,
+    private dialog: ZardDialogService,
+    private viewContainerRef: ViewContainerRef,
   ) {
     dialogRef.disableClose = true;
   }
@@ -137,15 +138,15 @@ export class AbhaEnterOtpComponentComponent {
   }
 
   askMobileNumberForAbha() {
-    const dialogRefMobile = this.dialog.open(
-      AbhaMobileComponentComponent,
-      {
-        height: '250px',
-        width: '420px',
-        disableClose: true,
-        data: { txnId: this.transactionId, otp: this.healthIdOTPForm.controls['otp'].value, },
-      },
-    );
+    const dialogRefMobile = this.dialog.create({
+      zContent: AbhaMobileComponentComponent,
+      zData: { txnId: this.transactionId, otp: this.healthIdOTPForm.controls['otp'].value, },
+      zWidth: '420px',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
     this.showProgressBar = false;
     dialogRefMobile.afterClosed().subscribe((response) => {
       if (response) {
@@ -160,15 +161,15 @@ export class AbhaEnterOtpComponentComponent {
 
   displayAbhaNumberOnSuccess(data: any) {
     console.log("Abha profile response - ", data);
-    const dialogRefSuccess = this.dialog.open(
-      AbhaGenerationSuccessComponentComponent,
-      {
-        height: '365px',
-        width: '480px',
-        disableClose: true,
-        data: { newAbhaResponse: data, xToken: data.xToken, mobileNumber: this.mobileNumber }
-      },
-    );
+    const dialogRefSuccess = this.dialog.create({
+      zContent: AbhaGenerationSuccessComponentComponent,
+      zData: { newAbhaResponse: data, xToken: data.xToken, mobileNumber: this.mobileNumber },
+      zWidth: '480px',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
     this.showProgressBar = false;
     dialogRefSuccess.afterClosed().subscribe((result) => {
       let abhaData = data.ABHAProfile;
@@ -281,15 +282,15 @@ export class AbhaEnterOtpComponentComponent {
 
   displayAbhaNumberOnVerify(abhaDetails: any, token: any) {
     console.log("Abha details response - ", abhaDetails);
-    const dialogRefSuccess = this.dialog.open(
-      AbhaVerifySuccessComponentComponent,
-      {
-        height: '370px',
-        width: '480px',
-        disableClose: true,
-        data: { abhaResponse: abhaDetails, xToken: token, loginHint: this.loginHint }
-      },
-    );
+    const dialogRefSuccess = this.dialog.create({
+      zContent: AbhaVerifySuccessComponentComponent,
+      zData: { abhaResponse: abhaDetails, xToken: token, loginHint: this.loginHint },
+      zWidth: '480px',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
     this.showProgressBar = false;
     dialogRefSuccess.afterClosed().subscribe((result) => {
       if (result) {

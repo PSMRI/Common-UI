@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
@@ -40,8 +40,8 @@ export class AbhaMobileComponentComponent {
 
   constructor(
     private fb: FormBuilder,
-    public dialogSucRef: MatDialogRef<AbhaMobileComponentComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    public dialogSucRef: ZardDialogRef<AbhaMobileComponentComponent>,
+    @Inject(Z_MODAL_DATA) public data: any,
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,

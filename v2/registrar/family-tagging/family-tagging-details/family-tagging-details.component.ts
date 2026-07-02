@@ -19,8 +19,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
-import { Component, DoCheck, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  Component,
+  DoCheck,
+  OnDestroy,
+  OnInit,
+  ViewContainerRef,
+} from '@angular/core';
+import { ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
@@ -128,7 +134,8 @@ export class FamilyTaggingDetailsComponent
   isEnableES: boolean = false;
 
   constructor(
-    private dialog: MatDialog,
+    private dialog: ZardDialogService,
+    private viewContainerRef: ViewContainerRef,
     public httpServiceService: HttpServiceService,
     private router: Router,
     private confirmationService: ConfirmationService,
@@ -263,18 +270,24 @@ export class FamilyTaggingDetailsComponent
   }
 
   CreateFamilyDialog() {
-    const matDialogRef: MatDialogRef<CreateFamilyTaggingComponent> =
-      this.dialog.open(CreateFamilyTaggingComponent, {
-        width: '60%',
-        disableClose: true,
-        data: {
-          benFamilyName: this.benFamilyName,
-          benFamilyID: this.benFamilyId,
-          benRegId: this.beneficiaryRegID,
-          beneficiaryName: this.beneficiaryName,
-          benVillageId: this.benVillageId,
-        },
-      });
+    const matDialogRef = this.dialog.create<
+      CreateFamilyTaggingComponent,
+      unknown
+    >({
+      zContent: CreateFamilyTaggingComponent,
+      zData: {
+        benFamilyName: this.benFamilyName,
+        benFamilyID: this.benFamilyId,
+        benRegId: this.beneficiaryRegID,
+        beneficiaryName: this.beneficiaryName,
+        benVillageId: this.benVillageId,
+      },
+      zWidth: '60%',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
     matDialogRef.afterClosed().subscribe(
       (result) => {
         if (result) {
@@ -332,20 +345,21 @@ export class FamilyTaggingDetailsComponent
   }
 
   openSearchFamily() {
-    const matDialogRef: MatDialogRef<SearchFamilyComponent> = this.dialog.open(
-      SearchFamilyComponent,
-      {
-        width: '60%',
-        disableClose: true,
-        data: {
-          benSurname: this.benFamilyName,
-          benStateId: this.benStateId,
-          benDistrictId: this.benDistrictId,
-          benBlockId: this.benBlockId,
-          benVillageId: this.benVillageId,
-        },
+    const matDialogRef = this.dialog.create<SearchFamilyComponent, unknown>({
+      zContent: SearchFamilyComponent,
+      zData: {
+        benSurname: this.benFamilyName,
+        benStateId: this.benStateId,
+        benDistrictId: this.benDistrictId,
+        benBlockId: this.benBlockId,
+        benVillageId: this.benVillageId,
       },
-    );
+      zWidth: '60%',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
     matDialogRef.afterClosed().subscribe((result: any) => {
       if (result !== null && result !== undefined) {
         this.familySearchList = result.familyDetails;
@@ -414,11 +428,10 @@ export class FamilyTaggingDetailsComponent
   }
 
   openFamilyTagDialog(isEdit: any, familyDetails: any, familyMembersList: any) {
-    const matDialogRef: MatDialogRef<EditFamilyTaggingComponent> =
-      this.dialog.open(EditFamilyTaggingComponent, {
-        width: '70%',
-        disableClose: true,
-        data: {
+    const matDialogRef = this.dialog.create<EditFamilyTaggingComponent, unknown>(
+      {
+        zContent: EditFamilyTaggingComponent,
+        zData: {
           isEdit: isEdit,
           familyData: familyMembersList,
           beneficiaryRegID: this.beneficiaryRegID,
@@ -426,7 +439,13 @@ export class FamilyTaggingDetailsComponent
           headInFamily: familyDetails.familyHeadName,
           beneficiaryName: this.beneficiaryName,
         },
-      });
+        zWidth: '70%',
+        zMaskClosable: false,
+        zHideFooter: true,
+        zClosable: false,
+        zViewContainerRef: this.viewContainerRef,
+      },
+    );
 
     matDialogRef.afterClosed().subscribe((result) => {
       if (result) {

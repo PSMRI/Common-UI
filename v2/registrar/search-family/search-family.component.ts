@@ -27,10 +27,7 @@ import {
   HostListener,
   DoCheck,
 } from '@angular/core';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
@@ -107,13 +104,13 @@ export class SearchFamilyComponent implements OnInit, DoCheck {
     private confirmationService: ConfirmationService,
     private formBuilder: FormBuilder,
     public httpServiceService: HttpServiceService,
-    public matDialogRef: MatDialogRef<SearchFamilyComponent>,
+    public matDialogRef: ZardDialogRef<SearchFamilyComponent>,
     public commonService: CommonService,
     private router: Router,
     private registrarService: RegistrarService,
     private changeDetectorRef: ChangeDetectorRef,
     private familyTaggingService: FamilyTaggingService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(Z_MODAL_DATA) public data: any
   ) {}
 
   ngOnInit() {

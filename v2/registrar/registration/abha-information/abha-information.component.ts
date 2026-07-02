@@ -1,7 +1,7 @@
-import { Component, Injector, Input } from '@angular/core';
+import { Component, Injector, Input, ViewContainerRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { RegistrarService } from '../../services/registrar.service';
-import { MatDialog } from '@angular/material/dialog';
+import { ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { HealthIdDisplayModalComponent } from '../../abha-components/health-id-display-modal/health-id-display-modal.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
@@ -52,7 +52,8 @@ export class AbhaInformationComponent {
   constructor(
     private router: Router,
     private registrarService: RegistrarService,
-    private dialog: MatDialog,
+    private dialog: ZardDialogService,
+    private viewContainerRef: ViewContainerRef,
     private confirmationService: ConfirmationService,
     private httpServiceService: HttpServiceService,
     private languageComponent: SetLanguageComponent,
@@ -113,8 +114,12 @@ export class AbhaInformationComponent {
     this.registrarService.getHealthIdDetails(reqObj).subscribe(
       (res: any) => {
         if (res.statusCode === 200) {
-          this.dialog.open(HealthIdDisplayModalComponent, {
-            data: { dataList: res },
+          this.dialog.create({
+            zContent: HealthIdDisplayModalComponent,
+            zData: { dataList: res },
+            zHideFooter: true,
+            zClosable: false,
+            zViewContainerRef: this.viewContainerRef,
           });
         } else {
           this.confirmationService.alert(
@@ -187,18 +192,27 @@ export class AbhaInformationComponent {
   }
 
   healthIdSearch() {
-    const dialog = this.dialog.open(AbhaConsentFormComponent, {
-      height: 'auto',
-      width: 'auto',
-      disableClose: true
+    const dialog = this.dialog.create<AbhaConsentFormComponent, unknown>({
+      zContent: AbhaConsentFormComponent,
+      zWidth: 'auto',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
     dialog.afterClosed().subscribe(res => {
       console.log("download consent after response -", res);
       if (res) {
-        const dialogRef = this.dialog.open(DownloadSearchAbhaComponent, {
-          height: '330px',
-          width: '500px',
-          disableClose: true,
+        const dialogRef = this.dialog.create<
+          DownloadSearchAbhaComponent,
+          unknown
+        >({
+          zContent: DownloadSearchAbhaComponent,
+          zWidth: '500px',
+          zMaskClosable: false,
+          zHideFooter: true,
+          zClosable: false,
+          zViewContainerRef: this.viewContainerRef,
         });
         dialogRef.afterClosed().subscribe((result) => {
           if (result) {
@@ -225,18 +239,24 @@ export class AbhaInformationComponent {
   }
 
   generateAbhaCard() {
-    const dialogRef = this.dialog.open(AbhaConsentFormComponent, {
-      height: 'auto',
-      width: 'auto',
-      disableClose: true
+    const dialogRef = this.dialog.create<AbhaConsentFormComponent, unknown>({
+      zContent: AbhaConsentFormComponent,
+      zWidth: 'auto',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
     dialogRef.afterClosed().subscribe(res => {
       console.log("consent after response -", res);
       if (res) {
-        this.dialog.open(GenerateAbhaComponentComponent, {
-          height: '340px',
-          width: '500px',
-          disableClose: true,
+        this.dialog.create({
+          zContent: GenerateAbhaComponentComponent,
+          zWidth: '500px',
+          zMaskClosable: false,
+          zHideFooter: true,
+          zClosable: false,
+          zViewContainerRef: this.viewContainerRef,
         });
       }
     });

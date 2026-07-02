@@ -28,7 +28,7 @@ import {
   FormControl,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogRef } from 'Common-UI/v2/ui/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { CommonService } from 'src/app/app-modules/core/services/common-services.service';
@@ -118,7 +118,7 @@ export class SearchDialogComponent implements OnInit, DoCheck {
 
   constructor(
     private confirmationService: ConfirmationService,
-    public matDialogRef: MatDialogRef<SearchDialogComponent>,
+    public matDialogRef: ZardDialogRef<SearchDialogComponent>,
     public commonService: CommonService,
     private fb: FormBuilder,
     private httpServiceService: HttpServiceService,

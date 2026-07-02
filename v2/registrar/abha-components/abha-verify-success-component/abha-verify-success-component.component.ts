@@ -20,8 +20,8 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject, ViewContainerRef } from '@angular/core';
+import { ZardDialogRef, Z_MODAL_DATA, ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleCheck, lucideX } from '@ng-icons/lucide';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
@@ -47,9 +47,10 @@ export class AbhaVerifySuccessComponentComponent {
   showProgressBar = false;
 
   constructor(
-    public dialogSucRef: MatDialogRef<AbhaVerifySuccessComponentComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialog: MatDialog,
+    public dialogSucRef: ZardDialogRef<AbhaVerifySuccessComponentComponent>,
+    @Inject(Z_MODAL_DATA) public data: any,
+    private dialog: ZardDialogService,
+    private viewContainerRef: ViewContainerRef,
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService
@@ -100,10 +101,13 @@ export class AbhaVerifySuccessComponentComponent {
   }
 
   displayAbhaCard(png: any) {
-    let matDialogRef = this.dialog.open(DisplayAbhaCardComponent, {
-      height: 'auto',
-      width: 'auto',
-      data: { png: png }
+    let matDialogRef = this.dialog.create({
+      zContent: DisplayAbhaCardComponent,
+      zData: { png: png },
+      zWidth: 'auto',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
   }
 

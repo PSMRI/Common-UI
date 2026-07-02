@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ViewContainerRef } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import * as moment from 'moment';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { ConsentFormComponent } from './consent-form/consent-form.component';
 import { SessionStorageService } from '../services/session-storage.service';
 import { NgIf } from '@angular/common';
@@ -59,7 +59,8 @@ export class RegistrationComponent {
     private httpServiceService: HttpServiceService,
     private sessionstorage:SessionStorageService,
     private router: Router,
-    private dialog: MatDialog, ){
+    private dialog: ZardDialogService,
+    private viewContainerRef: ViewContainerRef, ){
     this.mainForm = this.fb.group({
       // personalInfoForm: this.fb.group({}),
       personalInfoForm: this.fb.group({
@@ -197,14 +198,13 @@ export class RegistrationComponent {
 
   openConsent() {
     if (this.patientRevisit === false) {
-      const mdDialogRef: MatDialogRef<ConsentFormComponent> = this.dialog.open(
-        ConsentFormComponent,
-        {
-          width: '50%',
-          height: '330px',
-          // disableClose: true,
-        },
-      );
+      const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
+        zContent: ConsentFormComponent,
+        zWidth: '50%',
+        zHideFooter: true,
+        zClosable: false,
+        zViewContainerRef: this.viewContainerRef,
+      });
       mdDialogRef.afterClosed().subscribe((consentProvided) => {
         this.consentGranted = consentProvided;
         this.registrarService.sendConsentStatus(consentProvided);

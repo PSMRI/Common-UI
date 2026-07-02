@@ -19,9 +19,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewContainerRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA, ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
@@ -70,9 +70,10 @@ export class DownloadSearchAbhaComponent {
   allowAuthIdCharacters: number = 0;
 
   constructor(
-    public dialogRef: MatDialogRef<DownloadSearchAbhaComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialog: MatDialog,
+    public dialogRef: ZardDialogRef<DownloadSearchAbhaComponent>,
+    @Inject(Z_MODAL_DATA) public data: any,
+    private dialog: ZardDialogService,
+    private viewContainerRef: ViewContainerRef,
     private fb: FormBuilder,
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
@@ -253,15 +254,18 @@ export class DownloadSearchAbhaComponent {
     } else if (loginHint === "abha-address" && loginMethod === "mobile") {
       loginMethod = "abha-mobile"
     }
-    const dialogRef = this.dialog.open(AbhaEnterOtpComponentComponent, {
-      height: '250px',
-      width: '420px',
-      data: {
+    const dialogRef = this.dialog.create({
+      zContent: AbhaEnterOtpComponentComponent,
+      zData: {
         txnId: txnId,
         loginMethod: loginMethod,
         loginHint: loginHint,
         aadharNumber: (this.abhaAuthMethodForm.controls['abhaAuthId'].value) ? this.abhaAuthMethodForm.controls['abhaAuthId'].value : (this.adhaarNumberForm.controls['part1'].value + this.adhaarNumberForm.controls['part2'].value + this.adhaarNumberForm.controls['part3'].value)
       },
+      zWidth: '420px',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
     this.dialogRef.afterClosed();
   }

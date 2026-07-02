@@ -20,8 +20,8 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject, ViewContainerRef } from '@angular/core';
+import { ZardDialogRef, Z_MODAL_DATA, ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCircleCheck, lucideX } from '@ng-icons/lucide';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
@@ -53,9 +53,10 @@ export class AbhaGenerationSuccessComponentComponent {
   mobileNumber: any;
 
   constructor(
-    public dialogSucRef: MatDialogRef<AbhaGenerationSuccessComponentComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialog: MatDialog,
+    public dialogSucRef: ZardDialogRef<AbhaGenerationSuccessComponentComponent>,
+    @Inject(Z_MODAL_DATA) public data: any,
+    private dialog: ZardDialogService,
+    private viewContainerRef: ViewContainerRef,
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService
@@ -102,10 +103,13 @@ export class AbhaGenerationSuccessComponentComponent {
 
   GivePageToMobileEnterOtp(){
     this.dialogSucRef.close();
-    let dialogRef = this.dialog.open(AbhaEnterMobileOtpComponentComponent, {
-      height: '250px',
-      width: '420px',
-      data: {txnId: this.txnId, mobileNumber: this.mobileNumber }
+    let dialogRef = this.dialog.create({
+      zContent: AbhaEnterMobileOtpComponentComponent,
+      zData: {txnId: this.txnId, mobileNumber: this.mobileNumber },
+      zWidth: '420px',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
     // dialogRef.close();
   }
@@ -144,11 +148,14 @@ export class AbhaGenerationSuccessComponentComponent {
   }
 
   displayAbhaCard(png: any){
-    let matDialogRef = this.dialog.open(DisplayAbhaCardComponent, {
-      height: "auto",
-      width: "auto",
-      disableClose: true,
-      data: {png: png}
+    let matDialogRef = this.dialog.create({
+      zContent: DisplayAbhaCardComponent,
+      zData: {png: png},
+      zWidth: "auto",
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
   }
 }
