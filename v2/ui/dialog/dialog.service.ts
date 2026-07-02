@@ -47,9 +47,16 @@ export class ZardDialogService {
   private overlay = inject(Overlay);
   private injector = inject(Injector);
   private platformId = inject(PLATFORM_ID);
+  private readonly openDialogs = new Set<ZardDialogRef>();
 
   create<T, U>(config: ZardDialogOptions<T, U>): ZardDialogRef<T> {
     return this.open<T, U>(config.zContent as ComponentType<T>, config);
+  }
+
+  /** Closes every currently-open dialog. Parity with MatDialog.closeAll(). */
+  closeAll(): void {
+    this.openDialogs.forEach(ref => ref.close());
+    this.openDialogs.clear();
   }
 
   private open<T, U>(componentOrTemplateRef: ContentType<T>, config: ZardDialogOptions<T, U>) {
@@ -68,6 +75,9 @@ export class ZardDialogService {
     const dialogRef = this.attachDialogContent<T, U>(componentOrTemplateRef, dialogContainer, overlayRef, config);
 
     dialogContainer.dialogRef = dialogRef;
+
+    this.openDialogs.add(dialogRef);
+    dialogRef.afterClosed().subscribe(() => this.openDialogs.delete(dialogRef));
 
     return dialogRef;
   }
