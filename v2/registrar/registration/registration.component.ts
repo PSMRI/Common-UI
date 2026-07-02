@@ -1,4 +1,4 @@
-import { Component, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ViewContainerRef } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -59,8 +59,8 @@ export class RegistrationComponent {
     private httpServiceService: HttpServiceService,
     private sessionstorage:SessionStorageService,
     private router: Router,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef, ){
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef, ){
     this.mainForm = this.fb.group({
       // personalInfoForm: this.fb.group({}),
       personalInfoForm: this.fb.group({

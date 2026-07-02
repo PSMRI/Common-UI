@@ -52,8 +52,8 @@ export class AbhaInformationComponent {
   constructor(
     private router: Router,
     private registrarService: RegistrarService,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private confirmationService: ConfirmationService,
     private httpServiceService: HttpServiceService,
     private languageComponent: SetLanguageComponent,

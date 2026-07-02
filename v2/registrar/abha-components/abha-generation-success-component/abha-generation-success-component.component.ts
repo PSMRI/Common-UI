@@ -55,8 +55,8 @@ export class AbhaGenerationSuccessComponentComponent {
   constructor(
     public dialogSucRef: ZardDialogRef<AbhaGenerationSuccessComponentComponent>,
     @Inject(Z_MODAL_DATA) public data: any,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService
@@ -103,7 +103,7 @@ export class AbhaGenerationSuccessComponentComponent {
 
   GivePageToMobileEnterOtp(){
     this.dialogSucRef.close();
-    let dialogRef = this.dialog.create({
+    this.dialog.create({
       zContent: AbhaEnterMobileOtpComponentComponent,
       zData: {txnId: this.txnId, mobileNumber: this.mobileNumber },
       zWidth: '420px',
@@ -148,7 +148,7 @@ export class AbhaGenerationSuccessComponentComponent {
   }
 
   displayAbhaCard(png: any){
-    let matDialogRef = this.dialog.create({
+    this.dialog.create({
       zContent: DisplayAbhaCardComponent,
       zData: {png: png},
       zWidth: "auto",

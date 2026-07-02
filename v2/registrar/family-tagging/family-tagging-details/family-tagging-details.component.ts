@@ -134,8 +134,8 @@ export class FamilyTaggingDetailsComponent
   isEnableES: boolean = false;
 
   constructor(
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     public httpServiceService: HttpServiceService,
     private router: Router,
     private confirmationService: ConfirmationService,

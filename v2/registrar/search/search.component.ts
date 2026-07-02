@@ -123,8 +123,8 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private httpServiceService: HttpServiceService,
     private confirmationService: ConfirmationService,
     private registrarService: RegistrarService,

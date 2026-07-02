@@ -49,8 +49,8 @@ export class AbhaVerifySuccessComponentComponent {
   constructor(
     public dialogSucRef: ZardDialogRef<AbhaVerifySuccessComponentComponent>,
     @Inject(Z_MODAL_DATA) public data: any,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService
@@ -101,7 +101,7 @@ export class AbhaVerifySuccessComponentComponent {
   }
 
   displayAbhaCard(png: any) {
-    let matDialogRef = this.dialog.create({
+    this.dialog.create({
       zContent: DisplayAbhaCardComponent,
       zData: { png: png },
       zWidth: 'auto',

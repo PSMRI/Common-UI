@@ -105,8 +105,8 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
     private datePipe: DatePipe,
-    private dialogMd: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialogMd: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private readonly sessionstorage: SessionStorageService
   ) {
     dialogRef.disableClose = true;
@@ -311,7 +311,7 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   }
 
   printHealthIDCard(data: any) {
-    const dialogRefValue = this.dialogMd.create({
+    this.dialogMd.create({
       zContent: DownloadSearchAbhaComponent,
       zData: {
         printCard: true,

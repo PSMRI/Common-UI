@@ -72,8 +72,8 @@ export class DownloadSearchAbhaComponent {
   constructor(
     public dialogRef: ZardDialogRef<DownloadSearchAbhaComponent>,
     @Inject(Z_MODAL_DATA) public data: any,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private fb: FormBuilder,
     public httpServiceService: HttpServiceService,
     private registrarService: RegistrarService,
@@ -254,7 +254,7 @@ export class DownloadSearchAbhaComponent {
     } else if (loginHint === "abha-address" && loginMethod === "mobile") {
       loginMethod = "abha-mobile"
     }
-    const dialogRef = this.dialog.create({
+    this.dialog.create({
       zContent: AbhaEnterOtpComponentComponent,
       zData: {
         txnId: txnId,

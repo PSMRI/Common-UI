@@ -75,7 +75,7 @@ export class OtherInformationComponent {
     private readonly fb: FormBuilder,
     private registrarService: RegistrarService,
     private readonly dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly viewContainerRef: ViewContainerRef,
   ) {}
 
   ngOnInit() {

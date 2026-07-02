@@ -67,8 +67,8 @@ export class GenerateAbhaComponentComponent {
     public dialogRef: ZardDialogRef<GenerateAbhaComponentComponent>,
     public httpServiceService: HttpServiceService,
     private fb: FormBuilder,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
   ) {}
@@ -133,7 +133,7 @@ export class GenerateAbhaComponentComponent {
   }
 
   routeToOtpPage(txnId: any) {
-    const dialogRef = this.dialog.create({
+    this.dialog.create({
       zContent: AbhaEnterOtpComponentComponent,
       zData: {
         txnId: txnId,

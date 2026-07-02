@@ -57,8 +57,8 @@ export class AbhaEnterOtpComponentComponent {
     @Inject(Z_MODAL_DATA) public data: any,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
-    private dialog: ZardDialogService,
-    private viewContainerRef: ViewContainerRef,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
   ) {
     dialogRef.disableClose = true;
   }
