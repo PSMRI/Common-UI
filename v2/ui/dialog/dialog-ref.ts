@@ -24,7 +24,7 @@ import type { OverlayRef } from '@angular/cdk/overlay';
 import { isPlatformBrowser } from '@angular/common';
 import { EventEmitter, Inject, PLATFORM_ID } from '@angular/core';
 
-import { filter, fromEvent, Subject, takeUntil } from 'rxjs';
+import { filter, fromEvent, Observable, Subject, takeUntil } from 'rxjs';
 
 import type { ZardDialogComponent, ZardDialogOptions } from './dialog.component';
 
@@ -35,6 +35,7 @@ const enum eTriggerAction {
 
 export class ZardDialogRef<T = any, R = any, U = any> {
   private destroy$ = new Subject<void>();
+  private readonly afterClosed$ = new Subject<R | undefined>();
   private isClosing = false;
   protected result?: R;
   componentInstance: T | null = null;
@@ -90,7 +91,19 @@ export class ZardDialogRef<T = any, R = any, U = any> {
         this.destroy$.next();
         this.destroy$.complete();
       }
+
+      this.afterClosed$.next(this.result);
+      this.afterClosed$.complete();
     }, 150);
+  }
+
+  /**
+   * Emits the close result once, after the dialog has closed, then completes.
+   * Mirrors MatDialogRef.afterClosed() so callers migrating off Material keep
+   * the `create(...).afterClosed().subscribe(result => ...)` pattern unchanged.
+   */
+  afterClosed(): Observable<R | undefined> {
+    return this.afterClosed$.asObservable();
   }
 
   private trigger(action: eTriggerAction) {
