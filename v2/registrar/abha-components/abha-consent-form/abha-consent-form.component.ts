@@ -22,7 +22,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogRef } from 'Common-UI/v2/ui/dialog';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
 import { SessionStorageService } from '../../services/session-storage.service';
@@ -56,7 +56,7 @@ export class AbhaConsentFormComponent {
   userName = this.sessionstorage.getItem('userName');
 
   constructor(
-    public dialogRef: MatDialogRef<AbhaConsentFormComponent>,
+    public dialogRef: ZardDialogRef<AbhaConsentFormComponent>,
     private sessionstorage: SessionStorageService,
   ) {}
 

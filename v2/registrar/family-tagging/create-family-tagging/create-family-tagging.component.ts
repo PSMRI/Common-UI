@@ -26,7 +26,7 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { NgIf, NgFor } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
@@ -82,13 +82,13 @@ export class CreateFamilyTaggingComponent implements OnInit, DoCheck {
   countryId = 1;
 
   constructor(
-    public matDialogRef: MatDialogRef<CreateFamilyTaggingComponent>,
+    public matDialogRef: ZardDialogRef<CreateFamilyTaggingComponent>,
     public httpServiceService: HttpServiceService,
     private familyTaggingService: FamilyTaggingService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
     private sessionstorage: SessionStorageService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Inject(Z_MODAL_DATA) public data: any,
   ) {}
 
   ngOnInit() {

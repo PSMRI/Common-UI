@@ -21,7 +21,7 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
@@ -48,10 +48,9 @@ export class DisplayAbhaCardComponent {
   currentLanguageSet: any;
 
   constructor(
-    public dialogRef: MatDialogRef<DisplayAbhaCardComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    public dialogRef: ZardDialogRef<DisplayAbhaCardComponent>,
+    @Inject(Z_MODAL_DATA) public data: any,
     public httpServiceService: HttpServiceService,
-    private dialog: MatDialog,
     public sanitizer: DomSanitizer,
     private confirmationService: ConfirmationService,
   ) {

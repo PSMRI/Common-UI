@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { RegistrarService } from '../../services/registrar.service';
 import { RdDeviceService } from '../../services/rddevice.service';
@@ -50,13 +50,12 @@ export class BiometricAuthenticationComponent implements OnInit {
   currentLanguageSet: any;
 
   constructor(
-    public matDialogRef: MatDialogRef<BiometricAuthenticationComponent>,
+    public matDialogRef: ZardDialogRef<BiometricAuthenticationComponent>,
     private rddeviceService: RdDeviceService,
     private registrarService: RegistrarService,
-    private dialog: MatDialog,
     private confirmationService: ConfirmationService,
     public httpServiceService: HttpServiceService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    @Inject(Z_MODAL_DATA) public data: any,
   ) {}
 
   ngOnInit() {

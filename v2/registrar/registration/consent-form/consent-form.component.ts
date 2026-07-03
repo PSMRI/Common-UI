@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
@@ -40,10 +40,10 @@ export class ConsentFormComponent implements OnInit {
   currentLanguageSet: any;
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: Consent,
+    @Inject(Z_MODAL_DATA) public data: Consent,
     private router: Router,
     public httpServiceService: HttpServiceService,
-    public matDialogRef: MatDialogRef<ConsentFormComponent>,
+    public matDialogRef: ZardDialogRef<ConsentFormComponent>,
   ) {}
 
   ngOnInit(): void {

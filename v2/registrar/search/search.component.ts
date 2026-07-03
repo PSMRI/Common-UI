@@ -27,10 +27,11 @@ import {
   DoCheck,
   AfterViewChecked,
   OnDestroy,
+  ViewContainerRef,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { SearchDialogComponent } from '../search-dialog/search-dialog.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import {
   ConfirmationService,
@@ -122,7 +123,8 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
-    private dialog: MatDialog,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private httpServiceService: HttpServiceService,
     private confirmationService: ConfirmationService,
     private registrarService: RegistrarService,
@@ -400,8 +402,12 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
       data.benObject.abhaDetails.length > 0
     ) 
     {
-      this.dialog.open(HealthIdDisplayModalComponent, {
-        data: { dataList: data.benObject.abhaDetails[0], search: true },
+      this.dialog.create({
+        zContent: HealthIdDisplayModalComponent,
+        zData: { dataList: data.benObject.abhaDetails[0], search: true },
+        zHideFooter: true,
+        zClosable: false,
+        zViewContainerRef: this.viewContainerRef,
       });
     } else
       this.confirmationService.alert(
@@ -575,13 +581,14 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
   }
 
   openSearchDialog() {
-  const mdDialogRef: MatDialogRef<SearchDialogComponent> = this.dialog.open(
-    SearchDialogComponent,
-    {
-      width: '60%',
-      disableClose: false,
-    },
-  );
+  const mdDialogRef = this.dialog.create<SearchDialogComponent, unknown>({
+    zContent: SearchDialogComponent,
+    zWidth: '60%',
+    zMaskClosable: true,
+    zHideFooter: true,
+    zClosable: false,
+    zViewContainerRef: this.viewContainerRef,
+  });
 
   mdDialogRef.afterClosed().subscribe((result) => {
     if (result) {

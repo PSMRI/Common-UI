@@ -36,6 +36,12 @@ const enum eTriggerAction {
 export class ZardDialogRef<T = any, R = any, U = any> {
   private destroy$ = new Subject<void>();
   private readonly afterClosed$ = new Subject<R | undefined>();
+  /**
+   * When true, backdrop clicks and the Escape key do not close the dialog.
+   * Parity with MatDialogRef.disableClose so dialogs migrated off Material can
+   * keep marking themselves non-dismissible.
+   */
+  disableClose = false;
   private isClosing = false;
   protected result?: R;
   componentInstance: T | null = null;
@@ -53,7 +59,9 @@ export class ZardDialogRef<T = any, R = any, U = any> {
       this.overlayRef
         .outsidePointerEvents()
         .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.close());
+        .subscribe(() => {
+          if (!this.disableClose) this.close();
+        });
     }
 
     if (isPlatformBrowser(this.platformId)) {
@@ -62,7 +70,9 @@ export class ZardDialogRef<T = any, R = any, U = any> {
           filter(event => event.key === 'Escape'),
           takeUntil(this.destroy$),
         )
-        .subscribe(() => this.close());
+        .subscribe(() => {
+          if (!this.disableClose) this.close();
+        });
     }
   }
 

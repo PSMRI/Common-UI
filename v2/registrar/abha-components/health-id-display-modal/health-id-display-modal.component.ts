@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
-import { Component, DoCheck, Inject, OnInit } from '@angular/core';
+import { Component, DoCheck, Inject, OnInit, ViewContainerRef } from '@angular/core';
 import {
   FormGroup,
   FormBuilder,
@@ -28,10 +28,10 @@ import {
 } from '@angular/forms';
 import { DatePipe, NgIf, NgFor } from '@angular/common';
 import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-} from '@angular/material/dialog';
+  ZardDialogRef,
+  Z_MODAL_DATA,
+  ZardDialogService,
+} from 'Common-UI/v2/ui/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -98,14 +98,15 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   healthIDArray: any[] = [];
 
   constructor(
-    public dialogRef: MatDialogRef<HealthIdDisplayModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public input: any,
+    public dialogRef: ZardDialogRef<HealthIdDisplayModalComponent>,
+    @Inject(Z_MODAL_DATA) public input: any,
     public httpServiceService: HttpServiceService,
     private formBuilder: FormBuilder,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
     private datePipe: DatePipe,
-    private dialogMd: MatDialog,
+    private readonly dialogMd: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private readonly sessionstorage: SessionStorageService
   ) {
     dialogRef.disableClose = true;
@@ -310,14 +311,17 @@ export class HealthIdDisplayModalComponent implements OnInit, DoCheck {
   }
 
   printHealthIDCard(data: any) {
-    const dialogRefValue = this.dialogMd.open(DownloadSearchAbhaComponent, {
-      height: '330px',
-      width: '500px',
-      disableClose: true,
-      data: {
+    this.dialogMd.create({
+      zContent: DownloadSearchAbhaComponent,
+      zData: {
         printCard: true,
         healthId: data.healthIdNumber,
       },
+      zWidth: '500px',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
   }
 }
