@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewContainerRef } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -30,7 +30,7 @@ import {
 } from '@angular/forms';
 import { RegistrarService } from '../../services/registrar.service';
 import { Subscription } from 'rxjs';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { ConsentFormComponent } from '../consent-form/consent-form.component';
 import { NgFor, NgIf } from '@angular/common';
 import { ZardFormImports } from 'Common-UI/v2/ui/form';
@@ -74,7 +74,8 @@ export class OtherInformationComponent {
   constructor(
     private readonly fb: FormBuilder,
     private registrarService: RegistrarService,
-    private readonly dialog: MatDialog,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
   ) {}
 
   ngOnInit() {
@@ -151,14 +152,14 @@ export class OtherInformationComponent {
 
   openConsent() {
     if (this.patientRevisit === false) {
-      const matDialogRef: MatDialogRef<ConsentFormComponent> = this.dialog.open(
-        ConsentFormComponent,
-        {
-          width: '650px',
-          height: '700px',
-          disableClose: true,
-        },
-      );
+      const matDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
+        zContent: ConsentFormComponent,
+        zWidth: '650px',
+        zMaskClosable: false,
+        zHideFooter: true,
+        zClosable: false,
+        zViewContainerRef: this.viewContainerRef,
+      });
       matDialogRef.afterClosed().subscribe((consentProvided) => {
         this.consentGranted = consentProvided;
         this.registrarService.sendConsentStatus(consentProvided);

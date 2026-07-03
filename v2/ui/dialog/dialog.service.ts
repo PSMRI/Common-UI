@@ -47,9 +47,16 @@ export class ZardDialogService {
   private overlay = inject(Overlay);
   private injector = inject(Injector);
   private platformId = inject(PLATFORM_ID);
+  private readonly openDialogs = new Set<ZardDialogRef>();
 
   create<T, U>(config: ZardDialogOptions<T, U>): ZardDialogRef<T> {
     return this.open<T, U>(config.zContent as ComponentType<T>, config);
+  }
+
+  /** Closes every currently-open dialog. Parity with MatDialog.closeAll(). */
+  closeAll(): void {
+    this.openDialogs.forEach(ref => ref.close());
+    this.openDialogs.clear();
   }
 
   private open<T, U>(componentOrTemplateRef: ContentType<T>, config: ZardDialogOptions<T, U>) {
@@ -68,6 +75,9 @@ export class ZardDialogService {
     const dialogRef = this.attachDialogContent<T, U>(componentOrTemplateRef, dialogContainer, overlayRef, config);
 
     dialogContainer.dialogRef = dialogRef;
+
+    this.openDialogs.add(dialogRef);
+    dialogRef.afterClosed().subscribe(() => this.openDialogs.delete(dialogRef));
 
     return dialogRef;
   }
@@ -135,8 +145,12 @@ export class ZardDialogService {
   }
 
   private createInjector<T, U>(dialogRef: ZardDialogRef<T>, config: ZardDialogOptions<T, U>) {
+    // Resolve the content component against the caller's injector when a
+    // ViewContainerRef is supplied, so route/feature-scoped providers (not just
+    // root) are available inside the dialog. Falls back to the service's root
+    // injector. Mirrors MatDialog's viewContainerRef behaviour.
     return Injector.create({
-      parent: this.injector,
+      parent: config.zViewContainerRef?.injector ?? this.injector,
       providers: [
         { provide: ZardDialogRef, useValue: dialogRef },
         { provide: Z_MODAL_DATA, useValue: config.zData },

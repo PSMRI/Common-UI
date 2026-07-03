@@ -24,7 +24,7 @@ import type { OverlayRef } from '@angular/cdk/overlay';
 import { isPlatformBrowser } from '@angular/common';
 import { EventEmitter, Inject, PLATFORM_ID } from '@angular/core';
 
-import { filter, fromEvent, Subject, takeUntil } from 'rxjs';
+import { filter, fromEvent, Observable, Subject, takeUntil } from 'rxjs';
 
 import type { ZardDialogComponent, ZardDialogOptions } from './dialog.component';
 
@@ -35,6 +35,13 @@ const enum eTriggerAction {
 
 export class ZardDialogRef<T = any, R = any, U = any> {
   private destroy$ = new Subject<void>();
+  private readonly afterClosed$ = new Subject<R | undefined>();
+  /**
+   * When true, backdrop clicks and the Escape key do not close the dialog.
+   * Parity with MatDialogRef.disableClose so dialogs migrated off Material can
+   * keep marking themselves non-dismissible.
+   */
+  disableClose = false;
   private isClosing = false;
   protected result?: R;
   componentInstance: T | null = null;
@@ -52,7 +59,9 @@ export class ZardDialogRef<T = any, R = any, U = any> {
       this.overlayRef
         .outsidePointerEvents()
         .pipe(takeUntil(this.destroy$))
-        .subscribe(() => this.close());
+        .subscribe(() => {
+          if (!this.disableClose) this.close();
+        });
     }
 
     if (isPlatformBrowser(this.platformId)) {
@@ -61,7 +70,9 @@ export class ZardDialogRef<T = any, R = any, U = any> {
           filter(event => event.key === 'Escape'),
           takeUntil(this.destroy$),
         )
-        .subscribe(() => this.close());
+        .subscribe(() => {
+          if (!this.disableClose) this.close();
+        });
     }
   }
 
@@ -90,7 +101,19 @@ export class ZardDialogRef<T = any, R = any, U = any> {
         this.destroy$.next();
         this.destroy$.complete();
       }
+
+      this.afterClosed$.next(this.result);
+      this.afterClosed$.complete();
     }, 150);
+  }
+
+  /**
+   * Emits the close result once, after the dialog has closed, then completes.
+   * Mirrors MatDialogRef.afterClosed() so callers migrating off Material keep
+   * the `create(...).afterClosed().subscribe(result => ...)` pattern unchanged.
+   */
+  afterClosed(): Observable<R | undefined> {
+    return this.afterClosed$.asObservable();
   }
 
   private trigger(action: eTriggerAction) {

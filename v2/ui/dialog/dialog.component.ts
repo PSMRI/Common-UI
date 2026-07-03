@@ -35,13 +35,14 @@ import {
   computed,
   ElementRef,
   type EmbeddedViewRef,
+  EnvironmentInjector,
   type EventEmitter,
   inject,
   output,
   type TemplateRef,
   type Type,
   viewChild,
-  type ViewContainerRef,
+  ViewContainerRef,
 } from '@angular/core';
 
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -106,6 +107,7 @@ export class ZardDialogOptions<T, U> {
     }
 
     <main class="flex flex-col space-y-4">
+      <ng-container #contentAnchor />
       <ng-template cdkPortalOutlet />
 
       @if (isStringContent) {
@@ -188,6 +190,9 @@ export class ZardDialogComponent<T, U> extends BasePortalOutlet {
   protected readonly isStringContent = typeof this.config.zContent === 'string';
 
   readonly portalOutlet = viewChild.required(CdkPortalOutlet);
+  readonly contentAnchor = viewChild.required('contentAnchor', {
+    read: ViewContainerRef,
+  });
 
   okTriggered = output<void>();
   cancelTriggered = output<void>();
@@ -201,10 +206,22 @@ export class ZardDialogComponent<T, U> extends BasePortalOutlet {
   }
 
   attachComponentPortal<T>(portal: ComponentPortal<T>): ComponentRef<T> {
-    if (this.portalOutlet()?.hasAttached()) {
+    const viewContainerRef = this.contentAnchor();
+    if (viewContainerRef.length > 0) {
       throw new Error('Attempting to attach modal content after content is already attached');
     }
-    return this.portalOutlet()?.attachComponentPortal(portal);
+    // Create the content with an explicit environmentInjector taken from the
+    // caller's injector (whose parent is the opener's ViewContainerRef injector),
+    // so route/feature-scoped providers (DoctorService, MasterdataService, …)
+    // resolve inside the dialog. Delegating to CdkPortalOutlet.attachComponentPortal
+    // instead forces `ngModuleRef` to the overlay's (root) environment injector,
+    // which drops those providers and throws NG0201.
+    const injector = portal.injector ?? viewContainerRef.injector;
+    const environmentInjector = injector.get(EnvironmentInjector);
+    return viewContainerRef.createComponent(portal.component, {
+      injector,
+      environmentInjector,
+    });
   }
 
   attachTemplatePortal<C>(portal: TemplatePortal<C>): EmbeddedViewRef<C> {

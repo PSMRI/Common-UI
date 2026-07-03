@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 import { Component, DoCheck, Inject, OnInit, ViewChild } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { NgIf, NgFor, TitleCasePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -90,8 +90,8 @@ export class EditFamilyTaggingComponent implements OnInit, DoCheck {
 
   constructor(
     public httpServiceService: HttpServiceService,
-    public matDialogRef: MatDialogRef<EditFamilyTaggingComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
+    public matDialogRef: ZardDialogRef<EditFamilyTaggingComponent>,
+    @Inject(Z_MODAL_DATA) public data: any,
     private confirmationService: ConfirmationService,
     private familyTaggingService: FamilyTaggingService,
     private sessionstorage: SessionStorageService,

@@ -19,9 +19,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
-import { Component } from '@angular/core';
+import { Component, ViewContainerRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ZardDialogRef, ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { RegistrarService } from '../../services/registrar.service';
@@ -64,10 +64,11 @@ export class GenerateAbhaComponentComponent {
   maskedAadharNumber: string = '';
 
   constructor(
-    public dialogRef: MatDialogRef<GenerateAbhaComponentComponent>,
+    public dialogRef: ZardDialogRef<GenerateAbhaComponentComponent>,
     public httpServiceService: HttpServiceService,
     private fb: FormBuilder,
-    private dialog: MatDialog,
+    private readonly dialog: ZardDialogService,
+    private readonly viewContainerRef: ViewContainerRef,
     private registrarService: RegistrarService,
     private confirmationService: ConfirmationService,
   ) {}
@@ -132,25 +133,30 @@ export class GenerateAbhaComponentComponent {
   }
 
   routeToOtpPage(txnId: any) {
-    const dialogRef = this.dialog.open(AbhaEnterOtpComponentComponent, {
-      height: '250px',
-      width: '420px',
-      data: {
+    this.dialog.create({
+      zContent: AbhaEnterOtpComponentComponent,
+      zData: {
         txnId: txnId,
         healthIdMode: this.modeofAbhaHealthID,
         aadharNumber: this.aadharNumber
       },
+      zWidth: '420px',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
   }
 
   captureBioAuthentication() {
-    const matDialogRef: MatDialogRef<BiometricAuthenticationComponent> =
-      this.dialog.open(BiometricAuthenticationComponent, {
-        width: '500px',
-        height: '320px',
-        disableClose: true,
-        data: { aadharNumber: this.aadharNumber }
-      });
+    const matDialogRef = this.dialog.create<BiometricAuthenticationComponent, unknown>({
+      zContent: BiometricAuthenticationComponent,
+      zData: { aadharNumber: this.aadharNumber },
+      zWidth: '500px',
+      zMaskClosable: false,
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
     matDialogRef.afterClosed().subscribe((res) => {
       console.log("mat dialog close response: ", res)
       if(res){
@@ -160,14 +166,17 @@ export class GenerateAbhaComponentComponent {
   }
 
   mobileNumberCapturePage(pid: any) {
-    const dialogRef = this.dialog.open(AbhaMobileComponentComponent, {
-      height: '250px',
-      width: '420px',
-      data: {
+    const dialogRef = this.dialog.create({
+      zContent: AbhaMobileComponentComponent,
+      zData: {
         healthIdMode: this.modeofAbhaHealthID,
         pId: pid,
         aadharNumber: this.aadharNumber
       },
+      zWidth: '420px',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
     });
     dialogRef.afterClosed().subscribe((result) => {
     });
