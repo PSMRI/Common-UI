@@ -79,6 +79,8 @@ const COMPACT_MODE_WIDTH_THRESHOLD = 100;
       aria-controls="dropdown"
       [class]="triggerClasses()"
       [disabled]="zDisabled()"
+      [attr.aria-label]="ariaLabel()"
+      [attr.aria-labelledby]="ariaLabelledby()"
       [attr.aria-expanded]="isOpen()"
       [attr.aria-haspopup]="'listbox'"
       [attr.data-placeholder]="!zValue() ? '' : null"
@@ -154,6 +156,11 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
   readonly class = input<ClassValue>('');
   readonly zDisabled = input(false, { transform: booleanAttribute });
   readonly zLabel = input<string>('');
+  // Accessible name for the combobox trigger. Consumers set the native `aria-label` /
+  // `aria-labelledby` on <z-select>; we forward them to the inner button so screen readers
+  // announce it (a bare attribute on the host wouldn't reach the combobox role).
+  readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  readonly ariaLabelledby = input<string | null>(null, { alias: 'aria-labelledby' });
   readonly zMaxLabelCount = input<number>(1);
   readonly zMultiple = input<boolean>(false);
   readonly zPlaceholder = input<string>('Select an option...');
