@@ -1,6 +1,8 @@
 <div class="title info">
   <h4>Generate ABHA CARD</h4>
-  <mat-icon class="pull-right close-btn md-24" matDialogClose (click)="closeDialog()" mat-icon-button>close</mat-icon>
+  <button mat-icon-button type="button" aria-label="Close dialog" class="pull-right close-btn md-24" matDialogClose (click)="closeDialog()">
+    <mat-icon>close</mat-icon>
+  </button>
 </div>
 <br />
 <div class="col-xs-12 col-sm-12" style="overflow: hidden;" [formGroup]="abhaGenerateForm">
@@ -41,9 +43,11 @@
             (keydown.backspace)="moveToPrev($event, part2)"  style="text-align: center;"/>
         </mat-form-field>
      
-        <mat-icon class="eye-icon" (click)="toggleVisibility()" style="width: 25px; margin-bottom: -5px;">
-          {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
-        </mat-icon>
+        <button mat-icon-button type="button" aria-label="Toggle password visibility" class="eye-icon" (click)="toggleVisibility()" style="width: 25px; margin-bottom: -5px;">
+          <mat-icon>
+            {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
         <mat-error style="margin-top: -25px;" *ngIf="isInvalid"> Please enter a valid Aadhaar number</mat-error>
         
       </div>

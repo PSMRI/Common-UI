@@ -1,7 +1,8 @@
 <div class="title info">
     <h4 class="title"> {{ currentLanguageSet?.aBHACard}} </h4>
-    <mat-icon class="md-24 pull-right close-btn" style="margin-top: 12px;" matDialogClose (click)="closeDialog()"
-        mat-icon-button>close</mat-icon>
+    <button mat-icon-button type="button" aria-label="Close dialog" class="md-24 pull-right close-btn" style="margin-top: 12px;" matDialogClose (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+    </button>
 </div>
 <div class="overlay" *ngIf="showProgressBar">
     <div class="overlay-content">

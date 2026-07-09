@@ -1,8 +1,8 @@
 <div class="title info">
   <h4>{{ currentLanguageSet.searchAndDownloadAbha }}</h4>
-  <button class="pull-right close-btn"
+  <button mat-icon-button type="button" aria-label="Close dialog" class="pull-right close-btn"
     style="border: unset !important;background-color: unset !important; color: white;" matDialogClose
-    (click)="closeDialogAuth()" mat-icon-button>
+    (click)="closeDialogAuth()">
     <mat-icon class="md-24">close</mat-icon>
   </button>
 </div>
@@ -64,10 +64,12 @@
               aria-label="Third part of Aadhaar number" aria-describedby="aadhaar-format-hint" />
           </mat-form-field>
 
-          <mat-icon class="eye-icon" (click)="toggleVisibility()"
+          <button mat-icon-button type="button" aria-label="Toggle password visibility" class="eye-icon" (click)="toggleVisibility()"
             style="width: 25px; margin-bottom: -5px; margin-left: 15px;">
-            {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
-          </mat-icon>
+            <mat-icon>
+              {{ inputType === 'password' ? 'visibility_off' : 'visibility' }}
+            </mat-icon>
+          </button>
           <mat-error style="margin-top: -25px;" *ngIf="isInvalid"> Please enter a valid Aadhaar number</mat-error>
 
         </div>
