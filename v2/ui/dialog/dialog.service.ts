@@ -133,7 +133,12 @@ export class ZardDialogService {
           } as T,
         ),
       );
-    } else if (typeof componentOrTemplateRef !== 'string') {
+    } else if (componentOrTemplateRef != null && typeof componentOrTemplateRef !== 'string') {
+      // A dialog with no `zContent` (e.g. a title/description-only alert or
+      // confirm) has nothing to attach — render header/footer only. Without the
+      // null/undefined guard, `undefined` falls through to the component branch
+      // and `new ComponentPortal(undefined)` crashes in `getComponentDef` while
+      // reading `ɵcmp` off `undefined`.
       const injector = this.createInjector<T, U>(dialogRef, config);
       const contentRef = dialogContainer.attachComponentPortal<T>(
         new ComponentPortal(componentOrTemplateRef, config.zViewContainerRef, injector),
