@@ -24,7 +24,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 export const accordionVariants = cva('block');
 
-export const accordionItemVariants = cva('border-b');
+export const accordionItemVariants = cva('flex flex-col border-b');
 
 export const accordionTriggerVariants = cva(
   'flex flex-1 w-full items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50'
