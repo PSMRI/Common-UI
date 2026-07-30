@@ -521,8 +521,11 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
             takeUntilDestroyed(this.destroyRef),
           )
           .subscribe(() => {
-            this.isFocus.set(false);
+            // Close first: close() runs updateFocusWhenNormalMode() which would set isFocus
+            // back to true (since the dropdown is now closed). Clearing focus AFTER close
+            // ensures a click-away leaves no lingering active (blue) ring on the trigger.
             this.close();
+            this.isFocus.set(false);
           });
       } catch (error) {
         console.error('Error creating overlay:', error);
