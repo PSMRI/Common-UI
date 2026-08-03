@@ -124,9 +124,20 @@ export class LocationInformationComponent {
     const locationData: any = this.sessionstorage.getItem('locationData');
     this.locationDetails = JSON.parse(locationData);
     if (this.patientRevisit) {
-      this.locationInfoFormGroup.patchValue(this.revisitData);
+      // Edit/revisit mode: patch the beneficiary's saved location WITHOUT
+      // emitting, or the cascade valueChanges subscriptions fire onChangeLocation
+      // before the state/district/block/village master lists are loaded — which
+      // throws on `.find(undefined)` and issues location calls with `/undefined`
+      // IDs (401 → "session expired"). The real cascade is loaded below by
+      // loadLocationFromStorage() → loadState → loadDistrict → … using
+      // locationPatchDetails, so these patches only need to seed the form.
+      this.locationInfoFormGroup.patchValue(this.revisitData, {
+        emitEvent: false,
+      });
       this.locationPatchDetails = this.revisitData.i_bendemographics;
-      this.locationInfoFormGroup.patchValue(this.locationPatchDetails);
+      this.locationInfoFormGroup.patchValue(this.locationPatchDetails, {
+        emitEvent: false,
+      });
     }
     this.loadLocationFromStorage();
     console.log('location Form Data', this.formData);

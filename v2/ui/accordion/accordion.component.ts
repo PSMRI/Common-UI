@@ -25,6 +25,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   output,
@@ -170,7 +171,7 @@ export class ZardAccordionTriggerComponent {
   selector: 'z-accordion-content, [z-accordion-content]',
   template: `
     <div
-      class="overflow-hidden"
+      [class]="overflowVisible() ? 'overflow-visible' : 'overflow-hidden'"
       [attr.inert]="open() ? null : ''"
       [attr.aria-hidden]="open() ? null : 'true'">
       <div class="pb-4 pt-0">
@@ -196,6 +197,29 @@ export class ZardAccordionContentComponent {
   readonly class = input<ClassValue>('');
 
   readonly open = computed(() => this.item?.open() ?? false);
+
+  // Panel content is clipped (overflow-hidden) while it expands/collapses so the
+  // grid-rows height animation reveals it cleanly. Once fully open, switch to
+  // overflow-visible a beat later so overlays inside the panel — dropdowns,
+  // autocomplete suggestion lists — aren't cut off by the panel box. Reverts to
+  // hidden immediately on close so the collapse stays clean.
+  protected readonly overflowVisible = signal(false);
+  private overflowTimer: ReturnType<typeof setTimeout> | undefined;
+
+  constructor() {
+    effect(() => {
+      const isOpen = this.open();
+      clearTimeout(this.overflowTimer);
+      if (isOpen) {
+        this.overflowTimer = setTimeout(
+          () => this.overflowVisible.set(true),
+          220,
+        );
+      } else {
+        this.overflowVisible.set(false);
+      }
+    });
+  }
 
   protected readonly classes = computed(() =>
     mergeClasses(accordionContentVariants(), this.class())
