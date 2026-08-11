@@ -178,7 +178,10 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
           this.handleESSearchResponse(response);
         },
         (error: any) => {
-          this.confirmationService.alert(error, 'error');
+          this.confirmationService.alert(
+            error?.error?.errorMessage || error?.message || 'Something went wrong',
+            'error',
+          );
         }
       );
   }
@@ -220,7 +223,10 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
             this.handleESSearchResponse(response);
           },
           (error: any) => {
-            this.confirmationService.alert(error, 'error');
+            this.confirmationService.alert(
+            error?.error?.errorMessage || error?.message || 'Something went wrong',
+            'error',
+          );
           }
         );
     } else {
@@ -381,7 +387,10 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
             console.log('hi', JSON.stringify(beneficiaryList, null, 4));
           },
           (error) => {
-            this.confirmationService.alert(error, 'error');
+            this.confirmationService.alert(
+            error?.error?.errorMessage || error?.message || 'Something went wrong',
+            'error',
+          );
           },
         );
       } else {
@@ -554,7 +563,10 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
           else this.confirmationService.alert(result.status, 'warn');
         },
         (error) => {
-          this.confirmationService.alert(error, 'error');
+          this.confirmationService.alert(
+            error?.error?.errorMessage || error?.message || 'Something went wrong',
+            'error',
+          );
         },
       );
     }
@@ -614,7 +626,10 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
               console.log('ES Advanced Search Result:', JSON.stringify(response, null, 4));
             },
             (error) => {
-              this.confirmationService.alert(error, 'error');
+              this.confirmationService.alert(
+            error?.error?.errorMessage || error?.message || 'Something went wrong',
+            'error',
+          );
             },
           );
       } else {
@@ -639,7 +654,10 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
               console.log(JSON.stringify(beneficiaryList, null, 4));
             },
             (error) => {
-              this.confirmationService.alert(error, 'error');
+              this.confirmationService.alert(
+            error?.error?.errorMessage || error?.message || 'Something went wrong',
+            'error',
+          );
             },
           );
       }

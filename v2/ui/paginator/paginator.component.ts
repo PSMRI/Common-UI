@@ -71,6 +71,7 @@ import { mergeClasses } from '../utils/merge-classes';
           </div>
         }
         <z-pagination
+          class="mx-0 w-auto justify-end"
           [zPageIndex]="currentPage()"
           [zTotal]="totalPages()"
           (zPageIndexChange)="currentPage.set($event)"></z-pagination>
