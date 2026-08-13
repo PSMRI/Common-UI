@@ -376,7 +376,8 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
             if (!beneficiaryList || beneficiaryList.length <= 0) {
               this.resetWorklist();
               this.confirmationService.alert(
-                this.currentLanguageSet.alerts.info.beneficiarynotfound,
+                this.currentLanguageSet?.alerts?.info?.beneficiarynotfound ||
+                  'Beneficiary not found',
                 'info',
               );
             } else {
@@ -395,7 +396,8 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
         );
       } else {
         this.confirmationService.alert(
-          this.currentLanguageSet.alerts.info.phoneDetails,
+          this.currentLanguageSet?.alerts?.info?.phoneDetails ||
+            'Please enter the required search details',
           'info',
         );
       }
