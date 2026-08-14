@@ -618,7 +618,9 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
                 this.resetWorklist();
                 this.quicksearchTerm = null;
                 this.confirmationService.alert(
-                  this.currentLanguageSet.alerts.info.beneficiaryNotFound,
+                  this.currentLanguageSet?.alerts?.info?.beneficiarynotfound ||
+                    this.currentLanguageSet?.alerts?.info?.beneficiaryNotFound ||
+                    'Beneficiary not found',
                   'info',
                 );
               } else {
@@ -647,7 +649,9 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
                 this.resetWorklist();
                 this.quicksearchTerm = null;
                 this.confirmationService.alert(
-                  this.currentLanguageSet.alerts.info.beneficiaryNotFound,
+                  this.currentLanguageSet?.alerts?.info?.beneficiarynotfound ||
+                    this.currentLanguageSet?.alerts?.info?.beneficiaryNotFound ||
+                    'Beneficiary not found',
                   'info',
                 );
               } else {
