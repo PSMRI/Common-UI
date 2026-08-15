@@ -172,7 +172,35 @@ export class RegistrationComponent {
     return this.currentStep >= this.enabledStepKeys.length - 1;
   }
 
+  // Map a step key to its backing FormGroup so navigation/submit can check validity.
+  private stepFormGroup(key: string): FormGroup | null {
+    switch (key) {
+      case 'personal':
+        return this.personalInfoFormGroup;
+      case 'location':
+        return this.locationInfoFormGroup;
+      case 'other':
+        return this.otherInfoFormGroup;
+      case 'abha':
+        return this.abhaInfoFormGroup;
+      default:
+        return null;
+    }
+  }
+
   nextStep() {
+    // Block advancing while the current step has unfilled mandatory fields, and
+    // surface the errors (markAllAsTouched) so the required messages render.
+    const group = this.stepFormGroup(this.activeStepKey);
+    if (group && group.invalid) {
+      group.markAllAsTouched();
+      this.confirmationService.alert(
+        this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
+          'Please fill all the mandatory fields',
+        'info'
+      );
+      return;
+    }
     if (this.currentStep < this.enabledStepKeys.length - 1) {
       this.currentStep++;
     }
@@ -335,6 +363,17 @@ export class RegistrationComponent {
 
 
   submitBeneficiaryDetails() {
+    // Defensive guard: the Submit button is disabled while invalid, but never save
+    // a blank/partial beneficiary if it is reached programmatically.
+    if (this.mainForm.invalid) {
+      this.mainForm.markAllAsTouched();
+      this.confirmationService.alert(
+        this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
+          'Please fill all the mandatory fields',
+        'info'
+      );
+      return;
+    }
     console.log('registration data', this.mainForm);
     const newDate = this.dateFormatChange();
     const valueToSend = this.mainForm.value;

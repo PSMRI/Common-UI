@@ -81,21 +81,23 @@ export class OtherInformationComponent {
   ngOnInit() {
     console.log('this.otherInfoSubscription', this.otherInfoSubscription);
     this.formData.forEach((item: any) => {
+      // Attach Validators.required for isRequired fields (migration dropped this;
+      // see personal-information for the full explanation).
+      const validators = [];
+      if (item.isRequired) {
+        validators.push(Validators.required);
+      }
       if (item.fieldName && item.allowText) {
-        this.otherInfoFormGroup.addControl(
-          item.fieldName,
-          new FormControl(null, [
-            Validators.pattern(this.allowTextValidator(item.allowText)),
-            Validators.minLength(parseInt(item?.allowMin)),
-            Validators.maxLength(parseInt(item?.allowMax)),
-          ]),
-        );
-      } else {
-        this.otherInfoFormGroup.addControl(
-          item.fieldName,
-          new FormControl(null),
+        validators.push(
+          Validators.pattern(this.allowTextValidator(item.allowText)),
+          Validators.minLength(parseInt(item?.allowMin)),
+          Validators.maxLength(parseInt(item?.allowMax))
         );
       }
+      this.otherInfoFormGroup.addControl(
+        item.fieldName,
+        new FormControl(null, validators)
+      );
     });
     console.log('otherInfoFormGroup Data', this.otherInfoFormGroup);
     if (this.patientRevisit)
