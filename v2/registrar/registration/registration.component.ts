@@ -172,7 +172,6 @@ export class RegistrationComponent {
     return this.currentStep >= this.enabledStepKeys.length - 1;
   }
 
-  // Map a step key to its backing FormGroup so navigation/submit can check validity.
   private stepFormGroup(key: string): FormGroup | null {
     switch (key) {
       case 'personal':
@@ -189,10 +188,8 @@ export class RegistrationComponent {
   }
 
   nextStep() {
-    // Block advancing while the current step has unfilled mandatory fields, and
-    // surface the errors (markAllAsTouched) so the required messages render.
     const group = this.stepFormGroup(this.activeStepKey);
-    if (group && group.invalid) {
+    if (group?.invalid) {
       group.markAllAsTouched();
       this.confirmationService.alert(
         this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
@@ -363,8 +360,6 @@ export class RegistrationComponent {
 
 
   submitBeneficiaryDetails() {
-    // Defensive guard: the Submit button is disabled while invalid, but never save
-    // a blank/partial beneficiary if it is reached programmatically.
     if (this.mainForm.invalid) {
       this.mainForm.markAllAsTouched();
       this.confirmationService.alert(

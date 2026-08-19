@@ -104,10 +104,6 @@ export class PersonalInformationComponent {
     this.isEnableES = environment.isEnableES || false;
     this.fetchLanguageResponse();
     this.formData.forEach((item: any) => {
-      // A field flagged isRequired in the registration master config must get
-      // Validators.required. The migration dropped this — the label showed a red *
-      // (zRequired) but no validator was attached to the reactive control, so the
-      // form stayed valid while empty and could be submitted blank.
       const validators = [];
       if (item.isRequired) {
         validators.push(Validators.required);
@@ -115,13 +111,10 @@ export class PersonalInformationComponent {
       if (item.fieldName && item.allowText) {
         validators.push(
           Validators.pattern(this.allowTextValidator(item.allowText)),
-          Validators.minLength(parseInt(item?.allowMin)),
-          Validators.maxLength(parseInt(item?.allowMax))
+          Validators.minLength(Number.parseInt(item?.allowMin)),
+          Validators.maxLength(Number.parseInt(item?.allowMax))
         );
       }
-      // age / ageAtMarriage are pre-seeded on the group by the parent (for the
-      // ageAtMarriage cross-field validator). addControl() no-ops on an existing
-      // control, so merge validators onto it instead of silently dropping them.
       const existing = this.personalInfoFormGroup.get(item.fieldName);
       if (existing) {
         if (validators.length) {

@@ -81,8 +81,6 @@ export class OtherInformationComponent {
   ngOnInit() {
     console.log('this.otherInfoSubscription', this.otherInfoSubscription);
     this.formData.forEach((item: any) => {
-      // Attach Validators.required for isRequired fields (migration dropped this;
-      // see personal-information for the full explanation).
       const validators = [];
       if (item.isRequired) {
         validators.push(Validators.required);
@@ -90,8 +88,8 @@ export class OtherInformationComponent {
       if (item.fieldName && item.allowText) {
         validators.push(
           Validators.pattern(this.allowTextValidator(item.allowText)),
-          Validators.minLength(parseInt(item?.allowMin)),
-          Validators.maxLength(parseInt(item?.allowMax))
+          Validators.minLength(Number.parseInt(item?.allowMin)),
+          Validators.maxLength(Number.parseInt(item?.allowMax))
         );
       }
       this.otherInfoFormGroup.addControl(

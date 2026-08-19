@@ -79,8 +79,6 @@ export class LocationInformationComponent {
 
   ngOnInit() {
     this.formData.forEach((item: any) => {
-      // Attach Validators.required for isRequired fields (migration dropped this;
-      // see personal-information for the full explanation).
       const validators = [];
       if (item.isRequired) {
         validators.push(Validators.required);
@@ -88,11 +86,10 @@ export class LocationInformationComponent {
       if (item.fieldName && item.allowText) {
         validators.push(
           Validators.pattern(this.allowTextValidator(item.allowText)),
-          Validators.minLength(parseInt(item?.allowMin)),
-          Validators.maxLength(parseInt(item?.allowMax))
+          Validators.minLength(Number.parseInt(item?.allowMin)),
+          Validators.maxLength(Number.parseInt(item?.allowMax))
         );
       } else if (item.options) {
-        // Initialize filtered list with all options
         this.filteredOptions[item.fieldName] = [...item.options];
       }
       this.locationInfoFormGroup.addControl(
