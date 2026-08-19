@@ -172,7 +172,32 @@ export class RegistrationComponent {
     return this.currentStep >= this.enabledStepKeys.length - 1;
   }
 
+  private stepFormGroup(key: string): FormGroup | null {
+    switch (key) {
+      case 'personal':
+        return this.personalInfoFormGroup;
+      case 'location':
+        return this.locationInfoFormGroup;
+      case 'other':
+        return this.otherInfoFormGroup;
+      case 'abha':
+        return this.abhaInfoFormGroup;
+      default:
+        return null;
+    }
+  }
+
   nextStep() {
+    const group = this.stepFormGroup(this.activeStepKey);
+    if (group?.invalid) {
+      group.markAllAsTouched();
+      this.confirmationService.alert(
+        this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
+          'Please fill all the mandatory fields',
+        'info'
+      );
+      return;
+    }
     if (this.currentStep < this.enabledStepKeys.length - 1) {
       this.currentStep++;
     }
@@ -335,6 +360,15 @@ export class RegistrationComponent {
 
 
   submitBeneficiaryDetails() {
+    if (this.mainForm.invalid) {
+      this.mainForm.markAllAsTouched();
+      this.confirmationService.alert(
+        this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
+          'Please fill all the mandatory fields',
+        'info'
+      );
+      return;
+    }
     console.log('registration data', this.mainForm);
     const newDate = this.dateFormatChange();
     const valueToSend = this.mainForm.value;

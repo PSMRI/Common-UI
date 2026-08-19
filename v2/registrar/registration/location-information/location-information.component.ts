@@ -79,26 +79,23 @@ export class LocationInformationComponent {
 
   ngOnInit() {
     this.formData.forEach((item: any) => {
-      if (item.fieldName && item.allowText) {
-        this.locationInfoFormGroup.addControl(
-          item.fieldName,
-          new FormControl(null, [
-            Validators.pattern(this.allowTextValidator(item.allowText)),
-            Validators.minLength(parseInt(item?.allowMin)),
-            Validators.maxLength(parseInt(item?.allowMax)),
-          ]),
-        );
-      } else {
-        this.locationInfoFormGroup.addControl(
-          item.fieldName,
-          new FormControl(null),
-        );
-        // Initialize filtered list with all options
-        if (item.options) {
-          this.filteredOptions[item.fieldName] = [...item.options];
-        }
+      const validators = [];
+      if (item.isRequired) {
+        validators.push(Validators.required);
       }
-
+      if (item.fieldName && item.allowText) {
+        validators.push(
+          Validators.pattern(this.allowTextValidator(item.allowText)),
+          Validators.minLength(Number.parseInt(item?.allowMin)),
+          Validators.maxLength(Number.parseInt(item?.allowMax))
+        );
+      } else if (item.options) {
+        this.filteredOptions[item.fieldName] = [...item.options];
+      }
+      this.locationInfoFormGroup.addControl(
+        item.fieldName,
+        new FormControl(null, validators)
+      );
     });
     this.locationInfoFormGroup.addControl('stateID', new FormControl());
     this.locationInfoFormGroup.addControl('districtID', new FormControl());

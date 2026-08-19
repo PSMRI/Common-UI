@@ -104,19 +104,27 @@ export class PersonalInformationComponent {
     this.isEnableES = environment.isEnableES || false;
     this.fetchLanguageResponse();
     this.formData.forEach((item: any) => {
+      const validators = [];
+      if (item.isRequired) {
+        validators.push(Validators.required);
+      }
       if (item.fieldName && item.allowText) {
-        this.personalInfoFormGroup.addControl(
-          item.fieldName,
-          new FormControl(null, [
-            Validators.pattern(this.allowTextValidator(item.allowText)),
-            Validators.minLength(parseInt(item?.allowMin)),
-            Validators.maxLength(parseInt(item?.allowMax)),
-          ])
+        validators.push(
+          Validators.pattern(this.allowTextValidator(item.allowText)),
+          Validators.minLength(Number.parseInt(item?.allowMin)),
+          Validators.maxLength(Number.parseInt(item?.allowMax))
         );
+      }
+      const existing = this.personalInfoFormGroup.get(item.fieldName);
+      if (existing) {
+        if (validators.length) {
+          existing.addValidators(validators);
+          existing.updateValueAndValidity({ emitEvent: false });
+        }
       } else {
         this.personalInfoFormGroup.addControl(
           item.fieldName,
-          new FormControl(null)
+          new FormControl(null, validators)
         );
       }
     });
