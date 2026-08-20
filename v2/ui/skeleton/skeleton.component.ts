@@ -20,25 +20,34 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-export * from './button';
-export * from './calendar';
-export * from './card';
-export * from './checkbox';
-export * from './date-picker';
-export * from './dialog';
-export * from './directives';
-export * from './form';
-export * from './input';
-export * from './list';
-export * from './loader';
-export * from './menu';
-export * from './pagination';
-export * from './popover';
-export * from './provider';
-export * from './radio';
-export * from './select';
-export * from './skeleton';
-export * from './table';
-export * from './tabs';
-export * from './toast';
-export * from './tooltip';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
+
+import type { ClassValue } from 'clsx';
+
+import { mergeClasses } from '../utils/merge-classes';
+
+@Component({
+  selector: 'z-skeleton, [z-skeleton]',
+  template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  exportAs: 'zSkeleton',
+  host: {
+    'data-slot': 'skeleton',
+    '[class]': 'classes()',
+    'aria-hidden': 'true',
+  },
+})
+export class ZardSkeletonComponent {
+  readonly class = input<ClassValue>('');
+
+  protected readonly classes = computed(() =>
+    mergeClasses('bg-muted animate-pulse rounded-md block', this.class())
+  );
+}
