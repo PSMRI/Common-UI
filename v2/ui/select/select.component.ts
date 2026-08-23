@@ -117,6 +117,14 @@ const COMPACT_MODE_WIDTH_THRESHOLD = 100;
       >
         <div class="p-1">
           <ng-content />
+          @if (!selectItems().length) {
+            <div
+              class="text-muted-foreground select-none px-2 py-1.5 text-center text-sm"
+              aria-disabled="true"
+            >
+              {{ zEmptyText() }}
+            </div>
+          }
         </div>
       </div>
     </ng-template>
@@ -164,6 +172,7 @@ export class ZardSelectComponent implements ControlValueAccessor, OnDestroy {
   readonly zMaxLabelCount = input<number>(1);
   readonly zMultiple = input<boolean>(false);
   readonly zPlaceholder = input<string>('Select an option...');
+  readonly zEmptyText = input<string>('No options available');
   readonly zSize = input<ZardSelectSizeVariants>('default');
   readonly zValue = model<string | string[]>(this.zMultiple() ? [] : '');
 
