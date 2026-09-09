@@ -1,0 +1,210 @@
+<div class="flex flex-col overflow-hidden">
+  <div
+    class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+    <span class="text-base font-semibold text-foreground">
+      {{ currentLanguageSet?.common?.advanceBeneficiarySearch }}
+    </span>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon-sm"
+      type="button"
+      [attr.aria-label]="currentLanguageSet?.common?.close"
+      (click)="matDialogRef.close(false)">
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <div class="max-h-[70vh] overflow-y-auto px-5 py-4">
+    <form [formGroup]="newSearchForm" class="flex flex-col gap-6">
+      <section class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="firstName">{{
+            currentLanguageSet?.ro?.personalInfo?.firstName
+          }}</label>
+          <z-form-control>
+            <input
+              z-input
+              id="firstName"
+              autocomplete="off"
+              name="firstName"
+              formControlName="firstName"
+              minlength="2"
+              maxlength="50" />
+          </z-form-control>
+          <z-form-message
+            *ngIf="newSearchForm.controls['firstName'].errors?.['required']"
+            zType="error">
+            {{ currentLanguageSet?.benDetailsAlert?.firstNameMandatory }}
+          </z-form-message>
+          <z-form-message
+            *ngIf="newSearchForm.controls['firstName'].errors?.['minlength']"
+            zType="error">
+            {{ currentLanguageSet?.benDetailsAlert?.minCharRequired }}
+          </z-form-message>
+        </z-form-field>
+
+        <z-form-field class="gap-1.5">
+          <label z-form-label for="lastName">{{
+            currentLanguageSet?.ro?.personalInfo?.lastName
+          }}</label>
+          <z-form-control>
+            <input
+              z-input
+              id="lastName"
+              autocomplete="off"
+              name="lastName"
+              formControlName="lastName"
+              minlength="1"
+              maxlength="50" />
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field class="gap-1.5">
+          <label z-form-label for="fatherName">{{
+            currentLanguageSet?.ro?.otherInfo?.fatherName
+          }}</label>
+          <z-form-control>
+            <input
+              z-input
+              id="fatherName"
+              autocomplete="off"
+              name="fatherName"
+              formControlName="fatherName"
+              minlength="2"
+              maxlength="50" />
+          </z-form-control>
+          <z-form-message
+            *ngIf="newSearchForm.controls['fatherName'].errors?.['minlength']"
+            zType="error">
+            {{ currentLanguageSet?.common?.pleaseprovideatleast2character }}
+          </z-form-message>
+        </z-form-field>
+
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="gender">{{
+            currentLanguageSet?.ro?.personalInfo?.gender
+          }}</label>
+          <z-form-control>
+            <z-select
+              id="gender"
+              [zPlaceholder]="currentLanguageSet?.ro?.personalInfo?.gender"
+              (zSelectionChange)="onGenderSelected($event)">
+              <z-select-item
+                *ngFor="let gender of masterData?.genderMaster"
+                [zValue]="gender.genderID">
+                {{ gender.genderName }}
+              </z-select-item>
+            </z-select>
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field class="gap-1.5">
+          <label z-form-label for="dob">{{
+            currentLanguageSet?.ro?.personalInfo?.dateOfBirth
+          }}</label>
+          <z-form-control>
+            <z-date-picker
+              id="dob"
+              class="w-full"
+              formControlName="dob"
+              [maxDate]="maxDate"></z-date-picker>
+          </z-form-control>
+        </z-form-field>
+      </section>
+
+      <section
+        class="grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="stateID">{{
+            currentLanguageSet?.travel?.state
+          }}</label>
+          <z-form-control>
+            <z-combobox
+              id="stateID"
+              [formControl]="stateCtrl"
+              [zOptions]="states || []"
+              zLabelKey="stateName"
+              zValueKey="stateName"
+              [zPlaceholder]="currentLanguageSet?.travel?.state"></z-combobox>
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="districtID">{{
+            currentLanguageSet?.travel?.district
+          }}</label>
+          <z-form-control>
+            <z-combobox
+              id="districtID"
+              [formControl]="districtCtrl"
+              [zOptions]="districts || []"
+              zLabelKey="districtName"
+              zValueKey="districtName"
+              [zPlaceholder]="currentLanguageSet?.travel?.district"></z-combobox>
+          </z-form-control>
+        </z-form-field>
+      </section>
+
+      <section
+        class="grid grid-cols-1 gap-4 border-t border-border pt-6 sm:grid-cols-2">
+        <z-form-field class="gap-1.5">
+          <label z-form-label for="blockID">{{
+            currentLanguageSet?.block
+          }}</label>
+          <z-form-control>
+            <z-combobox
+              id="blockID"
+              [formControl]="blockCtrl"
+              [zOptions]="blockList || []"
+              zLabelKey="blockName"
+              zValueKey="blockName"
+              [zPlaceholder]="currentLanguageSet?.block"></z-combobox>
+          </z-form-control>
+        </z-form-field>
+
+        <z-form-field class="gap-1.5">
+          <label z-form-label for="villageID">{{
+            currentLanguageSet?.ro?.locInfo?.village
+          }}</label>
+          <z-form-control>
+            <z-combobox
+              id="villageID"
+              [formControl]="villageCtrl"
+              [zOptions]="villageList || []"
+              zLabelKey="villageName"
+              zValueKey="villageName"
+              [zPlaceholder]="
+                currentLanguageSet?.ro?.locInfo?.village
+              "></z-combobox>
+          </z-form-control>
+        </z-form-field>
+      </section>
+    </form>
+  </div>
+
+  <div
+    class="flex flex-wrap items-center justify-end gap-2 border-t border-border px-5 py-4">
+    <button
+      z-button
+      zType="outline"
+      type="button"
+      (click)="matDialogRef.close(false)">
+      {{ currentLanguageSet?.common?.close }}
+    </button>
+    <button
+      z-button
+      zType="outline"
+      type="button"
+      (click)="resetBeneficiaryForm()">
+      {{ currentLanguageSet?.common?.clear }}
+    </button>
+    <button
+      z-button
+      type="button"
+      [zDisabled]="!newSearchForm.valid"
+      (click)="getSearchResult(newSearchForm.value)">
+      {{ currentLanguageSet?.common?.search }}
+    </button>
+  </div>
+</div>

@@ -1,0 +1,233 @@
+<div class="px-6 pb-10 pt-3">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="relative flex max-w-96 flex-1 basis-72 items-center">
+      <label class="sr-only" for="quick-search">{{
+        currentLanguageSet?.quickSearch
+      }}</label>
+      <button
+        type="button"
+        class="absolute left-2.5 inline-flex appearance-none items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
+        (click)="onSearchButtonClick(quicksearchTerm)"
+        [attr.aria-label]="currentLanguageSet?.quickSearch || 'Search'">
+        <ng-icon name="lucideSearch" size="18"></ng-icon>
+      </button>
+      <input
+        z-input
+        id="quick-search"
+        type="search"
+        class="w-full bg-background pl-9"
+        autocomplete="off"
+        pattern="[a-zA-Z0-9]*"
+        maxlength="32"
+        [placeholder]="
+          isEnableES
+            ? currentLanguageSet?.ro?.benDetails
+            : currentLanguageSet?.ro?.benIDOrPhNo
+        "
+        name="quicksearchTerm"
+        [(ngModel)]="quicksearchTerm"
+        (ngModelChange)="onSearchInputChange($event)"
+        (keyup.enter)="onSearchButtonClick(quicksearchTerm)" />
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <button z-button type="button" (click)="navigateTORegistrar()">
+        <ng-icon name="lucideUserPlus"></ng-icon>
+        {{ currentLanguageSet?.ro?.registration }}
+      </button>
+      <button
+        z-button
+        zType="outline"
+        type="button"
+        (click)="openSearchDialog()">
+        <ng-icon name="lucideSlidersHorizontal"></ng-icon>
+        {{ currentLanguageSet?.bendetails?.advanceSearch }}
+      </button>
+    </div>
+  </div>
+
+  <z-card>
+    <z-card-content class="p-2">
+      <div
+        class="mb-3 flex items-center justify-end px-2"
+        *ngIf="beneficiaryList?.length > 0">
+        <div class="relative flex w-72 max-w-full items-center">
+          <label class="sr-only" for="table-search">{{
+            currentLanguageSet?.common?.inTableSearch
+          }}</label>
+          <ng-icon
+            class="pointer-events-none absolute left-2.5 text-muted-foreground"
+            name="lucideSearch"
+            size="18"></ng-icon>
+          <input
+            z-input
+            id="table-search"
+            type="search"
+            class="w-full bg-background pl-9"
+            autocomplete="off"
+            [placeholder]="currentLanguageSet?.common?.inTableSearch"
+            name="filterTerm"
+            [(ngModel)]="filterTerm"
+            (ngModelChange)="filterBeneficiaryList($event)" />
+        </div>
+      </div>
+
+      <div class="w-full overflow-x-auto">
+        <table z-table>
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head>{{ currentLanguageSet?.bendetails?.edit }}</th>
+              <th z-table-head>
+                {{ currentLanguageSet?.bendetails?.beneficiaryID }}
+              </th>
+              <th z-table-head>
+                {{ currentLanguageSet?.bendetails?.beneficiaryName }}
+              </th>
+              <th z-table-head>{{ currentLanguageSet?.bendetails?.gender }}</th>
+              <th z-table-head>{{ currentLanguageSet?.bendetails?.age }}</th>
+              <th z-table-head>
+                {{ currentLanguageSet?.bendetails?.fatherName }}
+              </th>
+              <th z-table-head>
+                {{ currentLanguageSet?.bendetails?.district }}
+              </th>
+              <th z-table-head>
+                {{ currentLanguageSet?.bendetails?.phoneNo }}
+              </th>
+              <th z-table-head>
+                {{ currentLanguageSet?.bendetails?.registrationDate }}
+              </th>
+              <th z-table-head>{{ currentLanguageSet?.abhaDetails }}</th>
+              <th z-table-head>{{ currentLanguageSet?.bendetails?.image }}</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            <tr
+              z-table-row
+              class="cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+              tabindex="0"
+              *ngFor="let beneficiary of pagedList"
+              (click)="patientRevisited(beneficiary.benObject)"
+              (keydown.enter)="patientRevisited(beneficiary.benObject)">
+              <td z-table-cell>
+                <button
+                  z-button
+                  zType="ghost"
+                  zSize="icon-sm"
+                  type="button"
+                  [zTooltip]="currentLanguageSet?.editBeneficiary"
+                  (click)="$event.stopPropagation(); editPatientInfo(beneficiary)"
+                  (keydown.enter)="
+                    $event.stopPropagation(); editPatientInfo(beneficiary)
+                  ">
+                  <ng-icon name="lucidePencil"></ng-icon>
+                </button>
+              </td>
+              <td z-table-cell>{{ beneficiary?.beneficiaryID }}</td>
+              <td z-table-cell class="max-w-[200px] break-words">
+                {{ beneficiary?.benName | titlecase }}
+              </td>
+              <td z-table-cell>{{ beneficiary.genderName | titlecase }}</td>
+              <td z-table-cell>
+                {{ beneficiary.age === "a year" ? "1 year" : beneficiary.age }}
+              </td>
+              <td z-table-cell>{{ beneficiary.fatherName | titlecase }}</td>
+              <td z-table-cell>
+                {{ beneficiary.districtName | titlecase }} /
+                {{ beneficiary.villageName | titlecase }}
+              </td>
+              <td z-table-cell>{{ beneficiary.phoneNo }}</td>
+              <td z-table-cell>{{ beneficiary.registeredOn }}</td>
+              <td z-table-cell>
+                <button
+                  z-button
+                  zType="outline"
+                  zSize="sm"
+                  type="button"
+                  (click)="$event.stopPropagation(); getHealthIDDetails(beneficiary)"
+                  (keydown.enter)="
+                    $event.stopPropagation(); getHealthIDDetails(beneficiary)
+                  ">
+                  {{ currentLanguageSet?.common?.view || "View" }}
+                </button>
+              </td>
+              <td z-table-cell>
+                <button
+                  type="button"
+                  class="inline-flex appearance-none rounded-full border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  [zTooltip]="currentLanguageSet?.tc?.image"
+                  (click)="
+                    $event.stopPropagation();
+                    patientImageView(beneficiary.beneficiaryRegID)
+                  "
+                  (keydown.enter)="$event.stopPropagation()">
+                  <img
+                    class="size-[1.875rem] rounded-full object-cover"
+                    src="assets/images/Avatar-Profile_30X30.png"
+                    alt="profile" />
+                </button>
+              </td>
+            </tr>
+            <tr z-table-row *ngIf="filteredBeneficiaryList.length === 0">
+              <td
+                z-table-cell
+                [attr.colspan]="11"
+                class="h-24 text-center text-muted-foreground">
+                {{ currentLanguageSet?.noRecordsFound || "No Records Found" }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        class="mt-4 flex flex-wrap items-center justify-end gap-4 px-2"
+        *ngIf="filteredBeneficiaryList.length > 0">
+        <div
+          class="inline-flex items-center gap-2 text-[0.8125rem] text-muted-foreground">
+          <span>{{ currentLanguageSet?.common?.rowsPerPage || "Rows per page" }}</span>
+          <z-select
+            class="w-[4.5rem]"
+            name="pageSize"
+            [zValue]="pageSize.toString()"
+            (zSelectionChange)="changePageSize($event)">
+            <z-select-item
+              *ngFor="let size of pageSizeOptions"
+              [zValue]="size.toString()">
+              {{ size }}
+            </z-select-item>
+          </z-select>
+        </div>
+
+        <ul z-pagination-content class="m-0">
+          <li z-pagination-item>
+            <button
+              z-pagination-button
+              [zDisabled]="currentPage === 1"
+              aria-label="Previous page"
+              (click)="prevPage()">
+              <ng-icon name="lucideChevronLeft" size="16"></ng-icon>
+            </button>
+          </li>
+          <li z-pagination-item *ngFor="let p of pageNumbers">
+            <button
+              z-pagination-button
+              [zActive]="p === currentPage"
+              (click)="goToPage(p)">
+              {{ p }}
+            </button>
+          </li>
+          <li z-pagination-item>
+            <button
+              z-pagination-button
+              [zDisabled]="currentPage === totalPages"
+              aria-label="Next page"
+              (click)="nextPage()">
+              <ng-icon name="lucideChevronRight" size="16"></ng-icon>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </z-card-content>
+  </z-card>
+</div>

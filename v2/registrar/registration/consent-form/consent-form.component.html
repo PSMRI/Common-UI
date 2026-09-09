@@ -1,0 +1,35 @@
+<div class="flex flex-col gap-4 p-2">
+  <div class="flex items-start justify-between gap-4">
+    <p class="text-lg font-semibold text-foreground">
+      {{ currentLanguageSet?.beneficaryConsent }}
+    </p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
+      type="button"
+      aria-label="Close"
+      (click)="closeConsent('0')"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <div class="flex flex-col gap-3">
+    <p class="text-sm text-muted-foreground">
+      आपको बेहतर सेवा प्रदान करने के लिए, हम आपकी व्यक्तिगत जानकारी का अनुरोध
+      करते हैं। आपके द्वारा प्रदान की जाने वाली जानकारी को गोपनीय रखा जाएगा और
+      इसका उपयोग केवल अनुसंधान और विश्लेषण के लिए किया जाएगा।
+    </p>
+    <p class="text-sm text-muted-foreground">
+      {{ currentLanguageSet?.consentFormText }}
+    </p>
+  </div>
+
+  <div class="flex justify-end">
+    <button z-button type="button" (click)="acceptConsent('1')">
+      {{ currentLanguageSet?.tc?.accept || 'Accept' }}
+    </button>
+  </div>
+</div>

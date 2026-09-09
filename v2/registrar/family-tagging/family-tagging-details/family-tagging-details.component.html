@@ -1,0 +1,208 @@
+<div class="relative flex min-h-[500px] w-full">
+  <!-- Beneficiary details slide-over panel -->
+  <button
+    z-button
+    zType="default"
+    zSize="icon"
+    type="button"
+    class="fixed bottom-12 left-5 z-30 rounded-full shadow-lg"
+    [zTooltip]="currentLanguageSet?.common?.beneficiaryDetails || 'Beneficiary details'"
+    zPosition="right"
+    (click)="toggleSidenav()">
+    <ng-icon name="lucideUserRound"></ng-icon>
+  </button>
+
+  <z-sheet
+    [(zOpen)]="sidenavOpen"
+    zSide="left"
+    [zTitle]="currentLanguageSet?.common?.beneficiaryDetails || ''">
+    <app-beneficiary-details></app-beneficiary-details>
+  </z-sheet>
+
+  <!-- Main content -->
+  <div class="w-full px-6 pb-10 pt-3">
+    <div
+      class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <p
+        class="text-xl font-semibold tracking-tight text-foreground">
+        {{ currentLanguageSet?.familyTagging }}
+      </p>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          z-button
+          zType="outline"
+          type="button"
+          (click)="backToRegistration()">
+          {{ currentLanguageSet?.backToRegistration }}
+        </button>
+
+        <button
+          z-button
+          zType="outline"
+          type="button"
+          (click)="openSearchFamily()">
+          {{ currentLanguageSet?.searchFamily }}
+        </button>
+
+        <button
+          z-button
+          zType="default"
+          type="button"
+          (click)="CreateFamilyDialog()"
+          [disabled]="benFamilyId !== null && benFamilyId !== undefined">
+          {{ currentLanguageSet?.createFamily }}
+        </button>
+      </div>
+    </div>
+
+    <z-card>
+      <z-card-content class="p-2">
+        <!-- Created-family table -->
+        <div class="w-full overflow-x-auto" *ngIf="enableFamilyCreateTable">
+          <table z-table>
+            <thead z-table-header>
+              <tr z-table-row>
+                <th z-table-head>{{ currentLanguageSet?.familyId }}</th>
+                <th z-table-head>{{ currentLanguageSet?.familyName }}</th>
+                <th z-table-head>{{ currentLanguageSet?.headOfTheFamily }}</th>
+                <th z-table-head>
+                  {{ currentLanguageSet?.benRelationWithHeadOfFamily }}
+                </th>
+              </tr>
+            </thead>
+            <tbody z-table-body>
+              <tr z-table-row *ngFor="let element of createdFamilyList">
+                <td z-table-cell>{{ element.familyId }}</td>
+                <td z-table-cell>{{ element.familyName | titlecase }}</td>
+                <td z-table-cell>
+                  {{
+                    (element.familyHeadName !== undefined &&
+                    element.familyHeadName !== null
+                      ? element.familyHeadName
+                      : "Not Declared"
+                    ) | titlecase
+                  }}
+                </td>
+                <td z-table-cell>{{ element.headofFamily_Relation }}</td>
+              </tr>
+              <tr z-table-row *ngIf="createdFamilyList.length === 0">
+                <td
+                  z-table-cell
+                  colspan="4"
+                  class="h-24 text-center text-muted-foreground">
+                  {{ currentLanguageSet?.noRecordsFound || "No Records Found" }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Family search-result table -->
+        <div class="w-full overflow-x-auto" *ngIf="!enableFamilyCreateTable">
+          <table z-table>
+            <thead z-table-header>
+              <tr z-table-row>
+                <th z-table-head>{{ currentLanguageSet?.coreComponents?.sno }}</th>
+                <th z-table-head>{{ currentLanguageSet?.familyId }}</th>
+                <th z-table-head>{{ currentLanguageSet?.headOfTheFamily }}</th>
+                <th z-table-head>{{ currentLanguageSet?.familyName }}</th>
+                <th z-table-head>{{ currentLanguageSet?.members }}</th>
+                <th z-table-head>{{ currentLanguageSet?.bendetails?.action }}</th>
+              </tr>
+            </thead>
+            <tbody z-table-body>
+              <tr
+                z-table-row
+                *ngFor="let element of pagedSearchList; let i = index">
+                <td z-table-cell>
+                  {{ (currentPage - 1) * pageSize + i + 1 }}
+                </td>
+                <td z-table-cell>{{ element.familyId }}</td>
+                <td z-table-cell>
+                  {{
+                    (element.familyHeadName !== undefined &&
+                    element.familyHeadName !== null &&
+                    element.familyHeadName !== ""
+                      ? element.familyHeadName
+                      : "Not Declared"
+                    ) | titlecase
+                  }}
+                </td>
+                <td z-table-cell>{{ element.familyName | titlecase }}</td>
+                <td z-table-cell>{{ element.noOfmembers }}</td>
+                <td z-table-cell>
+                  <button
+                    *ngIf="
+                      benFamilyId !== null && benFamilyId === element.familyId
+                    "
+                    z-button
+                    zType="ghost"
+                    zSize="icon-sm"
+                    type="button"
+                    [zTooltip]="'Edit'"
+                    aria-label="Edit"
+                    (click)="getFamilyMembers(true, element)">
+                    <ng-icon name="lucidePencil"></ng-icon>
+                  </button>
+                  <button
+                    *ngIf="benFamilyId === null"
+                    z-button
+                    zType="ghost"
+                    zSize="icon-sm"
+                    type="button"
+                    [zTooltip]="'Add Member'"
+                    aria-label="Add Member"
+                    (click)="getFamilyMembers(false, element)">
+                    <ng-icon name="lucidePlus"></ng-icon>
+                  </button>
+                </td>
+              </tr>
+              <tr z-table-row *ngIf="familySearchList.length === 0">
+                <td
+                  z-table-cell
+                  colspan="6"
+                  class="h-24 text-center text-muted-foreground">
+                  {{ currentLanguageSet?.noRecordsFound || "No Records Found" }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div
+            class="mt-4 flex flex-wrap items-center justify-end gap-4 px-2"
+            *ngIf="familySearchList.length > 0">
+            <ul z-pagination-content class="m-0">
+              <li z-pagination-item>
+                <button
+                  z-pagination-button
+                  [zDisabled]="currentPage === 1"
+                  aria-label="Previous page"
+                  (click)="prevPage()">
+                  <ng-icon name="lucideChevronLeft" size="16"></ng-icon>
+                </button>
+              </li>
+              <li z-pagination-item *ngFor="let p of pageNumbers">
+                <button
+                  z-pagination-button
+                  [zActive]="p === currentPage"
+                  (click)="goToPage(p)">
+                  {{ p }}
+                </button>
+              </li>
+              <li z-pagination-item>
+                <button
+                  z-pagination-button
+                  [zDisabled]="currentPage === totalPages"
+                  aria-label="Next page"
+                  (click)="nextPage()">
+                  <ng-icon name="lucideChevronRight" size="16"></ng-icon>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </z-card-content>
+    </z-card>
+  </div>
+</div>

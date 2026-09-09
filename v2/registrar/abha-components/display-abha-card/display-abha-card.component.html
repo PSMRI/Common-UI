@@ -1,0 +1,38 @@
+<div class="flex flex-col gap-4 p-6">
+  <div class="flex items-start justify-between gap-4">
+    <p class="text-lg font-semibold text-foreground">
+      {{ currentLanguageSet?.aBHACard }}
+    </p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
+      type="button"
+      [attr.aria-label]="currentLanguageSet?.common?.close || 'Close'"
+      (click)="closeDialog()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <div
+    class="fixed inset-0 z-[1001] flex items-center justify-center bg-black/30"
+    *ngIf="showProgressBar"
+  >
+    <z-loader zSize="lg"></z-loader>
+  </div>
+
+  <div class="flex flex-col items-center gap-4">
+    <img
+      [src]="blobUrl"
+      [attr.alt]="currentLanguageSet?.aBHACard || 'ABHA card'"
+      class="w-full max-w-[800px] rounded-lg"
+    />
+    <div class="flex justify-center">
+      <button z-button type="button" (click)="downloadImage()">
+        {{ currentLanguageSet?.common?.download || 'Download' }}
+      </button>
+    </div>
+  </div>
+</div>

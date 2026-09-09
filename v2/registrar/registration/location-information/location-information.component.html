@@ -1,0 +1,130 @@
+<form [formGroup]="locationInfoFormGroup" autocomplete="off">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ng-container *ngFor="let item of formData">
+      <!-- Text -->
+      <z-form-field
+        class="gap-1.5"
+        *ngIf="item?.fieldType?.toLowerCase() === 'text'"
+      >
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
+          item.fieldTitle | titlecase
+        }}</label>
+        <z-form-control>
+          <input
+            z-input
+            class="w-full"
+            type="text"
+            [id]="item.fieldName"
+            [placeholder]="item.placeholder | titlecase"
+            [formControlName]="item.fieldName"
+            (input)="onInputChanged($event, item.allowMax, item.fieldName)"
+            (focus)="trackFieldInteraction(item.fieldTitle)"
+          />
+        </z-form-control>
+        <z-form-message
+          *ngIf="
+            locationInfoFormGroup.controls[item.fieldName].errors?.['required'] &&
+            locationInfoFormGroup.controls[item.fieldName].dirty
+          "
+        >
+          Field is Required
+        </z-form-message>
+        <z-form-message
+          *ngIf="locationInfoFormGroup.controls[item.fieldName].errors?.['minlength']"
+        >
+          Minimum length should be {{ item.allowMin }} characters
+        </z-form-message>
+        <z-form-message
+          *ngIf="locationInfoFormGroup.controls[item.fieldName].errors?.['maxlength']"
+        >
+          Maximum length can only be {{ item.allowMax }} characters
+        </z-form-message>
+      </z-form-field>
+
+      <!-- Date -->
+      <z-form-field
+        class="gap-1.5"
+        *ngIf="item?.fieldType?.toLowerCase() === 'date'"
+      >
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
+          item.fieldTitle
+        }}</label>
+        <z-form-control>
+          <z-date-picker
+            class="w-full"
+            [id]="item.fieldName"
+            [formControlName]="item.fieldName"
+            [placeholder]="item.placeholder | titlecase"
+          ></z-date-picker>
+        </z-form-control>
+      </z-form-field>
+
+      <!-- Multiple select -->
+      <z-form-field
+        class="gap-1.5"
+        *ngIf="item?.fieldType?.toLowerCase() === 'multiple'"
+      >
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
+          item.fieldTitle | titlecase
+        }}</label>
+        <z-form-control>
+          <z-select
+            class="w-full"
+            [id]="item.fieldName"
+            [zMultiple]="true"
+            [formControlName]="item.fieldName"
+            [zPlaceholder]="item.placeholder | titlecase"
+          >
+            <z-select-item
+              *ngFor="let option of item.options"
+              [zValue]="option"
+            >
+              {{ option | titlecase }}
+            </z-select-item>
+          </z-select>
+        </z-form-control>
+      </z-form-field>
+
+      <!-- Radio -->
+      <div
+        class="flex flex-col gap-1.5"
+        *ngIf="item?.fieldType?.toLowerCase() === 'radio'"
+      >
+        <label z-form-label [zRequired]="item.isRequired === true" [attr.for]="item.fieldName">{{
+          item.fieldTitle
+        }}</label>
+        <z-radio-group
+          [id]="item.fieldName"
+          [formControlName]="item.fieldName"
+          zOrientation="horizontal"
+          class="flex-wrap gap-4"
+        >
+          <z-radio
+            *ngFor="let option of item.options"
+            [value]="option"
+          >
+            {{ option | titlecase }}
+          </z-radio>
+        </z-radio-group>
+      </div>
+
+      <!-- Dropdown (cascading combobox) -->
+      <z-form-field
+        class="gap-1.5"
+        *ngIf="item?.fieldType?.toLowerCase() === 'dropdown'"
+      >
+        <label z-form-label [zRequired]="item.isRequired || false" [attr.for]="item.fieldName">{{
+          item.fieldTitle | titlecase
+        }}</label>
+        <z-form-control>
+          <z-combobox
+            [id]="item.fieldName"
+            [formControlName]="item.fieldName"
+            [zOptions]="item.options || []"
+            [zPlaceholder]="item.placeholder"
+          ></z-combobox>
+        </z-form-control>
+      </z-form-field>
+    </ng-container>
+  </div>
+</form>

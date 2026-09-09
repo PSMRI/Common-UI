@@ -1,0 +1,167 @@
+<section class="relative flex max-h-[85vh] flex-col gap-4">
+  <!-- Header -->
+  <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-1.5">
+      <p class="text-lg font-semibold leading-none tracking-tight text-foreground">
+        {{ currentLanguageSet?.familyTaggingSearch }}
+      </p>
+    </div>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      type="button"
+      class="-mr-2 -mt-2 p-0 text-muted-foreground"
+      [attr.aria-label]="currentLanguageSet?.common?.close || 'Close'"
+      (click)="onClose()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <!-- Loading overlay -->
+  <div
+    *ngIf="showProgressBar"
+    class="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80"
+  >
+    <z-loader zSize="lg"></z-loader>
+  </div>
+
+  <!-- Body -->
+  <div class="overflow-y-auto">
+    <form [formGroup]="familySearchForm" autocomplete="off">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <!-- District -->
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="districtID">
+            {{ currentLanguageSet?.district }}
+          </label>
+          <z-form-control>
+            <z-select
+              class="w-full"
+              id="districtID"
+              formControlName="districtID"
+              [zPlaceholder]="currentLanguageSet?.district"
+              (zSelectionChange)="onDistrictChange($event)"
+            >
+              <z-select-item
+                *ngFor="let district of districtList"
+                [zValue]="district.districtID"
+              >
+                {{ district.districtName | titlecase }}
+              </z-select-item>
+            </z-select>
+          </z-form-control>
+        </z-form-field>
+
+        <!-- Block -->
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="blockID">
+            {{ currentLanguageSet?.block }}
+          </label>
+          <z-form-control>
+            <z-select
+              class="w-full"
+              id="blockID"
+              formControlName="blockID"
+              [zPlaceholder]="currentLanguageSet?.block"
+              (zSelectionChange)="onBlockChange($event)"
+            >
+              <z-select-item
+                *ngFor="let block of blockList"
+                [zValue]="block.blockID"
+              >
+                {{ block.blockName | titlecase }}
+              </z-select-item>
+            </z-select>
+          </z-form-control>
+        </z-form-field>
+
+        <!-- Village -->
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="villageID">
+            {{ currentLanguageSet?.village }}
+          </label>
+          <z-form-control>
+            <z-select
+              class="w-full"
+              id="villageID"
+              formControlName="villageID"
+              [zPlaceholder]="currentLanguageSet?.village"
+              (zSelectionChange)="onVillageChange($event)"
+            >
+              <z-select-item
+                *ngFor="let village of villageList"
+                [zValue]="village.districtBranchID"
+              >
+                {{ village.villageName | titlecase }}
+              </z-select-item>
+            </z-select>
+          </z-form-control>
+        </z-form-field>
+
+        <!-- Family Name -->
+        <z-form-field class="gap-1.5">
+          <label z-form-label [zRequired]="true" for="surname">
+            {{ currentLanguageSet?.familyName }}
+          </label>
+          <z-form-control>
+            <input
+              z-input
+              class="w-full"
+              type="text"
+              id="surname"
+              autocomplete="off"
+              allowText="alphaspace"
+              formControlName="surname"
+              minlength="2"
+              maxlength="50"
+            />
+          </z-form-control>
+          <z-form-message
+            *ngIf="familySearchForm.controls['surname'].errors?.['required']"
+          >
+            {{ currentLanguageSet?.familyNameisrequired }}
+          </z-form-message>
+          <z-form-message
+            *ngIf="familySearchForm.controls['surname'].errors?.['minlength']"
+          >
+            {{ currentLanguageSet?.benDetailsAlert?.minCharRequired }}
+          </z-form-message>
+        </z-form-field>
+
+        <!-- Family Id -->
+        <z-form-field class="gap-1.5">
+          <label z-form-label for="familyId">
+            {{ currentLanguageSet?.familyId }}
+          </label>
+          <z-form-control>
+            <input
+              z-input
+              class="w-full"
+              type="text"
+              id="familyId"
+              autocomplete="off"
+              allowText="alphanumeric"
+              formControlName="familyId"
+              minlength="2"
+              maxlength="50"
+            />
+          </z-form-control>
+        </z-form-field>
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="flex flex-row justify-end gap-2 pt-2">
+    <button
+      z-button
+      type="button"
+      [disabled]="familySearchForm.invalid"
+      (click)="getFamilySearchMaster()"
+    >
+      {{ currentLanguageSet?.common?.search }}
+    </button>
+  </div>
+</section>

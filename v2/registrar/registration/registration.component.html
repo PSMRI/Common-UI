@@ -1,0 +1,140 @@
+<div class="mx-auto w-full max-w-5xl px-4 py-6">
+  <div
+    *ngIf="patientRevisit && serviceLine === 'HWC'"
+    class="mb-4 flex justify-end">
+    <button
+      z-button
+      zType="outline"
+      id="familyTagging"
+      type="button"
+      (click)="NavigateToFamilyTagging()">
+      {{ currentLanguageSet?.familyTagging?.familyTagging || 'Family Tagging' }}
+    </button>
+  </div>
+
+  <form [formGroup]="mainForm" autocomplete="off">
+    <!-- Visual step indicator -->
+    <z-stepper [zActiveIndex]="currentStep" class="mb-6 w-full justify-center">
+      <z-step
+        *ngIf="enablePersonalInfo"
+        [zLabel]="
+          currentLanguageSet?.ro?.personalInfo?.personalInformation
+        "></z-step>
+      <z-step
+        *ngIf="enableLocationInfo"
+        [zLabel]="
+          currentLanguageSet?.ro?.locInfo?.locInformation
+        "></z-step>
+      <z-step
+        *ngIf="enableOtherInfo"
+        [zLabel]="
+          currentLanguageSet?.ro?.otherInfo?.otherInformation
+        "></z-step>
+      <z-step
+        *ngIf="enableAbhaInfo"
+        [zLabel]="
+          currentLanguageSet?.ro?.abhaInfo?.abhaInformation
+        "></z-step>
+    </z-stepper>
+
+    <!-- Active step panel -->
+    <z-card *ngIf="activeStepKey === 'personal'">
+      <z-card-header>
+        <z-card-title>{{
+          currentLanguageSet?.ro?.personalInfo?.personalInformation
+        }}</z-card-title>
+      </z-card-header>
+      <z-card-content>
+        <app-personal-information
+          [personalInfoFormGroup]="personalInfoFormGroup"
+          [formData]="personalInfoData"
+          [patientRevisit]="patientRevisit"
+          [revisitData]="revisitData"></app-personal-information>
+      </z-card-content>
+    </z-card>
+
+    <z-card *ngIf="activeStepKey === 'location'">
+      <z-card-header>
+        <z-card-title>{{
+          currentLanguageSet?.ro?.locInfo?.locInformation
+        }}</z-card-title>
+      </z-card-header>
+      <z-card-content>
+        <app-location-information
+          [locationInfoFormGroup]="locationInfoFormGroup"
+          [patientRevisit]="patientRevisit"
+          [revisitData]="revisitData"
+          [formData]="locationInfoData"></app-location-information>
+      </z-card-content>
+    </z-card>
+
+    <z-card *ngIf="activeStepKey === 'other'">
+      <z-card-header>
+        <z-card-title>{{
+          currentLanguageSet?.ro?.otherInfo?.otherInformation
+        }}</z-card-title>
+      </z-card-header>
+      <z-card-content>
+        <app-other-information
+          [otherInfoFormGroup]="otherInfoFormGroup"
+          [patientRevisit]="patientRevisit"
+          [revisitData]="revisitData"
+          [formData]="otherInfoData"></app-other-information>
+      </z-card-content>
+    </z-card>
+
+    <z-card *ngIf="activeStepKey === 'abha'">
+      <z-card-header>
+        <z-card-title>{{
+          currentLanguageSet?.ro?.abhaInfo?.abhaInformation
+        }}</z-card-title>
+      </z-card-header>
+      <z-card-content>
+        <app-abha-information
+          [abhaInfoFormGroup]="abhaInfoFormGroup"
+          [formData]="abhaInfoData"
+          [patientRevisit]="patientRevisit"
+          [revisitData]="revisitData"></app-abha-information>
+      </z-card-content>
+    </z-card>
+
+    <!-- Navigation -->
+    <div class="mt-6 flex items-center justify-between">
+      <button
+        z-button
+        zType="outline"
+        type="button"
+        id="backButton"
+        *ngIf="currentStep > 0"
+        (click)="previousStep()">
+        {{ currentLanguageSet?.common?.back || 'Back' }}
+      </button>
+      <div class="ml-auto flex gap-2">
+        <button
+          z-button
+          type="button"
+          *ngIf="!isLastStep"
+          (click)="nextStep()">
+          {{ currentLanguageSet?.common?.next || 'Next' }}
+        </button>
+        <button
+          z-button
+          type="button"
+          id="submitButton"
+          *ngIf="isLastStep && !patientRevisit"
+          [disabled]="!mainForm.valid"
+          (click)="submitBeneficiaryDetails()">
+          {{ currentLanguageSet?.common?.submit || 'Submit' }}
+        </button>
+        <button
+          z-button
+          type="button"
+          *ngIf="isLastStep && patientRevisit"
+          [disabled]="!mainForm.valid"
+          (click)="updateBeneficiaryDetails()">
+          {{ currentLanguageSet?.common?.update || 'Update' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

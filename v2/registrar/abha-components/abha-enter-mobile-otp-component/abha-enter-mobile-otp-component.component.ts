@@ -1,0 +1,140 @@
+import { Component, Inject } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
+import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
+import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { RegistrarService } from '../../services/registrar.service';
+import { ConfirmationService } from 'src/app/app-modules/core/services';
+import { NgIf } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideX } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardFormImports } from 'Common-UI/v2/ui/form';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ZardLoaderComponent } from 'Common-UI/v2/ui/loader';
+
+@Component({
+    selector: 'app-abha-enter-mobile-otp-component',
+    templateUrl: './abha-enter-mobile-otp-component.component.html',
+    standalone: true,
+    imports: [
+      NgIf,
+      ReactiveFormsModule,
+      NgIcon,
+      ZardButtonComponent,
+      ...ZardFormImports,
+      ZardInputDirective,
+      ZardLoaderComponent,
+    ],
+    viewProviders: [provideIcons({ lucideX })],
+})
+export class AbhaEnterMobileOtpComponentComponent {
+  generateMobileOTPForm!: FormGroup;
+  txnId: any;
+  loginId: any;
+  currentLanguageSet: any;
+  showProgressBar = false;
+  mobileNumber: any;
+
+  constructor(
+    private fb: FormBuilder,
+    public dialogSucRef: ZardDialogRef<AbhaEnterMobileOtpComponentComponent>,
+    @Inject(Z_MODAL_DATA) public data: any,
+    public httpServiceService: HttpServiceService,
+    private registrarService: RegistrarService,
+    private confirmationService: ConfirmationService,
+  ) {
+    dialogSucRef.disableClose = true;
+  }
+
+  ngOnInit() {
+    this.assignSelectedLanguage();
+    this.generateMobileOTPForm = this.createmobileOTPValidationForm();
+    this.txnId = this.data.txnId;
+    this.mobileNumber = this.data.mobileNumber;
+    this.mobileEnrollmentForAbha();
+  }
+
+  ngDoCheck() {
+    this.assignSelectedLanguage();
+  }
+  assignSelectedLanguage() {
+    const getLanguageJson = new SetLanguageComponent(this.httpServiceService);
+    getLanguageJson.setLanguage();
+    this.currentLanguageSet = getLanguageJson.currentLanguageObject;
+  }
+
+  createmobileOTPValidationForm() {
+    return this.fb.group({
+      mobileOtp: [
+        null,
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.maxLength(6),
+        ],
+      ],
+    });
+  }
+
+  closeDialog() {
+    this.dialogSucRef.close();
+  }
+
+  mobileEnrollmentForAbha(){
+      let reqObj = null;
+      this.showProgressBar = true;
+      reqObj = {
+        loginId: this.mobileNumber,
+        txnId: this.data.txnId,
+        loginMethod: "mobile",
+      };
+      this.registrarService.requestOtpForAbhaEnroll(reqObj).subscribe((res: any) => {
+        this.showProgressBar = false;
+        if(res.statusCode === 200 && res.data != null){
+          this.txnId = this.data.txnId
+          this.confirmationService.alert(res.data.message, 'success');
+        } else {
+          this.confirmationService.alert(res.errorMessage, 'error');
+        }
+      }, (err) => {
+        this.showProgressBar = false;
+        this.confirmationService.alert(err.errorMessage, 'error');
+      });
+  }
+
+  verifyMobileAuthAfterAbhaCreation(){
+    let reqObj = null;
+    this.showProgressBar = true;
+    reqObj = {
+      loginId: this.generateMobileOTPForm.controls['mobileOtp'].value,
+      txnId: this.txnId,
+      loginMethod: "mobile",
+    };
+    this.registrarService.verifyMobileForAbhaAuth(reqObj).subscribe((res: any) => {
+      this.showProgressBar = false;
+      if(res.statusCode === 200 && res.data != null){
+        this.dialogSucRef.close(true);
+        this.confirmationService.alert(res.data.message, 'success');
+      } else {
+        this.confirmationService.alert(res.errorMessage, 'error');
+      }
+    }, (err) => {
+      this.showProgressBar = false;
+      this.confirmationService.alert(err.errorMessage, 'error');
+    } )
+  }
+
+  numberOnly(event: any): boolean {
+    const charCode = event.which ? event.which : event.keyCode;
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      return false;
+    }
+    return true;
+  }
+}

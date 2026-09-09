@@ -1,0 +1,128 @@
+<div class="flex flex-col gap-6 p-6" [formGroup]="abhaAuthMethodForm">
+  <div class="flex items-start justify-between gap-4">
+    <p class="text-lg font-semibold text-foreground">
+      {{ currentLanguageSet.searchAndDownloadAbha }}
+    </p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
+      type="button"
+      aria-label="Close"
+      (click)="closeDialogAuth()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <!-- Search mode selection -->
+  <div *ngIf="!enableAuthIdField" class="flex flex-col gap-2">
+    <label z-form-label for="modeofAuthMethod">
+      {{ currentLanguageSet.abhaSearchMode }}
+    </label>
+    <z-radio-group
+      id="modeofAuthMethod"
+      formControlName="modeofAuthMethod"
+      zOrientation="horizontal"
+      class="flex-wrap gap-4"
+      (zChange)="getAbhaAuthMethod()"
+    >
+      <z-radio [value]="'AADHAAR'">Aadhaar</z-radio>
+      <z-radio [value]="'MOBILE'">Mobile</z-radio>
+      <z-radio [value]="'ABHANUMBER'">Abha Number</z-radio>
+      <z-radio [value]="'ABHAADDRESS'">Abha Address</z-radio>
+    </z-radio-group>
+  </div>
+
+  <!-- Auth ID text input (non-Aadhaar modes) -->
+  <z-form-field
+    *ngIf="
+      enableAuthIdField &&
+      abhaAuthMethodForm.controls['modeofAuthMethod']?.value !== 'AADHAAR'
+    "
+    class="gap-1.5"
+  >
+    <label z-form-label [zRequired]="true" for="abhaAuthId">
+      {{ enterAuthIdLabel }}
+    </label>
+    <z-form-control>
+      <input
+        z-input
+        id="abhaAuthId"
+        class="w-full"
+        autocomplete="off"
+        formControlName="abhaAuthId"
+        type="text"
+        required
+        (keydown.space)="$event.preventDefault()"
+        (input)="abhaNumberInputValidation($event)"
+        minlength="5"
+        maxlength="32"
+      />
+    </z-form-control>
+  </z-form-field>
+
+  <!-- Aadhaar (3-part) input -->
+  <app-aadhaar-input
+    *ngIf="
+      enableAuthIdField &&
+      abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'AADHAAR'
+    "
+    [formGroup]="adhaarNumberForm"
+    [label]="enterAuthIdLabel"
+    [invalid]="isInvalid"
+  ></app-aadhaar-input>
+
+  <!-- ABHA auth mode selection -->
+  <div *ngIf="enableAuthMethodForAbha" class="flex flex-col gap-2">
+    <label z-form-label [zRequired]="true" for="authMethodForAbha">
+      ABHA AUTH Mode
+    </label>
+    <z-radio-group
+      id="authMethodForAbha"
+      formControlName="authMethodForAbha"
+      zOrientation="horizontal"
+      class="flex-wrap gap-4"
+    >
+      <z-radio [value]="'AUTH_AADHAAR'">Aadhaar</z-radio>
+      <z-radio [value]="'AUTH_MOBILE'">Mobile</z-radio>
+    </z-radio-group>
+  </div>
+
+  <!-- Format note -->
+  <p
+    *ngIf="
+      abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHANUMBER' ||
+      abhaAuthMethodForm.controls['modeofAuthMethod']?.value === 'ABHAADDRESS'
+    "
+    class="text-xs text-muted-foreground"
+  >
+    Note*: {{ currentLanguageSet?.aBHA }}- xxx{{ abhaSuffix }}, xxx.xx{{
+      abhaSuffix
+    }}
+    <br />
+    {{ currentLanguageSet?.abhaNumber }} - xx-xxxx-xxxx-xxxx
+  </p>
+
+  <!-- Actions -->
+  <div *ngIf="enableAuthIdField" class="flex justify-end gap-2">
+    <button z-button zType="outline" type="button" id="back" (click)="goBackToOptions()">
+      {{ currentLanguageSet?.common?.back }}
+    </button>
+    <button
+      z-button
+      type="button"
+      id="searchHealthID"
+      (click)="checkAbhaIdType()"
+      [disabled]="
+        !checkValidHealthID() ||
+        !abhaAuthMethodForm.controls['modeofAuthMethod'].value ||
+        (enableAuthMethodForAbha &&
+          !abhaAuthMethodForm.controls['authMethodForAbha'].value)
+      "
+    >
+      {{ currentLanguageSet?.common?.search }}
+    </button>
+  </div>
+</div>
