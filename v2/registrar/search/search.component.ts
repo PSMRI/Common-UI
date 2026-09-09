@@ -142,6 +142,9 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
     if (this.isEnableES) {
       this.setupDebouncedSearch();
     }
+    // Show the beneficiaries already registered at this service point on open,
+    // instead of an empty "No Records Found" table.
+    this.loadRegistrarWorklist();
   }
 
   ngAfterViewChecked() {
@@ -289,6 +292,59 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
     this.filteredBeneficiaryList = list;
     this.filterTerm = '';
     this.currentPage = 1;
+  }
+
+  /**
+   * Load the beneficiaries already registered at this service point and show
+   * them on open, so the page is not empty until the user searches. The
+   * worklist API returns lighter records than search, so we map only the
+   * fields the table needs. Failures stay silent (the table just stays empty).
+   */
+  loadRegistrarWorklist() {
+    const servicePointID = this.sessionstorage.getItem('servicePointID');
+    if (!servicePointID) {
+      return;
+    }
+    this.registrarService.getRegistrarWorklist(servicePointID).subscribe(
+      (res: any) => {
+        let list = res?.data ?? res;
+        if (typeof list === 'string') {
+          try {
+            list = JSON.parse(list);
+          } catch {
+            list = [];
+          }
+        }
+        if (Array.isArray(list) && list.length > 0) {
+          this.setResults(this.restructWorklist(list));
+        }
+      },
+      () => {
+        // Silent: a failed worklist load just leaves the usual empty table.
+      },
+    );
+  }
+
+  /** Map registrar-worklist records to the row shape the results table uses. */
+  restructWorklist(list: any[]) {
+    return (list || []).map((w: any) => ({
+      beneficiaryID: w.beneficiaryID,
+      beneficiaryRegID: w.beneficiaryRegID,
+      benName: w.benName || 'Not Available',
+      genderName: w.genderName || 'Not Available',
+      fatherName: w.fatherName || 'Not Available',
+      districtName: w.districtName || 'Not Available',
+      villageName: w.villageName || 'Not Available',
+      phoneNo: w.phoneNo || 'Not Available',
+      age: w.age || 'Not Available',
+      registeredOn: w.visitDate ? moment(w.visitDate).format('DD-MM-YYYY') : '',
+      // Keep the raw record; shape m_gender so the row-click handler
+      // (patientRevisited) reads genderName without throwing.
+      benObject: {
+        ...w,
+        m_gender: { genderID: w.genderID, genderName: w.genderName },
+      },
+    }));
   }
 
   // ---- Client-side pagination (replaces MatPaginator) ----
