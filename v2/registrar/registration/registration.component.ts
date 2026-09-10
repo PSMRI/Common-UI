@@ -187,15 +187,71 @@ export class RegistrationComponent {
     }
   }
 
+  // Field config (fieldName + fieldTitle) for a step, mirroring stepFormGroup,
+  // so the "required fields" alert can name the missing fields.
+  private stepFieldConfig(key: string): any[] {
+    switch (key) {
+      case 'personal':
+        return this.personalInfoData || [];
+      case 'location':
+        return this.locationInfoData || [];
+      case 'other':
+        return this.otherInfoData || [];
+      case 'abha':
+        return this.abhaInfoData || [];
+      default:
+        return [];
+    }
+  }
+
+  // Human-readable titles of the invalid (missing) controls in a step group.
+  private missingFieldTitles(group: FormGroup | null, key: string): string[] {
+    if (!group) return [];
+    const titleByName: Record<string, string> = {};
+    this.stepFieldConfig(key).forEach((field: any) => {
+      if (field?.fieldName) {
+        titleByName[field.fieldName] = field.fieldTitle || field.fieldName;
+      }
+    });
+    const titles: string[] = [];
+    Object.keys(group.controls).forEach((name) => {
+      if (group.get(name)?.invalid) {
+        titles.push(titleByName[name] || this.humanizeFieldName(name));
+      }
+    });
+    return titles;
+  }
+
+  // Fallback label for a control that has no config entry (e.g. "genderID"
+  // -> "Gender", "literacyStatus" -> "Literacy Status").
+  private humanizeFieldName(name: string): string {
+    return name
+      .replace(/ID$/, '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .replace(/^./, (c) => c.toUpperCase());
+  }
+
+  // Show the mandatory-fields dialog with the missing field titles rendered as
+  // red bullet items (matching the nurse/doctor validation dialogs), falling
+  // back to a plain alert when there is no specific field to list.
+  private showMandatory(titles: string[]): void {
+    const title =
+      this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
+      'Below fields are required';
+    if (titles.length) {
+      this.confirmationService.notify(title, titles);
+    } else {
+      this.confirmationService.alert(title, 'info');
+    }
+  }
+
   nextStep() {
     const group = this.stepFormGroup(this.activeStepKey);
     if (group?.invalid) {
       group.markAllAsTouched();
-      this.confirmationService.alert(
-        this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
-          'Please fill all the mandatory fields',
-        'info'
-      );
+      this.showMandatory(this.missingFieldTitles(group, this.activeStepKey));
       return;
     }
     if (this.currentStep < this.enabledStepKeys.length - 1) {
@@ -362,11 +418,11 @@ export class RegistrationComponent {
   submitBeneficiaryDetails() {
     if (this.mainForm.invalid) {
       this.mainForm.markAllAsTouched();
-      this.confirmationService.alert(
-        this.currentLanguageSet?.alerts?.info?.mandatoryFields ||
-          'Please fill all the mandatory fields',
-        'info'
-      );
+      const titles: string[] = [];
+      this.enabledStepKeys.forEach((key) => {
+        titles.push(...this.missingFieldTitles(this.stepFormGroup(key), key));
+      });
+      this.showMandatory(titles);
       return;
     }
     console.log('registration data', this.mainForm);
