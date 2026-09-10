@@ -584,8 +584,8 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
       this.beneficiaryDetailsService
         .getBeneficiaryImage(benregID)
         .subscribe((data: any) => {
-          if (data && data.benImage)
-            this.cameraService.viewImage(data.benImage);
+          const benImage = data?.data?.benImage ?? data?.benImage;
+          if (benImage) this.cameraService.viewImage(benImage);
           else
             this.confirmationService.alert(
               this.currentLanguageSet.alerts.info.imageNotFound,
