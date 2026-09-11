@@ -152,6 +152,11 @@ export class RegistrarService {
     return this.http.post(environment.registrarMasterDataUrl, tmpSPID);
   }
 
+  getRegistrarWorklist(servicePointID: any) {
+    const tmpSPID = { spID: servicePointID };
+    return this.http.post(environment.registrarWorkListDataUrl, tmpSPID);
+  }
+
   patientRevisit(benRegID: any) {
     return this.http.post(environment.patientRevisitSubmitToNurse, benRegID);
   }
