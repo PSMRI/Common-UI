@@ -115,18 +115,11 @@ export class ZardDialogOptions<T, U> {
       }
     </main>
 
+    <!-- Confirm first, then dismiss, centred: the order and placement the
+         legacy AMRIT dialogs use, so agents migrating between the apps keep
+         the same muscle memory for Ok/Cancel. -->
     @if (!config.zHideFooter) {
-      <footer class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-0 sm:space-x-2">
-        @if (config.zCancelText !== null) {
-          <button type="button" data-testid="z-cancel-button" z-button zType="outline" (click)="onCloseClick()">
-            @if (config.zCancelIcon) {
-              <ng-icon [svg]="config.zCancelIcon" class="size-4!" />
-            }
-
-            {{ config.zCancelText ?? 'Cancel' }}
-          </button>
-        }
-
+      <footer class="flex flex-col gap-2 sm:flex-row sm:justify-center sm:gap-3">
         @if (config.zOkText !== null) {
           <button
             type="button"
@@ -141,6 +134,16 @@ export class ZardDialogOptions<T, U> {
             }
 
             {{ config.zOkText ?? 'OK' }}
+          </button>
+        }
+
+        @if (config.zCancelText !== null) {
+          <button type="button" data-testid="z-cancel-button" z-button zType="outline" (click)="onCloseClick()">
+            @if (config.zCancelIcon) {
+              <ng-icon [svg]="config.zCancelIcon" class="size-4!" />
+            }
+
+            {{ config.zCancelText ?? 'Cancel' }}
           </button>
         }
       </footer>
