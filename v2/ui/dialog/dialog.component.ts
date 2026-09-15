@@ -75,6 +75,12 @@ export class ZardDialogOptions<T, U> {
   zOnCancel?: EventEmitter<T> | OnClickCallback<T> = noopFn;
   zOnOk?: EventEmitter<T> | OnClickCallback<T> = noopFn;
   zTitle?: string | TemplateRef<T>;
+  /**
+   * Colors the title as a full-bleed banner (info/success/error), matching a
+   * legacy Material-dialog pattern of status-coded notice headers. Omit for
+   * the plain neutral heading every other dialog already uses.
+   */
+  zStatus?: 'info' | 'success' | 'error';
   zViewContainerRef?: ViewContainerRef;
   zWidth?: string;
 }
@@ -97,7 +103,15 @@ export class ZardDialogOptions<T, U> {
       </button>
     }
 
-    @if (config.zTitle || config.zDescription) {
+    @if (config.zTitle && config.zStatus) {
+      <header class="-mx-6 -mt-6 rounded-t-lg px-6 py-3 text-center sm:text-left" [class]="statusHeaderClasses()">
+        <h4 data-testid="z-title" class="text-lg leading-none font-semibold tracking-tight">{{ config.zTitle }}</h4>
+      </header>
+
+      @if (config.zDescription) {
+        <p data-testid="z-description" class="text-muted-foreground text-sm text-center sm:text-left">{{ config.zDescription }}</p>
+      }
+    } @else if (config.zTitle || config.zDescription) {
       <header class="flex flex-col space-y-1.5 text-center sm:text-left">
         @if (config.zTitle) {
           <h4
@@ -209,6 +223,18 @@ export class ZardDialogComponent<T, U> extends BasePortalOutlet implements After
   readonly descriptionId = `z-dialog-description-${this.dialogId}`;
 
   protected readonly classes = computed(() => mergeClasses(dialogVariants(), this.config.zCustomClasses));
+  protected readonly statusHeaderClasses = computed(() => {
+    switch (this.config.zStatus) {
+      case 'success':
+        return 'bg-[var(--color-success,var(--success,#43a047))] text-[var(--color-success-foreground,var(--success-foreground,#fff))]';
+      case 'error':
+        return 'bg-destructive text-destructive-foreground';
+      case 'info':
+        return 'bg-[var(--color-info,var(--info,#0277bd))] text-[var(--color-info-foreground,var(--info-foreground,#fff))]';
+      default:
+        return '';
+    }
+  });
   dialogRef?: ZardDialogRef<T>;
 
   protected readonly isStringContent = typeof this.config.zContent === 'string';
