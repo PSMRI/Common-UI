@@ -129,6 +129,10 @@ export class PersonalInformationComponent {
       }
     });
     this.personalInfoFormGroup.addControl('image', new FormControl());
+    this.personalInfoFormGroup.addControl(
+      'imageChangeFlag',
+      new FormControl(false)
+    );
     console.log('personalInfoFormGroup Data', this.personalInfoFormGroup);
     if (this.patientRevisit) {
       this.personalInfoFormGroup.addControl(

@@ -529,7 +529,9 @@ export class RegistrationComponent {
     const finalForm = {
       beneficiaryConsent: true,
       dob: personalForm.controls['dOB']?.value,
-
+      benImage: personalForm.controls['image']?.value || null,
+      changeInBenImage:
+        personalForm.controls['imageChangeFlag']?.value || false,
 
       i_bendemographics: {
         monthlyFamilyIncome: personalForm.controls['monthlyFamilyIncome']?.value || null,
