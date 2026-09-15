@@ -202,11 +202,11 @@ export class ZardDialogComponent<T, U> extends BasePortalOutlet {
   protected readonly statusHeaderClasses = computed(() => {
     switch (this.config.zStatus) {
       case 'success':
-        return 'bg-success text-success-foreground';
+        return 'bg-[var(--color-success,var(--success,#43a047))] text-[var(--color-success-foreground,var(--success-foreground,#fff))]';
       case 'error':
         return 'bg-destructive text-destructive-foreground';
       case 'info':
-        return 'bg-info text-info-foreground';
+        return 'bg-[var(--color-info,var(--info,#0277bd))] text-[var(--color-info-foreground,var(--info-foreground,#fff))]';
       default:
         return '';
     }
