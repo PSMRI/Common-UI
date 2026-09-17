@@ -43,6 +43,7 @@ import { toastVariants, type ZardToastVariants } from './toast.variants';
       [visibleToasts]="visibleToasts()"
       [closeButton]="closeButton()"
       [toastOptions]="toastOptions()"
+      [offset]="offset()"
       [dir]="dir()"
     />
   `,
@@ -64,6 +65,7 @@ export class ZardToastComponent {
   readonly visibleToasts = input<number>(3);
   readonly closeButton = input<boolean>(false);
   readonly toastOptions = input<Record<string, unknown>>({});
+  readonly offset = input<string | number | null>(null);
   readonly dir = input<'ltr' | 'rtl' | 'auto'>('auto');
 
   protected readonly classes = computed(() =>
