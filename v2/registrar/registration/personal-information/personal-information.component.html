@@ -61,6 +61,19 @@
           *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['minlength']">
           Minimum length should be {{ item.allowMin }} characters
         </z-form-message>
+        <z-form-message
+          zType="error"
+          *ngIf="personalInfoFormGroup.controls[item.fieldName].errors?.['maxlength']">
+          Maximum length should be {{ item.allowMax }} characters
+        </z-form-message>
+        <z-form-message
+          zType="error"
+          *ngIf="
+            personalInfoFormGroup.controls[item.fieldName].errors?.['pattern'] &&
+            !personalInfoFormGroup.controls[item.fieldName].errors?.['required']
+          ">
+          Please enter valid characters
+        </z-form-message>
       </z-form-field>
 
       <!-- Date -->

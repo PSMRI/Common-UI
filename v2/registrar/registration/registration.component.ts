@@ -204,22 +204,37 @@ export class RegistrationComponent {
     }
   }
 
-  // Human-readable titles of the invalid (missing) controls in a step group.
-  private missingFieldTitles(group: FormGroup | null, key: string): string[] {
-    if (!group) return [];
+  // Split the invalid controls in a step group into two buckets: `required`
+  // (empty mandatory fields) and `invalid` (filled but failing a format rule —
+  // pattern / min / max length). This lets the caller show the right message
+  // instead of labelling wrong-format input as "required".
+  private categorizeInvalidFields(
+    group: FormGroup | null,
+    key: string
+  ): { required: string[]; invalid: string[] } {
+    const result: { required: string[]; invalid: string[] } = {
+      required: [],
+      invalid: [],
+    };
+    if (!group) return result;
     const titleByName: Record<string, string> = {};
     this.stepFieldConfig(key).forEach((field: any) => {
       if (field?.fieldName) {
         titleByName[field.fieldName] = field.fieldTitle || field.fieldName;
       }
     });
-    const titles: string[] = [];
     Object.keys(group.controls).forEach((name) => {
-      if (group.get(name)?.invalid) {
-        titles.push(titleByName[name] || this.humanizeFieldName(name));
+      const control = group.get(name);
+      if (control?.invalid) {
+        const title = titleByName[name] || this.humanizeFieldName(name);
+        if (control.errors?.['required']) {
+          result.required.push(title);
+        } else {
+          result.invalid.push(title);
+        }
       }
     });
-    return titles;
+    return result;
   }
 
   // Fallback label for a control that has no config entry (e.g. "genderID"
@@ -247,11 +262,29 @@ export class RegistrationComponent {
     }
   }
 
+  // Show the mandatory-fields dialog for empty required fields, otherwise a
+  // "please enter valid data" list for fields that are filled but fail a format
+  // rule — so wrong-format input is no longer reported as "required".
+  private showValidationDialog(required: string[], invalid: string[]): void {
+    if (required.length) {
+      this.showMandatory(required);
+    } else if (invalid.length) {
+      const title =
+        this.currentLanguageSet?.alerts?.info?.enterValidData ||
+        'Please enter valid data in the following fields';
+      this.confirmationService.notify(title, invalid);
+    }
+  }
+
   nextStep() {
     const group = this.stepFormGroup(this.activeStepKey);
     if (group?.invalid) {
       group.markAllAsTouched();
-      this.showMandatory(this.missingFieldTitles(group, this.activeStepKey));
+      const { required, invalid } = this.categorizeInvalidFields(
+        group,
+        this.activeStepKey
+      );
+      this.showValidationDialog(required, invalid);
       return;
     }
     if (this.currentStep < this.enabledStepKeys.length - 1) {
@@ -418,11 +451,17 @@ export class RegistrationComponent {
   submitBeneficiaryDetails() {
     if (this.mainForm.invalid) {
       this.mainForm.markAllAsTouched();
-      const titles: string[] = [];
+      const required: string[] = [];
+      const invalid: string[] = [];
       this.enabledStepKeys.forEach((key) => {
-        titles.push(...this.missingFieldTitles(this.stepFormGroup(key), key));
+        const categorized = this.categorizeInvalidFields(
+          this.stepFormGroup(key),
+          key
+        );
+        required.push(...categorized.required);
+        invalid.push(...categorized.invalid);
       });
-      this.showMandatory(titles);
+      this.showValidationDialog(required, invalid);
       return;
     }
     console.log('registration data', this.mainForm);

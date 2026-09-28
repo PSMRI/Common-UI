@@ -27,7 +27,14 @@
     </p>
   </div>
 
-  <div class="flex justify-end">
+  <div class="flex justify-end gap-3">
+    <button
+      z-button
+      zType="outline"
+      type="button"
+      (click)="closeConsent('0')">
+      {{ currentLanguageSet?.decline || 'Decline' }}
+    </button>
     <button z-button type="button" (click)="acceptConsent('1')">
       {{ currentLanguageSet?.tc?.accept || 'Accept' }}
     </button>
