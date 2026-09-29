@@ -128,9 +128,7 @@
                 {{ beneficiary?.benName | titlecase }}
               </td>
               <td z-table-cell>{{ beneficiary.genderName | titlecase }}</td>
-              <td z-table-cell>
-                {{ beneficiary.age === "a year" ? "1 year" : beneficiary.age }}
-              </td>
+              <td z-table-cell>{{ beneficiary.age }}</td>
               <td z-table-cell>{{ beneficiary.fatherName | titlecase }}</td>
               <td z-table-cell>
                 {{ beneficiary.districtName | titlecase }} /
