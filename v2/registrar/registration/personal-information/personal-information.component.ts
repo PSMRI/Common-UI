@@ -143,7 +143,7 @@ export class PersonalInformationComponent {
       this.personalInfoFormGroup.patchValue(this.revisitData);
       this.personalInfoFormGroup
         .get('phoneNo')
-        ?.patchValue(this.revisitData.benPhoneMaps[0].phoneNo);
+        ?.patchValue(this.revisitData?.benPhoneMaps?.[0]?.phoneNo);
     }
     console.log('personal Form Data', this.formData);
     console.log('this.revist data - personal info', this.revisitData);
