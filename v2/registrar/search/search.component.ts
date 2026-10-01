@@ -265,9 +265,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
                     element.i_bendemographics?.villageName || 
                     element.i_bendemographics?.districtBranchName || 'Not Available',
         phoneNo: element.benPhoneMaps?.[0]?.phoneNo || 'Not Available',
-        age: moment(element.dob || element.dOB).fromNow(true) === 'a few seconds'
-          ? 'Not Available'
-          : moment(element.dob || element.dOB).fromNow(true),
+        age: this.formatAge(element.dob || element.dOB),
         registeredOn: moment(element.createdDate).format('DD-MM-YYYY'),
         benObject: element,
       });
@@ -342,6 +340,21 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
     const pages: number[] = [];
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
+  }
+
+  // Precise age as "X years Y months", matching the Nurse module. moment().fromNow(true)
+  // rounds to a single unit (e.g. 22 years 11 months displayed as "23 years"), which is
+  // what made the age look inconsistent across modules.
+  formatAge(dob: any): string {
+    if (!dob) return 'Not Available';
+    const birth = moment(dob);
+    if (!birth.isValid() || !moment().isAfter(birth)) return 'Not Available';
+    const now = moment();
+    const years = now.diff(birth, 'years');
+    const months = now.diff(birth.clone().add(years, 'years'), 'months');
+    if (years >= 1) return `${years} years ${months} months`;
+    if (months >= 1) return `${months} months`;
+    return `${now.diff(birth, 'days')} days`;
   }
 
   goToPage(page: number) {
@@ -475,10 +488,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
           element.i_bendemographics.districtBranchName || 'Not Available'
         }`,
         phoneNo: this.getCorrectPhoneNo(element.benPhoneMaps, benObject),
-        age:
-          moment(element.dOB).fromNow(true) === 'a few seconds'
-            ? 'Not Available'
-            : moment(element.dOB).fromNow(true),
+        age: this.formatAge(element.dOB),
         registeredOn: moment(element.createdDate).format('DD-MM-YYYY'),
         benObject: element,
       });
