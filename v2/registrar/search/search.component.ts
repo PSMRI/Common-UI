@@ -289,6 +289,35 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
     this.filteredBeneficiaryList = list;
     this.filterTerm = '';
     this.currentPage = 1;
+    this.loadBeneficiaryImages(list);
+  }
+
+  /**
+   * Fetch each beneficiary's uploaded photo so the search results show the
+   * real image instead of the placeholder avatar (Quick and Advanced Search).
+   */
+  loadBeneficiaryImages(list: any[]) {
+    if (!list || !list.length) {
+      return;
+    }
+    list.forEach((beneficiary: any) => {
+      if (!beneficiary?.beneficiaryRegID) {
+        return;
+      }
+      this.beneficiaryDetailsService.getBeneficiaryImage(
+        beneficiary.beneficiaryRegID,
+      ).subscribe({
+        next: (data: any) => {
+          const benImage = data?.data?.benImage ?? data?.benImage;
+          if (benImage) {
+            beneficiary.benImage = benImage;
+            this.changeDetectorRef.detectChanges();
+          }
+        },
+        // No image (or fetch failed): keep the placeholder avatar.
+        error: () => {},
+      });
+    });
   }
 
   // ---- Client-side pagination (replaces MatPaginator) ----

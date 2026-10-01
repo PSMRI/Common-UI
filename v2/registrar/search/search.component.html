@@ -163,7 +163,10 @@
                   (keydown.enter)="$event.stopPropagation()">
                   <img
                     class="size-[1.875rem] rounded-full object-cover"
-                    src="assets/images/Avatar-Profile_30X30.png"
+                    [src]="
+                      beneficiary.benImage ||
+                      'assets/images/Avatar-Profile_30X30.png'
+                    "
                     alt="profile" />
                 </button>
               </td>
