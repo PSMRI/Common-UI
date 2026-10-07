@@ -11,7 +11,9 @@ import { AbhaEnterMobileOtpComponentComponent } from '../abha-enter-mobile-otp-c
 @Component({
   selector: 'app-abha-generation-success-component',
   templateUrl: './abha-generation-success-component.component.html',
-  styleUrls: ['./abha-generation-success-component.component.css']
+  styleUrls: ['./abha-generation-success-component.component.css'],
+
+  standalone: false,
 })
 export class AbhaGenerationSuccessComponentComponent {
 

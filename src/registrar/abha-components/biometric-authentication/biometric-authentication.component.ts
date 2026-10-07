@@ -15,6 +15,7 @@ import { HttpServiceService } from 'src/app/app-modules/core/services/http-servi
   selector: 'app-biometric-authentication',
   templateUrl: './biometric-authentication.component.html',
   styleUrls: ['./biometric-authentication.component.css'],
+  standalone: false,
 })
 export class BiometricAuthenticationComponent implements OnInit {
   transactionId: any;

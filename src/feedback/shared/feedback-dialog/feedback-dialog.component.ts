@@ -36,6 +36,7 @@ import { SetLanguageComponent } from "src/app/app-modules/core/components/set-la
   selector: "app-feedback-dialog",
   templateUrl: "./feedback-dialog.component.html",
   styleUrls: ["./feedback-dialog.component.scss"],
+  standalone: false,
 })
 export class FeedbackDialogComponent implements OnInit {
   @Input() serviceLine: ServiceLine = "TM";

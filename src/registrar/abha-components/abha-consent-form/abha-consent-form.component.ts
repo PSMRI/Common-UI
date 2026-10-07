@@ -6,7 +6,9 @@ import { SessionStorageService } from '../../services/session-storage.service';
 @Component({
   selector: 'app-abha-consent-form',
   templateUrl: './abha-consent-form.component.html',
-  styleUrls: ['./abha-consent-form.component.css']
+  styleUrls: ['./abha-consent-form.component.css'],
+
+  standalone: false,
 })
 export class AbhaConsentFormComponent {
 

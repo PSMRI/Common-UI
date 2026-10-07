@@ -9,7 +9,9 @@ import { ConfirmationService } from 'src/app/app-modules/core/services';
 @Component({
   selector: 'app-abha-enter-mobile-otp-component',
   templateUrl: './abha-enter-mobile-otp-component.component.html',
-  styleUrls: ['./abha-enter-mobile-otp-component.component.css']
+  styleUrls: ['./abha-enter-mobile-otp-component.component.css'],
+
+  standalone: false,
 })
 export class AbhaEnterMobileOtpComponentComponent {
   generateMobileOTPForm!: FormGroup;

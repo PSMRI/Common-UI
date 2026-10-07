@@ -15,6 +15,7 @@ import { ConsentFormComponent } from '../consent-form/consent-form.component';
   selector: 'app-other-information',
   templateUrl: './other-information.component.html',
   styleUrls: ['./other-information.component.css'],
+  standalone: false,
 })
 export class OtherInformationComponent {
   @Input('otherInfoFormGroup')
