@@ -35,7 +35,7 @@ import {
 import { mergeClasses } from '../utils/merge-classes';
 
 import type { CalendarDay } from './calendar.types';
-import { calendarWeekdays, getDayAriaLabel, getDayId } from './calendar.utils';
+import { getCalendarWeekdays, getDayAriaLabel, getDayId } from './calendar.utils';
 import { calendarDayButtonVariants, calendarDayVariants, calendarWeekdayVariants } from './calendar.variants';
 
 @Component({
@@ -95,7 +95,9 @@ export class ZardCalendarGridComponent {
   readonly nextMonth = output<{ position: string; dayOfWeek: number }>();
   readonly navigateYear = output<number>();
 
-  readonly weekdays = calendarWeekdays;
+  protected get weekdays(): readonly string[] {
+    return getCalendarWeekdays();
+  }
 
   private readonly focusedDayIndex = signal<number>(-1);
 
