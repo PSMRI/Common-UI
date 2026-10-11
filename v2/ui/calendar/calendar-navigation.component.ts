@@ -24,7 +24,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, ViewEncaps
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide';
 
-import { calendarMonths } from './calendar.utils';
+import { getCalendarMonths } from './calendar.utils';
 import { mergeClasses } from '../utils/merge-classes';
 
 import { calendarNavVariants } from './calendar.variants';
@@ -99,7 +99,9 @@ export class ZardCalendarNavigationComponent {
   readonly yearChange = output<string>();
   readonly previousMonth = output<void>();
   readonly nextMonth = output<void>();
-  readonly months = calendarMonths;
+  protected get months(): readonly string[] {
+    return getCalendarMonths();
+  }
 
   protected readonly navClasses = computed(() => mergeClasses(calendarNavVariants()));
 

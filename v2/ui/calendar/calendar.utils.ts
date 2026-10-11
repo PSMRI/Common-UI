@@ -40,6 +40,64 @@ export const calendarMonths = [
 export const calendarWeekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] as const;
 
 /**
+ * Maps the AMRIT app language name (stored in sessionStorage as 'currentLanguage'
+ * by the header's language selector) to a BCP-47 locale for Intl. Only languages
+ * with reliable short month/weekday data are mapped; anything else falls back to
+ * English so the calendar never shows a fabricated or broken label.
+ */
+const CALENDAR_LANGUAGE_LOCALES: Record<string, string> = {
+  English: 'en',
+  Hindi: 'hi',
+  Assamese: 'as',
+};
+
+function currentCalendarLocale(): string {
+  try {
+    const lang =
+      typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('currentLanguage') : null;
+    return (lang && CALENDAR_LANGUAGE_LOCALES[lang]) || 'en';
+  } catch {
+    return 'en';
+  }
+}
+
+/**
+ * Localized short month names for the calendar's month dropdown. English (and any
+ * locale Intl cannot format) returns the exact `calendarMonths` constants, so the
+ * English rendering is unchanged.
+ */
+export function getCalendarMonths(): readonly string[] {
+  const locale = currentCalendarLocale();
+  if (locale === 'en') {
+    return calendarMonths;
+  }
+  try {
+    const fmt = new Intl.DateTimeFormat(locale, { month: 'short' });
+    return Array.from({ length: 12 }, (_, m) => fmt.format(new Date(2000, m, 1)));
+  } catch {
+    return calendarMonths;
+  }
+}
+
+/**
+ * Localized short weekday names (Sunday first). English returns the exact
+ * `calendarWeekdays` constants so the header layout is unchanged.
+ */
+export function getCalendarWeekdays(): readonly string[] {
+  const locale = currentCalendarLocale();
+  if (locale === 'en') {
+    return calendarWeekdays;
+  }
+  try {
+    const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+    // 2000-01-02 was a Sunday; produce Sun..Sat to match calendarWeekdays order.
+    return Array.from({ length: 7 }, (_, d) => fmt.format(new Date(2000, 0, 2 + d)));
+  } catch {
+    return calendarWeekdays;
+  }
+}
+
+/**
  * Checks if two dates represent the same day (ignoring time)
  */
 export function isSameDay(date1: Date, date2: Date): boolean {
