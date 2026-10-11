@@ -62,9 +62,9 @@ import {
   host: {
     '[class]': 'classes()',
     '[attr.data-icon-only]': 'iconOnly() || null',
-    '[attr.data-disabled]': 'isNotInsideOfButtonOrLink() && zDisabled() || null',
-    '[attr.aria-disabled]': 'isNotInsideOfButtonOrLink() && zDisabled() || null',
-    '[attr.disabled]': 'isNotInsideOfButtonOrLink() && zDisabled() ? "" : null',
+    '[attr.data-disabled]': 'isNotInsideOfButtonOrLink() && isDisabled() || null',
+    '[attr.aria-disabled]': 'isNotInsideOfButtonOrLink() && isDisabled() || null',
+    '[attr.disabled]': 'isNotInsideOfButtonOrLink() && isDisabled() ? "" : null',
     '[attr.role]': 'isNotInsideOfButtonOrLink() ? "button" : null',
     '[attr.tabindex]': 'isNotInsideOfButtonOrLink() ? "0" : null',
   },
@@ -80,6 +80,12 @@ export class ZardButtonComponent implements OnDestroy {
   readonly zFull = input(false, { transform: booleanAttribute });
   readonly zLoading = input(false, { transform: booleanAttribute });
   readonly zDisabled = input(false, { transform: booleanAttribute });
+  // Honour the native `disabled` binding too, so `[disabled]="expr"` disables a
+  // z-button (not only `[zDisabled]`). Previously `[disabled]` was silently
+  // nullified by the host attr binding below, so those disabled states never
+  // applied. OR the two so either input disables the button.
+  readonly disabled = input(false, { transform: booleanAttribute });
+  protected readonly isDisabled = computed(() => this.zDisabled() || this.disabled());
 
   private readonly iconOnlyState = signal(false);
   readonly iconOnly = this.iconOnlyState.asReadonly();
@@ -138,7 +144,7 @@ export class ZardButtonComponent implements OnDestroy {
         zShape: this.zShape(),
         zFull: this.zFull(),
         zLoading: this.zLoading(),
-        zDisabled: this.zDisabled(),
+        zDisabled: this.isDisabled(),
       }),
       this.class(),
     ),
