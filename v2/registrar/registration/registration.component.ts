@@ -1,4 +1,4 @@
-import { Component, ViewContainerRef } from '@angular/core';
+import { Component, ViewContainerRef, inject } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -19,6 +19,7 @@ import { PersonalInformationComponent } from './personal-information/personal-in
 import { LocationInformationComponent } from './location-information/location-information.component';
 import { OtherInformationComponent } from './other-information/other-information.component';
 import { AbhaInformationComponent } from './abha-information/abha-information.component';
+import { ConsentDialogResult, ConsentDialogService, isConsentFeatureEnabled } from 'Common-UI/v2/consent/public-api';
 
 @Component({
     selector: 'app-registration',
@@ -45,6 +46,8 @@ export class RegistrationComponent {
   abhaInfoData: any;
   serviceLine: any;
   consentGranted: any;
+  consentResult: ConsentDialogResult | null = null;
+  private readonly consentDialog = inject(ConsentDialogService);
   disableGenerateOTP = false;
   today = new Date();
 
@@ -311,6 +314,17 @@ export class RegistrationComponent {
   }
 
   openConsent() {
+    if (this.patientRevisit === false && isConsentFeatureEnabled()) {
+      this.consentDialog
+        .open({ context: 'REGISTRATION', beneficiaryRegId: null })
+        .subscribe((result) => {
+          this.consentResult = result;
+          if (result.outcome === 'BLOCKED' || result.outcome === 'NO_DECISION') {
+            this.router.navigate(['/registrar/search/']);
+          }
+        });
+      return;
+    }
     if (this.patientRevisit === false) {
       const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
         zContent: ConsentFormComponent,
@@ -352,6 +366,18 @@ export class RegistrationComponent {
             this.redirectToSearch();
           }
         });
+    }
+
+    /** Real consent outcome for the registration payload; empty when the feature is off (FR-035). */
+    consentFields(): { beneficiaryConsent?: boolean; consentId?: string | null } {
+      if (!isConsentFeatureEnabled()) {
+        return {};
+      }
+      const outcome = this.consentResult?.outcome;
+      return {
+        beneficiaryConsent: outcome === 'GRANTED' || outcome === 'PARTIAL',
+        consentId: this.consentResult?.consentId || null,
+      };
     }
 
     redirectToSearch() {
@@ -567,6 +593,7 @@ export class RegistrationComponent {
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
       beneficiaryConsent: true,
+      ...this.consentFields(),
       dob: personalForm.controls['dOB']?.value,
       benImage: personalForm.controls['image']?.value || null,
       changeInBenImage:

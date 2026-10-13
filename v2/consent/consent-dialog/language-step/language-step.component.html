@@ -1,0 +1,26 @@
+<div class="flex flex-col gap-3">
+  <p class="text-sm font-medium text-foreground">{{ text?.chooseLanguage }}</p>
+  @if (failed) {
+    <div class="flex items-center gap-3" role="alert">
+      <p class="text-sm text-destructive">{{ text?.serviceUnavailable }}</p>
+      <button z-button zType="outline" type="button" (click)="load()">
+        {{ text?.retry }}
+      </button>
+    </div>
+  } @else {
+    <div class="flex flex-wrap gap-2">
+      @for (language of languages; track language.languageCode) {
+        <button
+          z-button
+          type="button"
+          [zType]="language.languageCode === selected ? 'default' : 'outline'"
+          [attr.aria-pressed]="language.languageCode === selected"
+          [attr.lang]="language.languageCode"
+          (click)="select(language.languageCode)"
+        >
+          {{ language.languageName }}
+        </button>
+      }
+    </div>
+  }
+</div>

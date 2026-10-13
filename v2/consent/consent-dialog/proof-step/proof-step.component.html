@@ -1,0 +1,14 @@
+<fieldset class="flex flex-col gap-2">
+  <legend class="text-sm font-medium text-foreground">{{ text?.mode }}</legend>
+  <z-radio-group
+    name="consent-mode"
+    zOrientation="horizontal"
+    class="flex-wrap gap-4"
+    [ngModel]="mode"
+    (zChange)="selectMode($event)"
+  >
+    @for (option of modes; track option.mode) {
+      <z-radio [value]="option.mode">{{ text?.[option.key] }}</z-radio>
+    }
+  </z-radio-group>
+</fieldset>

@@ -1,0 +1,79 @@
+<div class="flex max-h-[90vh] flex-col gap-4 p-2">
+  <div class="flex items-start justify-between gap-4">
+    <p class="text-lg font-semibold text-foreground">{{ text?.title }}</p>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      class="p-0"
+      type="button"
+      [attr.aria-label]="text?.close"
+      (click)="close()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+    @if (step === 'LANGUAGE') {
+      <app-consent-language-step
+        [text]="text"
+        [selected]="draft.languageCode"
+        (languageSelected)="loadNotice($event)"
+      ></app-consent-language-step>
+    } @else if (draft.notice) {
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-sm text-muted-foreground">{{ draft.notice.languageCode }}</span>
+        <button z-button zType="link" type="button" (click)="changeLanguage()">
+          {{ text?.chooseLanguage }}
+        </button>
+      </div>
+      <app-consent-notice-step
+        [text]="text"
+        [notice]="draft.notice"
+        (readComplete)="onReadComplete()"
+        (audioPlayedToEnd)="onAudioPlayed()"
+      ></app-consent-notice-step>
+      <app-consent-purposes-step
+        [text]="text"
+        [purposes]="draft.notice.purposes"
+        [decisions]="draft.decisions"
+        (decisionsChange)="onDecisions($event)"
+      ></app-consent-purposes-step>
+      <app-consent-proof-step
+        [text]="text"
+        [notice]="draft.notice"
+        [mode]="draft.mode"
+        [audioPlayedToEnd]="draft.audioPlayedToEnd"
+        (modeChange)="onMode($event)"
+        (proofChange)="onProof($event)"
+      ></app-consent-proof-step>
+    }
+
+    @if (failed) {
+      <div class="flex items-center gap-3" role="alert">
+        <p class="text-sm text-destructive">{{ text?.serviceUnavailable }}</p>
+        <button z-button zType="outline" type="button" (click)="retry()">
+          {{ text?.retry }}
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (step === 'DECIDE') {
+    <div class="flex justify-end gap-3">
+      <button z-button zType="outline" type="button" [disabled]="saving" (click)="decline()">
+        {{ text?.decline }}
+      </button>
+      <button
+        z-button
+        type="button"
+        [disabled]="!acceptEnabled"
+        [zLoading]="saving"
+        (click)="accept()"
+      >
+        {{ text?.accept }}
+      </button>
+    </div>
+  }
+</div>

@@ -1,0 +1,40 @@
+<div class="flex flex-col gap-3">
+  @if (notice.audioUrl && !audioFailed) {
+    <div class="flex flex-col gap-1">
+      <span class="text-sm font-medium text-foreground">{{ text?.playAudio }}</span>
+      <audio
+        #player
+        controls
+        class="w-full"
+        [src]="notice.audioUrl"
+        (timeupdate)="onTimeUpdate(player)"
+        (ended)="onEnded(player)"
+        (error)="onAudioError()"
+      ></audio>
+    </div>
+  }
+  <div
+    #scrollBox
+    class="max-h-64 overflow-y-auto rounded-lg border border-input bg-background p-3 text-sm text-foreground"
+    tabindex="0"
+    [attr.lang]="notice.languageCode"
+    [attr.aria-label]="text?.title"
+    (scroll)="onScroll()"
+  >
+    <div [innerHTML]="notice.body"></div>
+    <dl class="mt-3 flex flex-col gap-2">
+      <dt class="font-medium">{{ text?.noticeDataItems }}</dt>
+      <dd>{{ notice.dataItems }}</dd>
+      <dt class="font-medium">{{ text?.noticeRetention }}</dt>
+      <dd>{{ notice.retention }}</dd>
+      <dt class="font-medium">{{ text?.noticeRecipients }}</dt>
+      <dd>{{ notice.recipients }}</dd>
+      <dt class="font-medium">{{ text?.noticeWithdrawal }}</dt>
+      <dd>{{ notice.withdrawalInfo }}</dd>
+      <dt class="font-medium">{{ text?.noticeGrievance }}</dt>
+      <dd>{{ notice.grievanceInfo }}</dd>
+    </dl>
+    <div #endMarker class="h-px" aria-hidden="true"></div>
+  </div>
+  <p class="text-xs text-muted-foreground">{{ text?.readToEnd }}</p>
+</div>
