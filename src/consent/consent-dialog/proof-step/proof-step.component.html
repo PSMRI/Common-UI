@@ -1,0 +1,13 @@
+<fieldset class="consent-proof">
+  <legend>{{ text?.mode }}</legend>
+  <mat-radio-group
+    name="consent-mode"
+    class="consent-modes"
+    [value]="mode"
+    (change)="selectMode($event.value)"
+  >
+    <mat-radio-button *ngFor="let option of modes" [value]="option.mode">
+      {{ text?.[option.key] }}
+    </mat-radio-button>
+  </mat-radio-group>
+</fieldset>

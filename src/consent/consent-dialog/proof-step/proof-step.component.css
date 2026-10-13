@@ -1,0 +1,3 @@
+.consent-proof { border: 0; margin: 0; padding: 0; }
+.consent-proof legend { font-weight: 500; }
+.consent-modes { display: flex; flex-wrap: wrap; gap: 16px; }

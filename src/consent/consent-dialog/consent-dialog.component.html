@@ -1,0 +1,58 @@
+<section class="consent-dialog">
+  <div class="consent-header">
+    <span class="consent-title">{{ text?.title }}</span>
+    <button mat-icon-button type="button" [attr.aria-label]="text?.close" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="consent-body">
+    <app-consent-language-step
+      *ngIf="step === 'LANGUAGE'"
+      [text]="text"
+      [selected]="draft.languageCode"
+      (languageSelected)="loadNotice($event)"
+    ></app-consent-language-step>
+
+    <ng-container *ngIf="step === 'DECIDE' && draft.notice">
+      <div class="consent-language-row">
+        <span>{{ draft.notice.languageCode }}</span>
+        <button mat-button type="button" (click)="changeLanguage()">{{ text?.chooseLanguage }}</button>
+      </div>
+      <app-consent-notice-step
+        [text]="text"
+        [notice]="draft.notice"
+        (readComplete)="onReadComplete()"
+        (audioPlayedToEnd)="onAudioPlayed()"
+      ></app-consent-notice-step>
+      <app-consent-purposes-step
+        [text]="text"
+        [purposes]="draft.notice.purposes"
+        [decisions]="draft.decisions"
+        (decisionsChange)="onDecisions($event)"
+      ></app-consent-purposes-step>
+      <app-consent-proof-step
+        [text]="text"
+        [notice]="draft.notice"
+        [mode]="draft.mode"
+        [audioPlayedToEnd]="draft.audioPlayedToEnd"
+        (modeChange)="onMode($event)"
+        (proofChange)="onProof($event)"
+      ></app-consent-proof-step>
+    </ng-container>
+
+    <div *ngIf="failed" class="consent-alert" role="alert">
+      <span>{{ text?.serviceUnavailable }}</span>
+      <button mat-stroked-button type="button" (click)="retry()">{{ text?.retry }}</button>
+    </div>
+  </div>
+
+  <div *ngIf="step === 'DECIDE'" class="consent-actions">
+    <button mat-stroked-button type="button" [disabled]="saving" (click)="decline()">
+      {{ text?.decline }}
+    </button>
+    <button mat-flat-button color="primary" type="button" [disabled]="!acceptEnabled" (click)="accept()">
+      {{ text?.accept }}
+    </button>
+  </div>
+</section>

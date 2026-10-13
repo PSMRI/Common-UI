@@ -1,0 +1,9 @@
+.consent-notice { display: flex; flex-direction: column; gap: 12px; }
+.consent-audio { display: flex; flex-direction: column; gap: 4px; }
+.consent-audio audio { width: 100%; }
+.consent-label { font-weight: 500; }
+.consent-notice-box { max-height: 256px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; }
+.consent-notice-box dt { font-weight: 500; margin-top: 8px; }
+.consent-notice-box dd { margin: 0; }
+.consent-end-marker { height: 1px; }
+.consent-hint { margin: 0; font-size: 12px; color: #616161; }

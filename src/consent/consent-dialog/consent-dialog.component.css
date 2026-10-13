@@ -1,0 +1,7 @@
+.consent-dialog { display: flex; flex-direction: column; gap: 16px; max-height: 90vh; padding: 8px; }
+.consent-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.consent-title { font-size: 18px; font-weight: 600; }
+.consent-body { display: flex; flex-direction: column; gap: 16px; min-height: 0; flex: 1; overflow-y: auto; }
+.consent-language-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.consent-alert { display: flex; align-items: center; gap: 12px; color: #c62828; }
+.consent-actions { display: flex; justify-content: flex-end; gap: 12px; }
