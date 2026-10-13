@@ -25,3 +25,5 @@ export * from './core/consent.models';
 export { isConsentFeatureEnabled } from './core/consent-feature';
 export { consentRefusalFrom } from './core/consent-refusal';
 export { ConsentApiService } from './core/consent-api.service';
+export { ConsentDialogService } from './consent-dialog.service';
+export { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';

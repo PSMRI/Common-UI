@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import {
@@ -19,6 +19,7 @@ import * as moment from 'moment';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConsentFormComponent } from './consent-form/consent-form.component';
 import { SessionStorageService } from '../services/session-storage.service';
+import { ConsentDialogResult, ConsentDialogService, isConsentFeatureEnabled } from '../../consent/public-api';
 
 @Component({
   selector: 'app-registration',
@@ -45,6 +46,8 @@ export class RegistrationComponent {
   abhaInfoData: any;
   serviceLine: any;
   consentGranted: any;
+  consentResult: ConsentDialogResult | null = null;
+  private readonly consentDialog = inject(ConsentDialogService);
   disableGenerateOTP = false;
   today = new Date();
 
@@ -161,6 +164,17 @@ export class RegistrationComponent {
   }
 
   openConsent() {
+    if (this.patientRevisit === false && isConsentFeatureEnabled()) {
+      this.consentDialog
+        .open({ context: 'REGISTRATION', beneficiaryRegId: null })
+        .subscribe((result) => {
+          this.consentResult = result;
+          if (result.outcome === 'BLOCKED' || result.outcome === 'NO_DECISION') {
+            this.router.navigate(['/registrar/search/']);
+          }
+        });
+      return;
+    }
     if (this.patientRevisit === false) {
       const mdDialogRef: MatDialogRef<ConsentFormComponent> = this.dialog.open(
         ConsentFormComponent,
@@ -203,6 +217,18 @@ export class RegistrationComponent {
             this.redirectToSearch();
           }
         });
+    }
+
+    /** Real consent outcome for the registration payload; empty when the feature is off (FR-035). */
+    consentFields(): { beneficiaryConsent?: boolean; consentId?: string | null } {
+      if (!isConsentFeatureEnabled()) {
+        return {};
+      }
+      const outcome = this.consentResult?.outcome;
+      return {
+        beneficiaryConsent: outcome === 'GRANTED' || outcome === 'PARTIAL',
+        consentId: this.consentResult?.consentId || null,
+      };
     }
 
     redirectToSearch() {
@@ -403,6 +429,7 @@ export class RegistrationComponent {
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
       beneficiaryConsent: true,
+      ...this.consentFields(),
       dob: personalForm.controls['dOB']?.value,
 
 

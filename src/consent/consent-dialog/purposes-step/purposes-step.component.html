@@ -1,0 +1,15 @@
+<ul class="consent-purposes">
+  <li *ngFor="let purpose of sorted">
+    <mat-slide-toggle
+      [id]="'consent-purpose-' + purpose.purposeCode"
+      [checked]="isOn(purpose.purposeCode)"
+      (change)="toggle(purpose.purposeCode, $event.checked)"
+    >
+      <span class="consent-purpose-name">{{ purpose.name }}</span>
+      <span class="consent-purpose-desc">{{ purpose.description }}</span>
+    </mat-slide-toggle>
+    <span class="consent-purpose-kind">
+      {{ purpose.isMandatory ? text?.mandatory : text?.optional }}
+    </span>
+  </li>
+</ul>

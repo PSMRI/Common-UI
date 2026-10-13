@@ -1,0 +1,37 @@
+<div class="consent-notice">
+  <div *ngIf="notice.audioUrl && !audioFailed" class="consent-audio">
+    <span class="consent-label">{{ text?.playAudio }}</span>
+    <audio
+      #player
+      controls
+      [src]="notice.audioUrl"
+      (timeupdate)="onTimeUpdate(player)"
+      (ended)="onEnded(player)"
+      (error)="onAudioError()"
+    ></audio>
+  </div>
+  <div
+    #scrollBox
+    class="consent-notice-box"
+    tabindex="0"
+    [attr.lang]="notice.languageCode"
+    [attr.aria-label]="text?.title"
+    (scroll)="onScroll()"
+  >
+    <div [innerHTML]="notice.body"></div>
+    <dl>
+      <dt>{{ text?.noticeDataItems }}</dt>
+      <dd>{{ notice.dataItems }}</dd>
+      <dt>{{ text?.noticeRetention }}</dt>
+      <dd>{{ notice.retention }}</dd>
+      <dt>{{ text?.noticeRecipients }}</dt>
+      <dd>{{ notice.recipients }}</dd>
+      <dt>{{ text?.noticeWithdrawal }}</dt>
+      <dd>{{ notice.withdrawalInfo }}</dd>
+      <dt>{{ text?.noticeGrievance }}</dt>
+      <dd>{{ notice.grievanceInfo }}</dd>
+    </dl>
+    <div #endMarker class="consent-end-marker" aria-hidden="true"></div>
+  </div>
+  <p class="consent-hint">{{ text?.readToEnd }}</p>
+</div>
