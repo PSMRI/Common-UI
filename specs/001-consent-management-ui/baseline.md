@@ -38,5 +38,15 @@ instruments only files under `sourceRoot`, then restores `angular.json`.
 | 2026-10-13 | MMU-UI, AOT (`CONSENT_AOT=1`) | lines added to `v2/registrar/registration/registration.component.ts` | 9 pass | — | 100 % (11/11) | — | 100 % (12/12) |
 
 | 2026-10-13 | HWC-UI (Common-UI `4677d34` + `src/consent` + hooked registration), JIT | `src/consent/**` + lines added to `src/registrar/registration/registration.component.ts` (US1 src + core) | 128 pass | — | 100 % (179/179) | 100 % (132/132) | 100 % (337/337) |
+### Builds with the feature off (no-regression check, US1)
+
+| Date | Host | Common-UI | Result |
+| --- | --- | --- | --- |
+| 2026-10-13 | MMU-UI, Node 22, `ng build` (production) | `001-consent-management-ui-v2` @ 6b64ea0 | Pass, 2 min 47 s, 35 warnings, none from consent code |
+| 2026-10-13 | HWC-UI, Node 18, `ng build` (production) | `4677d34` + `src/consent` + hooked registration | Pass, 2 min 27 s, 32 warnings, none from consent code (the one naming "consent" is the existing `abha-consent-form` CSS) |
+
+There is no warning count from before this feature to compare against; T105 records them at the pinned
+commits.
+
 Statements are not in lcov; `lcov-consent.py` reports lines, branches and functions. The HWC-UI
 text summary includes statements.
