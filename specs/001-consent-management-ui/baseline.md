@@ -37,5 +37,6 @@ instruments only files under `sourceRoot`, then restores `angular.json`.
 | 2026-10-13 | MMU-UI (Common-UI `001-consent-management-ui-v2`), JIT | `src/consent/**`, `v2/consent/**` (US1 v2 + core) | 119 pass | — | 100 % (168/168) | 100 % (130/130) | 100 % (325/325) |
 | 2026-10-13 | MMU-UI, AOT (`CONSENT_AOT=1`) | lines added to `v2/registrar/registration/registration.component.ts` | 9 pass | — | 100 % (11/11) | — | 100 % (12/12) |
 
+| 2026-10-13 | HWC-UI (Common-UI `4677d34` + `src/consent` + hooked registration), JIT | `src/consent/**` + lines added to `src/registrar/registration/registration.component.ts` (US1 src + core) | 128 pass | — | 100 % (179/179) | 100 % (132/132) | 100 % (337/337) |
 Statements are not in lcov; `lcov-consent.py` reports lines, branches and functions. The HWC-UI
 text summary includes statements.

@@ -61,7 +61,7 @@ description: "Task list for Consent Management UI (Common-UI)"
 - [X] T001 Agree the branch strategy with the Common-UI maintainers. The choice is between building on `angular-zard-migration` (has both `src/` and `v2/`), or a `main`-based PR for `src/` plus a zard-based PR for `v2/`. Record the decision in `specs/001-consent-management-ui/plan.md` under "Open risk". **Blocks T003.**
 - [ ] T002 Get FE tech lead approval for the Constitution I exception: one `consentManagement.apiBase` env key plus path constants in code (research R5). Record the approver and date in `specs/001-consent-management-ui/plan.md` Complexity Tracking row 4. If refused, switch R5 to per-URL env keys before T009. _2026-10-13: approval still pending; the user chose to proceed with the R5 design meanwhile (plan.md Complexity Tracking row 4)._
 - [X] T003 Per T001 (split): in `FE/MMU-UI/Common-UI`, run `git fetch origin` and `git checkout -b 001-consent-management-ui origin/main`. Commit the untracked `specs/001-consent-management-ui/` and `.specify/` as `docs: add consent management spec, plan and tasks`. The `v2` branch `001-consent-management-ui-v2` is cut from `origin/angular-zard-migration` when US1's `v2` track starts, and gets the docs and core commits cherry-picked.
-- [ ] T004 Create empty barrels with the licence header only: `src/consent/public-api.ts` and `v2/consent/public-api.ts`. Do NOT add them to `src/public-api.ts` or `v2/public-api.ts` (Constitution IV).
+- [X] T004 Create empty barrels with the licence header only: `src/consent/public-api.ts` and `v2/consent/public-api.ts`. Do NOT add them to `src/public-api.ts` or `v2/public-api.ts` (Constitution IV).
 - [X] T005 [P] In `FE/MMU-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/core/**/*.spec.ts"` and `"Common-UI/v2/consent/**/*.spec.ts"` to `include`. Change nothing else.
 - [X] T006 [P] In `FE/HWC-UI/tsconfig.spec.json` and `FE/TM-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/**/*.spec.ts"` to `include`. Change nothing else.
 - [ ] T007 Record the regression baseline with the feature off in `specs/001-consent-management-ui/baseline.md`. For each of FE/MMU-UI, FE/HWC-UI and FE/TM-UI, run `npm run lint`, `npx ng test --watch=false --browsers=ChromeHeadless` (stop Karma once `TOTAL` prints) and `npm run build`. For each of FE/Admin-UI, FE/ECD-UI, FE/Inventory-UI, FE/HWC-Inventory-UI, FE/HWC-UI-integration and FE/Helpline1097-UI-NEXT, run `npx ng test --watch=false --browsers=ChromeHeadless` and `npm run build` with Common-UI at its currently pinned commit. Record pass/fail counts and warnings exactly.
@@ -274,23 +274,28 @@ specs.
 
 ### src track (HWC-UI, TM-UI)
 
-- [ ] T040 [P] [US1] Write `src/consent/consent-dialog/language-step/language-step.component.spec.ts` with the same cases as T026.
-- [ ] T041 [P] [US1] Implement `src/consent/consent-dialog/language-step/language-step.component.{ts,html,css}` with Material `mat-select`.
-- [ ] T042 [P] [US1] Write `src/consent/consent-dialog/notice-step/notice-step.component.spec.ts` with the same cases as T028.
-- [ ] T043 [P] [US1] Implement `src/consent/consent-dialog/notice-step/notice-step.component.{ts,html,css}`.
-- [ ] T044 [P] [US1] Write `src/consent/consent-dialog/purposes-step/purposes-step.component.spec.ts` with the same cases as T030, using `mat-slide-toggle`.
-- [ ] T045 [P] [US1] Implement `src/consent/consent-dialog/purposes-step/purposes-step.component.{ts,html,css}` with `mat-slide-toggle`.
-- [ ] T046 [P] [US1] Write `src/consent/consent-dialog/proof-step/proof-step.component.spec.ts` with the same cases as T032.
-- [ ] T047 [P] [US1] Implement `src/consent/consent-dialog/proof-step/proof-step.component.{ts,html,css}` with `mat-radio-group` and an `[ngSwitch]` per mode.
-- [ ] T048 [US1] Write `src/consent/consent-dialog/consent-dialog.component.spec.ts` with the same cases as T034, injecting `MAT_DIALOG_DATA` and a `MatDialogRef` spy.
-- [ ] T049 [US1] Implement `src/consent/consent-dialog/consent-dialog.component.{ts,html,css}`, mirroring T035 with Material.
-- [ ] T050 [US1] Write `src/consent/consent-dialog.service.spec.ts`. `open()` calls `MatDialog.open(ConsentDialogComponent, { data, disableClose: true, width: 'min(960px, 95vw)', maxHeight: '90vh' })`; the remaining cases are the same as T036.
-- [ ] T051 [US1] Implement `src/consent/consent-dialog.service.ts` (`providedIn: 'root'`).
-- [ ] T052 [US1] Add a spec for the `src` registration hook to `src/registrar/registration/registration.component.spec.ts`, with the same cases as T038.
+> _Implemented 2026-10-13 as thin Material subclasses of the same bases, running the same behaviour
+> suites. Hook spec: new file `src/registrar/registration/registration.consent-hook.spec.ts`. Measured in
+> HWC-UI (JIT): 128 specs, 100 % lines, branches and functions for consent code and the added hook
+> lines. TM-UI not run yet (its Common-UI submodule is not initialised); same code, verified at T105._
+
+- [X] T040 [P] [US1] Write `src/consent/consent-dialog/language-step/language-step.component.spec.ts` with the same cases as T026.
+- [X] T041 [P] [US1] Implement `src/consent/consent-dialog/language-step/language-step.component.{ts,html,css}` with Material `mat-select`.
+- [X] T042 [P] [US1] Write `src/consent/consent-dialog/notice-step/notice-step.component.spec.ts` with the same cases as T028.
+- [X] T043 [P] [US1] Implement `src/consent/consent-dialog/notice-step/notice-step.component.{ts,html,css}`.
+- [X] T044 [P] [US1] Write `src/consent/consent-dialog/purposes-step/purposes-step.component.spec.ts` with the same cases as T030, using `mat-slide-toggle`.
+- [X] T045 [P] [US1] Implement `src/consent/consent-dialog/purposes-step/purposes-step.component.{ts,html,css}` with `mat-slide-toggle`.
+- [X] T046 [P] [US1] Write `src/consent/consent-dialog/proof-step/proof-step.component.spec.ts` with the same cases as T032.
+- [X] T047 [P] [US1] Implement `src/consent/consent-dialog/proof-step/proof-step.component.{ts,html,css}` with `mat-radio-group` and an `[ngSwitch]` per mode.
+- [X] T048 [US1] Write `src/consent/consent-dialog/consent-dialog.component.spec.ts` with the same cases as T034, injecting `MAT_DIALOG_DATA` and a `MatDialogRef` spy.
+- [X] T049 [US1] Implement `src/consent/consent-dialog/consent-dialog.component.{ts,html,css}`, mirroring T035 with Material.
+- [X] T050 [US1] Write `src/consent/consent-dialog.service.spec.ts`. `open()` calls `MatDialog.open(ConsentDialogComponent, { data, disableClose: true, width: 'min(960px, 95vw)', maxHeight: '90vh' })`; the remaining cases are the same as T036.
+- [X] T051 [US1] Implement `src/consent/consent-dialog.service.ts` (`providedIn: 'root'`).
+- [X] T052 [US1] Add a spec for the `src` registration hook to `src/registrar/registration/registration.component.spec.ts`, with the same cases as T038.
   - If the existing spec file does not compile, create `src/registrar/registration/registration.consent-hook.spec.ts` instead.
   - Never edit the stale existing spec (Constitution IV).
-- [ ] T053 [US1] Edit `src/registrar/registration/registration.component.ts` minimally: `openConsent()` around L163-178 and the payload around L405, the same as T039 but using `MatDialog`.
-- [ ] T054 [US1] Export `ConsentDialogService` and `ConsentDialogComponent` from `src/consent/public-api.ts` and `v2/consent/public-api.ts`. The `v2` barrel re-exports the core models, feature and refusal from `../../src/consent/core/...`.
+- [X] T053 [US1] Edit `src/registrar/registration/registration.component.ts` minimally: `openConsent()` around L163-178 and the payload around L405, the same as T039 but using `MatDialog`.
+- [X] T054 [US1] Export `ConsentDialogService` and `ConsentDialogComponent` from `src/consent/public-api.ts` and `v2/consent/public-api.ts`. The `v2` barrel re-exports the core models, feature and refusal from `../../src/consent/core/...`.
 
 **Checkpoint**:
 
