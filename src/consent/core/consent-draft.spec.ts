@@ -24,11 +24,13 @@ import {
   ageInYears,
   canAccept,
   createDraft,
+  declineAll,
   decisionList,
   filterRtl,
   guardianValid,
   mandatoryAllGranted,
   needsGuardian,
+  noDecisionResult,
   outcomeOf,
   proofValid,
   sortPurposes,
@@ -313,5 +315,23 @@ describe('consent-draft', () => {
       );
       expect(u.guardian!.witnessName).toBe('Ravi');
     });
+  });
+  it('noDecisionResult saves nothing', () => {
+    expect(noDecisionResult()).toEqual({
+      outcome: 'NO_DECISION',
+      consentId: null,
+      consentingParty: null,
+      decisions: [],
+      syncStatus: null,
+    });
+  });
+
+  it('declineAll turns every decision off and keeps the rest', () => {
+    const d = grantAll(withNotice(createDraft(), mockNotice('hi')));
+    const declined = declineAll(d);
+    expect(Object.values(declined.decisions).every((v) => v === false)).toBeTrue();
+    expect(Object.keys(declined.decisions).length).toBe(6);
+    expect(declined.idempotencyKey).toBe(d.idempotencyKey);
+    expect(d.decisions['P-REG']).toBeTrue();
   });
 });
