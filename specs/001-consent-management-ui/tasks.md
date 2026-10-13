@@ -60,11 +60,12 @@ description: "Task list for Consent Management UI (Common-UI)"
 
 - [X] T001 Agree the branch strategy with the Common-UI maintainers. The choice is between building on `angular-zard-migration` (has both `src/` and `v2/`), or a `main`-based PR for `src/` plus a zard-based PR for `v2/`. Record the decision in `specs/001-consent-management-ui/plan.md` under "Open risk". **Blocks T003.**
 - [ ] T002 Get FE tech lead approval for the Constitution I exception: one `consentManagement.apiBase` env key plus path constants in code (research R5). Record the approver and date in `specs/001-consent-management-ui/plan.md` Complexity Tracking row 4. If refused, switch R5 to per-URL env keys before T009. _2026-10-13: approval still pending; the user chose to proceed with the R5 design meanwhile (plan.md Complexity Tracking row 4)._
-- [ ] T003 Per T001 (split): in `FE/MMU-UI/Common-UI`, run `git fetch origin` and `git checkout -b 001-consent-management-ui origin/main`. Commit the untracked `specs/001-consent-management-ui/` and `.specify/` as `docs: add consent management spec, plan and tasks`. The `v2` branch `001-consent-management-ui-v2` is cut from `origin/angular-zard-migration` when US1's `v2` track starts, and gets the docs and core commits cherry-picked.
+- [X] T003 Per T001 (split): in `FE/MMU-UI/Common-UI`, run `git fetch origin` and `git checkout -b 001-consent-management-ui origin/main`. Commit the untracked `specs/001-consent-management-ui/` and `.specify/` as `docs: add consent management spec, plan and tasks`. The `v2` branch `001-consent-management-ui-v2` is cut from `origin/angular-zard-migration` when US1's `v2` track starts, and gets the docs and core commits cherry-picked.
 - [ ] T004 Create empty barrels with the licence header only: `src/consent/public-api.ts` and `v2/consent/public-api.ts`. Do NOT add them to `src/public-api.ts` or `v2/public-api.ts` (Constitution IV).
 - [ ] T005 [P] In `FE/MMU-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/core/**/*.spec.ts"` and `"Common-UI/v2/consent/**/*.spec.ts"` to `include`. Change nothing else.
-- [ ] T006 [P] In `FE/HWC-UI/tsconfig.spec.json` and `FE/TM-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/**/*.spec.ts"` to `include`. Change nothing else.
+- [X] T006 [P] In `FE/HWC-UI/tsconfig.spec.json` and `FE/TM-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/**/*.spec.ts"` to `include`. Change nothing else.
 - [ ] T007 Record the regression baseline with the feature off in `specs/001-consent-management-ui/baseline.md`. For each of FE/MMU-UI, FE/HWC-UI and FE/TM-UI, run `npm run lint`, `npx ng test --watch=false --browsers=ChromeHeadless` (stop Karma once `TOTAL` prints) and `npm run build`. For each of FE/Admin-UI, FE/ECD-UI, FE/Inventory-UI, FE/HWC-Inventory-UI, FE/HWC-UI-integration and FE/Helpline1097-UI-NEXT, run `npx ng test --watch=false --browsers=ChromeHeadless` and `npm run build` with Common-UI at its currently pinned commit. Record pass/fail counts and warnings exactly.
+  _2026-10-13: HWC-UI unit tests recorded in `baseline.md`. The other repos are deferred to T105; the baseline uses the pinned Common-UI commit, so it can run any time before merge._
 
 ---
 
@@ -74,15 +75,15 @@ description: "Task list for Consent Management UI (Common-UI)"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T008 [P] Create `src/consent/core/consent.models.ts` with every enum (string union types) and interface in [data-model.md](./data-model.md): `Purpose`, `Notice`, `NoticeLanguage`, `ConsentDraft`, `ProofDraft`, `GuardianDraft`, `ConsentRecord`, `PurposeState`, `PendingAction`, `AccessGrant`, `ConsentDialogResult`, `ConsentRefusal`, `OutputResponse<T>` (`statusCode`, `status`, `errorMessage`, `data`), and the save/change/withdraw/OTP/evidence request and response shapes from [contracts/consent-api.md](./contracts/consent-api.md). Types only; no logic, so no spec.
-- [ ] T009 [P] Create `src/consent/core/consent-api.paths.ts` exporting `CONSENT_PATHS`, one function or constant per row of the endpoint table in contracts/consent-api.md, e.g. `pendingActions: (benRegId: number) => \`/consent/v1/principals/${benRegId}/pending-actions\``. Add `src/consent/core/consent-api.paths.spec.ts` asserting every path string.
-- [ ] T010 [P] Write `src/consent/core/consent-feature.spec.ts`. Cover:
+- [X] T008 [P] Create `src/consent/core/consent.models.ts` with every enum (string union types) and interface in [data-model.md](./data-model.md): `Purpose`, `Notice`, `NoticeLanguage`, `ConsentDraft`, `ProofDraft`, `GuardianDraft`, `ConsentRecord`, `PurposeState`, `PendingAction`, `AccessGrant`, `ConsentDialogResult`, `ConsentRefusal`, `OutputResponse<T>` (`statusCode`, `status`, `errorMessage`, `data`), and the save/change/withdraw/OTP/evidence request and response shapes from [contracts/consent-api.md](./contracts/consent-api.md). Types only; no logic, so no spec.
+- [X] T009 [P] Create `src/consent/core/consent-api.paths.ts` exporting `CONSENT_PATHS`, one function or constant per row of the endpoint table in contracts/consent-api.md, e.g. `pendingActions: (benRegId: number) => \`/consent/v1/principals/${benRegId}/pending-actions\``. Add `src/consent/core/consent-api.paths.spec.ts` asserting every path string.
+- [X] T010 [P] Write `src/consent/core/consent-feature.spec.ts`. Cover:
     - `isConsentFeatureEnabled()` is false when `environment.consentManagement` is undefined, when `enabled` is false, and when it is `'true'` (a string); true only when `enabled === true`.
     - `consentApiBase()` returns `apiBase` with any trailing `/` removed, or `''` when absent.
 
   Spy on the environment object by temporarily assigning `(environment as any).consentManagement` in `beforeEach`/`afterEach`.
-- [ ] T011 Implement `src/consent/core/consent-feature.ts` (`isConsentFeatureEnabled`, `consentApiBase`), importing `environment` from `'src/environments/environment'` like `src/registrar/services/registrar.service.ts`.
-- [ ] T012 [P] Create `src/consent/core/testing/consent.mock.ts`. It is shared test data only, imported only by specs, and every export is a factory returning a fresh object. Exports:
+- [X] T011 Implement `src/consent/core/consent-feature.ts` (`isConsentFeatureEnabled`, `consentApiBase`), importing `environment` from `'src/environments/environment'` like `src/registrar/services/registrar.service.ts`.
+- [X] T012 [P] Create `src/consent/core/testing/consent.mock.ts`. It is shared test data only, imported only by specs, and every export is a factory returning a fresh object. Exports:
     - `mockLanguages`: `en`, `hi`, `as`, `ur`, `ks`, `sd`; `hasAudio` true for `hi`.
     - `mockNotice(lang)`, with purposes:
         - `P-REG`: mandatory, not withdrawable.
@@ -100,17 +101,17 @@ description: "Task list for Consent Management UI (Common-UI)"
     - `mockEvidenceResponse`.
     - Error bodies: `mock403(reason, crossFacility?)`, `mock409Stale`, `mock422NotWithdrawable`, `mockServerError` (`statusCode 5000`).
     - `mockSession`: `userID 4521`, `userName 'nurse1'`, `providerServiceID 1714`, `facilityID 33`, `servicePointID 7`, `serviceName 'MMU'`.
-- [ ] T013 [P] Write `src/consent/core/evidence.util.spec.ts`. Cover:
+- [X] T013 [P] Write `src/consent/core/evidence.util.spec.ts`. Cover:
     - `uuidV4()` matches the v4 regex and two calls differ.
     - `sha256Hex(blob)` returns the known hex for `'abc'` when `crypto.subtle` exists, and resolves `null` when `crypto.subtle` is undefined (stub with `spyOnProperty`/temporary override).
     - `isVoiceDurationValid` is true at 30 and 60, false at 29.9 and 60.1.
     - `maskPhone('9876543212')` gives `'98******12'`; null or short input gives `''`.
     - `getDeviceId()` creates and stores `amrit.consent.deviceId` in localStorage once, returns the same value next time, and still returns a UUID when `localStorage` throws.
-- [ ] T014 Implement `src/consent/core/evidence.util.ts`:
+- [X] T014 Implement `src/consent/core/evidence.util.ts`:
     - `uuidV4` via `crypto.getRandomValues`;
     - `sha256Hex` via `crypto.subtle.digest('SHA-256')` when available, else `null` (research R8);
     - `isVoiceDurationValid`, `maskPhone`, and `getDeviceId` with try/catch around localStorage.
-- [ ] T015 [P] Write `src/consent/core/consent-api.service.spec.ts` with `HttpClientTestingModule` + `HttpTestingController`, the base mocked to `'http://api'`. For each of the 13 calls in contracts/consent-api.md, assert the method, full URL and body.
+- [X] T015 [P] Write `src/consent/core/consent-api.service.spec.ts` with `HttpClientTestingModule` + `HttpTestingController`, the base mocked to `'http://api'`. For each of the 13 calls in contracts/consent-api.md, assert the method, full URL and body.
   Also cover:
     - write calls (save, evidence, change, withdraw, approve, revoke, OTP send) send an `Idempotency-Key` header equal to the key passed in;
     - `statusCode 200` unwraps to `data`;
@@ -119,7 +120,7 @@ description: "Task list for Consent Management UI (Common-UI)"
     - HTTP 422 with `NOT_WITHDRAWABLE` maps to `{ kind: 'NOT_WITHDRAWABLE' }`;
     - network error maps to `{ kind: 'UNAVAILABLE' }`;
     - evidence upload sends `FormData` with `file`, `type`, `sha256`, `durationSec`.
-- [ ] T016 Implement `src/consent/core/consent-api.service.ts` (`@Injectable({ providedIn: 'root' })`, `HttpClient`, URLs from `consentApiBase()` + `CONSENT_PATHS`) with methods:
+- [X] T016 Implement `src/consent/core/consent-api.service.ts` (`@Injectable({ providedIn: 'root' })`, `HttpClient`, URLs from `consentApiBase()` + `CONSENT_PATHS`) with methods:
     - `getLanguages(context)`, `getNotice(context, lang)`
     - `saveConsent(req, key)`
     - `uploadEvidence(file, type, sha256, durationSec, key)`
@@ -129,7 +130,7 @@ description: "Task list for Consent Management UI (Common-UI)"
     - `getAccessGrants(benRegId)`, `approveAccess(grantId, otpChallengeId, key)`, `revokeAccess(grantId, key)`
 
   Each method returns a typed `Observable`, unwraps `OutputResponse`, and maps errors to `ConsentApiError` (`{ kind: 'STALE' | 'NOT_WITHDRAWABLE' | 'UNAVAILABLE' | 'FAILED', message }`).
-- [ ] T017 [P] Write `src/consent/core/consent-context.service.spec.ts`, mocking `SessionStorageService` with `mockSession`. `context()` returns:
+- [X] T017 [P] Write `src/consent/core/consent-context.service.spec.ts`, mocking `SessionStorageService` with `mockSession`. `context()` returns:
     - `capturedBy` = `userID` (number)
     - `providerServiceMapId` = `providerServiceID`
     - `facilityId`, `servicePointId`
@@ -138,8 +139,8 @@ description: "Task list for Consent Management UI (Common-UI)"
     - `capturedAt` as ISO with offset, using a mocked clock
 
   Missing session keys give `null`, never `NaN`.
-- [ ] T018 Implement `src/consent/core/consent-context.service.ts` (`providedIn: 'root'`), injecting `SessionStorageService` from `src/registrar/services/session-storage.service`.
-- [ ] T019 [P] Write `src/consent/core/consent-draft.spec.ts` covering every exported function and branch:
+- [X] T018 Implement `src/consent/core/consent-context.service.ts` (`providedIn: 'root'`), injecting `SessionStorageService` from `src/registrar/services/session-storage.service`.
+- [X] T019 [P] Write `src/consent/core/consent-draft.spec.ts` covering every exported function and branch:
     - `createDraft()`: all decisions false, new `idempotencyKey`.
     - `sortPurposes()`: mandatory first, otherwise stable.
     - `filterRtl(languages)`: drops `ur`, `ks`, `sd`.
@@ -155,26 +156,31 @@ description: "Task list for Consent Management UI (Common-UI)"
     - `canAccept()`: true only when every condition holds; false while `saving`.
     - `outcomeOf(decisions, purposes)`: `GRANTED` when all are true, `PARTIAL` when mandatory are true and some optional false, `BLOCKED` when any mandatory is false.
     - `toSaveRequest(draft, ctx, beneficiaryRegId)`: builds the exact request in contracts/consent-api.md, with `GRANT`/`DENY` per purpose, guardian block and `evidenceIds`.
-- [ ] T020 Implement `src/consent/core/consent-draft.ts` as pure functions (no Angular imports) per T019.
-- [ ] T021 [P] Write `src/consent/core/consent-refusal.spec.ts`. `consentRefusalFrom(err)`:
+- [X] T020 Implement `src/consent/core/consent-draft.ts` as pure functions (no Angular imports) per T019.
+- [X] T021 [P] Write `src/consent/core/consent-refusal.spec.ts`. `consentRefusalFrom(err)`:
     - returns `null` for non-`HttpErrorResponse`, for non-403, and for a 403 with no or unknown `data.reason`;
     - for each of the 6 reasons, returns `messageKey 'refusal<REASON>'`;
     - `action` is `OPEN_CONSENT` for `CONSENT_NOT_FOUND`, `RECONSENT_REQUIRED`, `GUARDIAN_REQUIRED`, and `REQUEST_ACCESS` when `crossFacility: true`;
     - otherwise `action` is `null`.
-- [ ] T022 Implement `src/consent/core/consent-refusal.ts` per T021.
-- [ ] T023 [P] Add the `consent` key group, all keys and English values from [contracts/i18n-keys.md](./contracts/i18n-keys.md), as a new top-level property, appended without reordering existing keys, to:
+- [X] T022 Implement `src/consent/core/consent-refusal.ts` per T021.
+- [X] T023 [P] Add the `consent` key group, all keys and English values from [contracts/i18n-keys.md](./contracts/i18n-keys.md), as a new top-level property, appended without reordering existing keys, to:
     - `FE/MMU-UI/src/assets/English.json`, `Hindi.json`, `Assamese.json`
     - `FE/HWC-UI/src/assets/English.json`, `Hindi.json`, `Assamese.json`, `Kannada.json`
     - `FE/TM-UI/src/assets/English.json`, `Hindi.json`, `Assamese.json`
 
   Non-English files get English values for now (SC-008). Validate each file with `node -e "JSON.parse(require('fs').readFileSync(f))"`.
-- [ ] T024 [P] Add `consentManagement: { enabled: false, apiBase: '' }` next to the existing `tracking` block in:
-    - `FE/MMU-UI/src/environments/environment.ts` and every other `environment*.ts` in that folder;
-    - `FE/MMU-UI/src/environments/environment.ci.ts.template`, following how `tracking` is templated there (`CONSENT_ENABLED`, `CONSENT_API_BASE` env vars);
-    - the same in `FE/HWC-UI/src/environments/` and `FE/TM-UI/src/environments/`. TM-UI's `environment.ts` is gitignored, so edit `environment.local.ts` and the CI template.
-
-  Do NOT add the key to the other 6 consumers; absent means off.
-- [ ] T025 Export the core from `src/consent/public-api.ts`: `consent.models`, `consent-feature`, `consent-refusal`, `ConsentApiService`. Do not export `testing/`.
+- [X] T024 [P] Add the off-by-default `consentManagement` block to `environment.ci.ts.template` (after the `tracking` block) in FE/MMU-UI, FE/HWC-UI and FE/TM-UI:
+  ```ts
+  consentManagement: {
+    enabled: '<%= CONSENT_ENABLED %>' === 'true',
+    apiBase: '<%= CONSENT_API_BASE %>',
+  },
+  ```
+  Add `CONSENT_ENABLED: 'false'` and `CONSENT_API_BASE: ''` to `defaultEnvValues` in each host's `scripts/ci-prebuild.js`, so the EJS render never fails on an unset variable.
+  - The other `environment*.ts` files are left untouched: `isConsentFeatureEnabled()` reads the key through a cast, so absent means off (Constitution V).
+  - Developers enable the feature in their local, untracked `environment.ts`.
+  - Do NOT add the key to the other 6 consumers.
+- [X] T025 Export the core from `src/consent/public-api.ts`: `consent.models`, `consent-feature`, `consent-refusal`, `ConsentApiService`. Do not export `testing/`.
 
 **Checkpoint**: Run the core specs (quickstart §1, MMU-UI command). All pass, and coverage of `src/consent/core/**` is ≥ 99 %.
 

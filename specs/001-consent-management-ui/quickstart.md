@@ -16,34 +16,43 @@
 
 ## 1. Unit tests and coverage (Constitution VI: ≥ 99 %)
 
-The added include line in each host's `tsconfig.spec.json` is a test-only change (research R12).
-Karma can hang after printing the summary, so run it in the background and stop it once `TOTAL` appears.
+Two Angular CLI details shape these commands:
 
-**MMU-UI (core + v2 track)**
+- `--include` globs are resolved from the project's `sourceRoot` (`src/`), so Common-UI specs need a
+  `../` prefix.
+- Coverage is only instrumented for files under `sourceRoot`, so Common-UI code is never measured by a
+  plain `ng test --code-coverage`. `scripts/consent-coverage.sh` sets `sourceRoot` to `""` for the run
+  only and always restores `angular.json`.
+
+The host `tsconfig.spec.json` include line (T005/T006) is a test-only change (research R12). Karma can
+hang after printing the summary; `scripts/karma-run.sh` stops it once `TOTAL` appears.
+
+**Specs only** (fast check), from the Common-UI spec folder:
 
 ```bash
-cd FE/MMU-UI
-npx ng test --watch=false --browsers=ChromeHeadless --code-coverage \
-  --include='Common-UI/src/consent/core/**/*.spec.ts' \
-  --include='Common-UI/v2/consent/**/*.spec.ts'
+scripts/karma-run.sh ../../../HWC-UI /tmp/consent.log --include='../Common-UI/src/consent/**/*.spec.ts'
 ```
 
-**HWC-UI and TM-UI (core + src track)**
+**Coverage — core + src track** (HWC-UI or TM-UI):
 
 ```bash
-cd FE/HWC-UI   # then FE/TM-UI
-npx ng test --watch=false --browsers=ChromeHeadless --code-coverage \
-  --code-coverage-exclude='src/**' \
-  --include='Common-UI/src/consent/**/*.spec.ts'
+scripts/consent-coverage.sh <path-to>/FE/HWC-UI /tmp/consent-cov.log \
+  'Common-UI/src/consent/**/*.spec.ts' --code-coverage-exclude='Common-UI/src/registrar/**'
 ```
 
-HWC-UI normally excludes `Common-UI/**` from coverage; this flag overrides it for the run only.
+**Coverage — core + v2 track** (MMU-UI, with Common-UI on `001-consent-management-ui-v2`):
+
+```bash
+scripts/consent-coverage.sh <path-to>/FE/MMU-UI /tmp/consent-cov.log \
+  'Common-UI/{src/consent/core,v2/consent}/**/*.spec.ts' \
+  --code-coverage-exclude='Common-UI/src/registrar/**' --code-coverage-exclude='Common-UI/v2/registrar/**'
+```
 
 **Expected**:
 
 - All specs pass.
-- `coverage/` shows ≥ 99 % statements, branches, functions and lines for `Common-UI/src/consent/**` and
-  `Common-UI/v2/consent/**`.
+- The coverage summary shows ≥ 99 % statements, branches, functions and lines.
+- Record each run in `baseline.md` (coverage log).
 
 ## 2. No-regression gate (Constitution III, VII)
 

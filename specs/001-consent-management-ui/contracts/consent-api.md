@@ -83,7 +83,7 @@ Source: Solution Overview §4.2. Items marked **[FE ask]** are not in the source
   "purposes": [ { "purposeCode": "P-REG", "status": "GRANTED", "versionNo": 1 } ] }
 ```
 
-`beneficiaryRegId: null` is accepted **[FE ask]**. The consent stays unlinked until registration links
+`beneficiaryRegId: null` is accepted **[FE ask]**. `mode` may be `null` only for a decline where every decision is `DENY` and no consent mode was chosen **[FE ask]**. The consent stays unlinked until registration links
 it (see Identity-API below).
 
 ### 4. Upload evidence
