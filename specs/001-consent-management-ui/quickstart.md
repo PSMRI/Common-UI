@@ -40,13 +40,25 @@ scripts/consent-coverage.sh <path-to>/FE/HWC-UI /tmp/consent-cov.log \
   'Common-UI/src/consent/**/*.spec.ts' --code-coverage-exclude='Common-UI/src/registrar/**'
 ```
 
-**Coverage — core + v2 track** (MMU-UI, with Common-UI on `001-consent-management-ui-v2`):
+**Coverage — core + v2 track** (MMU-UI on Node 22, with Common-UI on `001-consent-management-ui-v2`):
 
 ```bash
+export PATH=~/.nvm/versions/node/v22.22.3/bin:$PATH        # Angular 20 needs Node >= 20.19
+export COVERAGE_DIR=/tmp/cov-mmu
 scripts/consent-coverage.sh <path-to>/FE/MMU-UI /tmp/consent-cov.log \
-  'Common-UI/{src/consent/core,v2/consent}/**/*.spec.ts' \
-  --code-coverage-exclude='Common-UI/src/registrar/**' --code-coverage-exclude='Common-UI/v2/registrar/**'
+  'Common-UI/{src/consent/core,v2/consent}/**/*.spec.ts'
+scripts/lcov-consent.py $COVERAGE_DIR/lcov.info <path-to>/FE/MMU-UI
+
+# Registration hook: AOT, because Zard's stepper does not load in JIT test builds
+export COVERAGE_DIR=/tmp/cov-mmu-hook CONSENT_AOT=1
+scripts/consent-coverage.sh <path-to>/FE/MMU-UI /tmp/consent-hook.log \
+  'Common-UI/v2/registrar/**/*.consent-hook.spec.ts'
+scripts/lcov-consent.py $COVERAGE_DIR/lcov.info <path-to>/FE/MMU-UI origin/angular-zard-migration
 ```
+
+`consent-coverage.sh` also compiles only the consent specs (temporary tsconfig), because existing
+MMU-UI specs no longer compile, and writes coverage to `$COVERAGE_DIR`, never into the repo.
+`lcov-consent.py` reports consent files plus only the lines this branch added to existing files.
 
 **Expected**:
 

@@ -14,6 +14,11 @@ from the notice API in the patient's language.
 | `title` | Patient consent |
 | `chooseLanguage` | Choose the patient's language |
 | `playAudio` | Play notice aloud |
+| `noticeDataItems` | What data we collect |
+| `noticeRetention` | How long it is kept |
+| `noticeRecipients` | Who it is shared with |
+| `noticeWithdrawal` | How to withdraw |
+| `noticeGrievance` | How to complain |
 | `readToEnd` | Read or play the notice to the end to continue |
 | `mandatory` | Required for this service |
 | `optional` | Optional |

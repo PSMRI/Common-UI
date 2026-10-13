@@ -62,7 +62,7 @@ description: "Task list for Consent Management UI (Common-UI)"
 - [ ] T002 Get FE tech lead approval for the Constitution I exception: one `consentManagement.apiBase` env key plus path constants in code (research R5). Record the approver and date in `specs/001-consent-management-ui/plan.md` Complexity Tracking row 4. If refused, switch R5 to per-URL env keys before T009. _2026-10-13: approval still pending; the user chose to proceed with the R5 design meanwhile (plan.md Complexity Tracking row 4)._
 - [X] T003 Per T001 (split): in `FE/MMU-UI/Common-UI`, run `git fetch origin` and `git checkout -b 001-consent-management-ui origin/main`. Commit the untracked `specs/001-consent-management-ui/` and `.specify/` as `docs: add consent management spec, plan and tasks`. The `v2` branch `001-consent-management-ui-v2` is cut from `origin/angular-zard-migration` when US1's `v2` track starts, and gets the docs and core commits cherry-picked.
 - [ ] T004 Create empty barrels with the licence header only: `src/consent/public-api.ts` and `v2/consent/public-api.ts`. Do NOT add them to `src/public-api.ts` or `v2/public-api.ts` (Constitution IV).
-- [ ] T005 [P] In `FE/MMU-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/core/**/*.spec.ts"` and `"Common-UI/v2/consent/**/*.spec.ts"` to `include`. Change nothing else.
+- [X] T005 [P] In `FE/MMU-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/core/**/*.spec.ts"` and `"Common-UI/v2/consent/**/*.spec.ts"` to `include`. Change nothing else.
 - [X] T006 [P] In `FE/HWC-UI/tsconfig.spec.json` and `FE/TM-UI/tsconfig.spec.json`, append `"Common-UI/src/consent/**/*.spec.ts"` to `include`. Change nothing else.
 - [ ] T007 Record the regression baseline with the feature off in `specs/001-consent-management-ui/baseline.md`. For each of FE/MMU-UI, FE/HWC-UI and FE/TM-UI, run `npm run lint`, `npx ng test --watch=false --browsers=ChromeHeadless` (stop Karma once `TOTAL` prints) and `npm run build`. For each of FE/Admin-UI, FE/ECD-UI, FE/Inventory-UI, FE/HWC-Inventory-UI, FE/HWC-UI-integration and FE/Helpline1097-UI-NEXT, run `npx ng test --watch=false --browsers=ChromeHeadless` and `npm run build` with Common-UI at its currently pinned commit. Record pass/fail counts and warnings exactly.
   _2026-10-13: HWC-UI unit tests recorded in `baseline.md`. The other repos are deferred to T105; the baseline uses the pinned Common-UI commit, so it can run any time before merge._
@@ -200,34 +200,42 @@ specs.
 
 ### v2 track (MMU-UI)
 
-- [ ] T026 [P] [US1] Write `v2/consent/consent-dialog/language-step/language-step.component.spec.ts`. Cover:
+> _Implemented 2026-10-13: all step and dialog logic lives once in `src/consent/core/ui/*.base.ts`
+> (abstract directives). Each track's component is a thin subclass with its own template. The
+> behaviour specs live once in `src/consent/core/testing/*.suite.ts`; each track's spec file calls the
+> suite with its component (and a small adapter where the DOM differs). The hook spec is the new file
+> `v2/registrar/registration/registration.consent-hook.spec.ts`, because the existing spec declares a
+> standalone component and cannot run. Measured in MMU-UI: 119 specs (JIT) + 9 hook specs (AOT), 100 %
+> lines, branches and functions for consent code and the added hook lines (`baseline.md`)._
+
+- [X] T026 [P] [US1] Write `v2/consent/consent-dialog/language-step/language-step.component.spec.ts`. Cover:
     - On init it calls `getLanguages('REGISTRATION')`.
     - It renders only non-RTL languages, so `ur`, `ks`, `sd` are absent.
     - Selecting one emits `languageSelected` with the code.
     - An empty list shows the `serviceUnavailable` text.
     - An API error shows the `serviceUnavailable` text with a retry button that reloads.
-- [ ] T027 [P] [US1] Implement `v2/consent/consent-dialog/language-step/language-step.component.{ts,html}` (standalone; Zard `z-select` or a list of `z-button` options; `@Output() languageSelected`), using `filterRtl` from the core.
-- [ ] T028 [P] [US1] Write `v2/consent/consent-dialog/notice-step/notice-step.component.spec.ts`. Cover:
+- [X] T027 [P] [US1] Implement `v2/consent/consent-dialog/language-step/language-step.component.{ts,html}` (standalone; Zard `z-select` or a list of `z-button` options; `@Output() languageSelected`), using `filterRtl` from the core.
+- [X] T028 [P] [US1] Write `v2/consent/consent-dialog/notice-step/notice-step.component.spec.ts`. Cover:
     - It renders `body`, `dataItems`, `retention`, `recipients`, `withdrawalInfo` and `grievanceInfo`.
     - The body goes through Angular sanitisation: a `<script>` in the mock is not executed or rendered.
     - `readComplete` is emitted once when the end sentinel intersects (mock `IntersectionObserver` on `window`).
     - It falls back to the scroll check when `IntersectionObserver` is undefined.
     - The audio player is shown only when `audioUrl` is set. The `ended` event emits `readComplete` and `audioPlayedToEnd`. Seeking to the end without playing does not count (`timeupdate` furthest-point tracking).
     - An audio `error` event hides the player and leaves the scroll rule active.
-- [ ] T029 [P] [US1] Implement `v2/consent/consent-dialog/notice-step/notice-step.component.{ts,html}` per research R9. It has `@Input() notice` and `@Output() readComplete` / `audioPlayedToEnd`, and disconnects the observer in `ngOnDestroy`.
-- [ ] T030 [P] [US1] Write `v2/consent/consent-dialog/purposes-step/purposes-step.component.spec.ts`. Cover:
+- [X] T029 [P] [US1] Implement `v2/consent/consent-dialog/notice-step/notice-step.component.{ts,html}` per research R9. It has `@Input() notice` and `@Output() readComplete` / `audioPlayedToEnd`, and disconnects the observer in `ngOnDestroy`.
+- [X] T030 [P] [US1] Write `v2/consent/consent-dialog/purposes-step/purposes-step.component.spec.ts`. Cover:
     - Mandatory purposes render first with the `mandatory` label; optional ones with `optional`.
     - Every switch is initially off.
     - Each switch has `role="switch"` and its `aria-checked` reflects state.
     - Toggling emits `decisionsChange` with the full map.
     - An input change of `purposes` (language reload) resets all switches to off.
-- [ ] T031 [P] [US1] Implement `v2/consent/consent-dialog/purposes-step/purposes-step.component.{ts,html}` using `z-checkbox` with `role="switch"` and `aria-checked` (research R10), with `sortPurposes` from the core.
-- [ ] T032 [P] [US1] Write `v2/consent/consent-dialog/proof-step/proof-step.component.spec.ts` for US1 scope. Cover:
+- [X] T031 [P] [US1] Implement `v2/consent/consent-dialog/purposes-step/purposes-step.component.{ts,html}` using `z-checkbox` with `role="switch"` and `aria-checked` (research R10), with `sortPurposes` from the core.
+- [X] T032 [P] [US1] Write `v2/consent/consent-dialog/proof-step/proof-step.component.spec.ts` for US1 scope. Cover:
     - It renders the mode picker with all 6 modes.
     - Selecting `SELF_READ` emits `proofChange` with a valid empty proof and needs no input.
     - The other modes are covered in US2.
-- [ ] T033 [P] [US1] Implement `v2/consent/consent-dialog/proof-step/proof-step.component.{ts,html}` with a mode picker (`z-radio-group`), `@Input() notice`, `@Input() audioPlayedToEnd`, and `@Output() modeChange` / `proofChange`. Render the `SELF_READ` branch only, leaving one `@switch` case per mode for US2.
-- [ ] T034 [US1] Write `v2/consent/consent-dialog/consent-dialog.component.spec.ts` (inject `Z_MODAL_DATA` and a `ZardDialogRef` spy). Cover:
+- [X] T033 [P] [US1] Implement `v2/consent/consent-dialog/proof-step/proof-step.component.{ts,html}` with a mode picker (`z-radio-group`), `@Input() notice`, `@Input() audioPlayedToEnd`, and `@Output() modeChange` / `proofChange`. Render the `SELF_READ` branch only, leaving one `@switch` case per mode for US2.
+- [X] T034 [US1] Write `v2/consent/consent-dialog/consent-dialog.component.spec.ts` (inject `Z_MODAL_DATA` and a `ZardDialogRef` spy). Cover:
     - The step flow is LANGUAGE → NOTICE/DECIDE.
     - A language change reloads the notice and resets decisions (FR-010).
     - Accept is disabled until `canAccept`.
@@ -240,13 +248,13 @@ specs.
     - `STALE` calls `ConfirmationService.alert(consent.staleReload)`, then re-fetches the notice with the current language.
     - `UNAVAILABLE` shows `serviceUnavailable` and `retry`.
     - `NOT_SYNCED` in the response is carried into the result (FR-034).
-- [ ] T035 [US1] Implement `v2/consent/consent-dialog/consent-dialog.component.{ts,html}`. It is the shell with the state machine from data-model.md and hosts the steps from T027–T033. It holds the `ConsentDraft`, calls `ConsentApiService` and `ConsentContextService`, and has its own close button. All text comes from `currentLanguageSet.consent`. Layout: content scrolls inside the dialog at 1024 px wide (FR-001b).
-- [ ] T036 [US1] Write `v2/consent/consent-dialog.service.spec.ts`. `open(options)`:
+- [X] T035 [US1] Implement `v2/consent/consent-dialog/consent-dialog.component.{ts,html}`. It is the shell with the state machine from data-model.md and hosts the steps from T027–T033. It holds the `ConsentDraft`, calls `ConsentApiService` and `ConsentContextService`, and has its own close button. All text comes from `currentLanguageSet.consent`. Layout: content scrolls inside the dialog at 1024 px wide (FR-001b).
+- [X] T036 [US1] Write `v2/consent/consent-dialog.service.spec.ts`. `open(options)`:
     - calls `ZardDialogService.create` with `zContent: ConsentDialogComponent`, `zData: options`, `zMaskClosable: false`, `zClosable: false`, `zHideFooter: true`, `zWidth: 'min(960px, 95vw)'`;
     - returns an Observable emitting the `afterClosed` value;
     - maps an `undefined` close to `{ outcome: 'NO_DECISION', consentId: null, decisions: [], syncStatus: null }`.
-- [ ] T037 [US1] Implement `v2/consent/consent-dialog.service.ts` (`providedIn: 'root'`) with `open()` only. `openPreferenceCentre` and `openAccessApproval` are added in US5/US6.
-- [ ] T038 [US1] Add a registration hook spec to the existing `v2/registrar/registration/registration.component.spec.ts`, adding cases only and leaving existing ones untouched.
+- [X] T037 [US1] Implement `v2/consent/consent-dialog.service.ts` (`providedIn: 'root'`) with `open()` only. `openPreferenceCentre` and `openAccessApproval` are added in US5/US6.
+- [X] T038 [US1] Add a registration hook spec to the existing `v2/registrar/registration/registration.component.spec.ts`, adding cases only and leaving existing ones untouched.
   With the feature off:
     - the old `ConsentFormComponent` dialog opens exactly as before;
     - the payload has `beneficiaryConsent: true` and no `consentId` key.
@@ -257,7 +265,7 @@ specs.
     - `BLOCKED` and `NO_DECISION` call the existing `redirectToSearch()`.
 
   Revisit (`patientRevisit === true`) opens nothing, as today.
-- [ ] T039 [US1] Edit `v2/registrar/registration/registration.component.ts` minimally:
+- [X] T039 [US1] Edit `v2/registrar/registration/registration.component.ts` minimally:
     - In `openConsent()` (around L313), wrap the existing body in `if (!isConsentFeatureEnabled()) { …existing code unchanged… } else { this.consentDialog.open({ context: 'REGISTRATION', beneficiaryRegId: null }).subscribe(r => { this.consentResult = r; if (r.outcome === 'BLOCKED' || r.outcome === 'NO_DECISION') { this.redirectToSearch(); } }); }`.
     - In the final payload (around L569), keep `beneficiaryConsent: true` and add, only when enabled, `beneficiaryConsent` from the result plus `consentId`, using a conditional spread so the off-path object is identical.
     - Add the `ConsentDialogService` constructor injection.

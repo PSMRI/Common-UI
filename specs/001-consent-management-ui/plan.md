@@ -133,6 +133,8 @@ src/consent/                                   # NEW (HWC-UI, TM-UI) — Angular
 │   ├── consent-refusal.ts                     # ConsentRefusal.from(error)
 │   ├── consent-context.service.ts             # session data → capturedBy, facility, device ID (R13)
 │   ├── evidence.util.ts                       # sha256 (when available), uuid v4, duration check (R8)
+│   ├── ui/*.base.ts                           # abstract directives holding all step/dialog logic for both tracks
+│   ├── testing/*.suite.ts                     # behaviour specs run by each track's spec files
 │   ├── testing/consent.mock.ts                # shared mock data
 │   └── *.spec.ts
 ├── consent-dialog/                            # dialog shell + steps

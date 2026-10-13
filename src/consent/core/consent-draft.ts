@@ -23,6 +23,7 @@
 // Pure consent-dialog rules shared by both UI tracks (data-model.md). No Angular imports.
 import {
   ConsentCaptureContext,
+  ConsentDialogResult,
   ConsentDraft,
   ConsentMode,
   DialogOutcome,
@@ -265,4 +266,22 @@ export function toSaveRequest(
         }
       : null,
   };
+}
+
+/** Result for a dialog closed without Accept or Decline: nothing was saved (FR-008). */
+export function noDecisionResult(): ConsentDialogResult {
+  return {
+    outcome: 'NO_DECISION',
+    consentId: null,
+    consentingParty: null,
+    decisions: [],
+    syncStatus: null,
+  };
+}
+
+/** Same notice and proof, every purpose declined. */
+export function declineAll(draft: ConsentDraft): ConsentDraft {
+  const decisions: { [code: string]: boolean } = {};
+  Object.keys(draft.decisions).forEach((code) => (decisions[code] = false));
+  return { ...draft, decisions };
 }
