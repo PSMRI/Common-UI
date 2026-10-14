@@ -21,7 +21,9 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
+import { NoticeLanguage } from '../consent.models';
+import { createInOnPushHost } from './on-push-host';
 import { ConsentApiService } from '../consent-api.service';
 import { mockLanguages } from './consent.mock';
 import { Type } from '@angular/core';
@@ -90,6 +92,17 @@ describe(`LanguageStepComponent (${track})`, () => {
     expect(api.getLanguages).toHaveBeenCalledTimes(2);
     expect(component.failed).toBeFalse();
     expect(buttons().length).toBe(3);
+  });
+
+  it('renders languages that arrive later inside an OnPush dialog container', () => {
+    const later = new Subject<NoticeLanguage[]>();
+    api.getLanguages.and.returnValue(later);
+    const { host, ref } = createInOnPushHost(LanguageStepComponent);
+    ref.instance.text = text;
+    host.detectChanges();
+    later.next(mockLanguages());
+    host.detectChanges();
+    expect(host.nativeElement.querySelectorAll('button[lang]').length).toBe(3);
   });
 });
 }
