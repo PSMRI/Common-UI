@@ -314,7 +314,12 @@ saved.
 
 ### Shared building blocks
 
-- [ ] T055 [P] [US2] Write `v2/consent/otp-verify/otp-verify.component.spec.ts`. Cover:
+> _Implemented 2026-10-14: logic in `src/consent/core/ui/{otp-verify,media-capture}.base.ts` and an
+> extended `proof-step.base.ts`; evidence upload in `consent-dialog.base.ts`. Each track only has a
+> template. Voice uses the browser `MediaRecorder` instead of `recordrtc` (research R7). Results: MMU-UI
+> 151 specs, HWC-UI 160 specs, both 100 % lines, branches and functions for consent code._
+
+- [X] T055 [P] [US2] Write `v2/consent/otp-verify/otp-verify.component.spec.ts`. Cover:
     - Inputs: `phone`, `purpose` (`'CONSENT' | 'GUARDIAN' | 'ACCESS_GRANT'`), `refId`.
     - Send calls `sendOtp` with a key and shows `otpSentTo` with `maskedPhone`, never the raw phone.
     - Verify with a 6-digit OTP calls `verifyOtp` and emits `verified(challengeId)`.
@@ -322,11 +327,11 @@ saved.
     - A wrong OTP shows `otpInvalid`.
     - Resend is disabled for 30 s (fakeAsync `tick(30000)`).
     - `UNAVAILABLE` shows the error.
-- [ ] T056 [P] [US2] Implement `v2/consent/otp-verify/otp-verify.component.{ts,html}`.
-- [ ] T057 [P] [US2] Write `src/consent/otp-verify/otp-verify.component.spec.ts` with the same cases as T055.
-- [ ] T058 [P] [US2] Implement `src/consent/otp-verify/otp-verify.component.{ts,html,css}`.
-- [ ] T059 [P] [US2] Check the host `camera-dialog` in FE/HWC-UI, FE/MMU-UI and FE/TM-UI (`src/app/app-modules/core/components/camera-dialog/camera-dialog.component.ts`): confirm the import path, how it is opened (MatDialog or ZardDialogService) and the shape of its `close(result)` value in each host (expected: `imageAsDataUrl`). Record the result in `specs/001-consent-management-ui/research.md` R7. If a host differs, record the fallback: that track's `media-capture` uses `ngx-webcam` directly.
-- [ ] T060 [P] [US2] Write `v2/consent/media-capture/media-capture.component.spec.ts`. Cover:
+- [X] T056 [P] [US2] Implement `v2/consent/otp-verify/otp-verify.component.{ts,html}`.
+- [X] T057 [P] [US2] Write `src/consent/otp-verify/otp-verify.component.spec.ts` with the same cases as T055.
+- [X] T058 [P] [US2] Implement `src/consent/otp-verify/otp-verify.component.{ts,html,css}`.
+- [X] T059 [P] [US2] Check the host `camera-dialog` in FE/HWC-UI, FE/MMU-UI and FE/TM-UI (`src/app/app-modules/core/components/camera-dialog/camera-dialog.component.ts`): confirm the import path, how it is opened (MatDialog or ZardDialogService) and the shape of its `close(result)` value in each host (expected: `imageAsDataUrl`). Record the result in `specs/001-consent-management-ui/research.md` R7. If a host differs, record the fallback: that track's `media-capture` uses `ngx-webcam` directly.
+- [X] T060 [P] [US2] Write `v2/consent/media-capture/media-capture.component.spec.ts`. Cover:
     - `kind: 'photo'`:
         - opens the host `CameraDialogComponent` through a dialog-service spy and converts the returned data URL into a `Blob` emitted via `captured`;
         - an empty result emits nothing, and when no camera is found it shows a file input with `accept="image/*"`;
@@ -336,29 +341,29 @@ saved.
         - duration is measured with fakeAsync; out-of-range durations show `voiceTooShort` or `voiceTooLong` and emit nothing;
         - when the microphone is denied, it falls back to a file input with `accept="audio/*"`, and the duration is read from audio metadata.
     - Object URLs are revoked on destroy.
-- [ ] T061 [P] [US2] Implement `v2/consent/media-capture/media-capture.component.{ts,html}`, opening the host `CameraDialogComponent` for photos (as recorded in T059) and using `RecordRTC` from `recordrtc` for voice (already an MMU-UI dependency; research R7).
-- [ ] T062 [P] [US2] Write `src/consent/media-capture/media-capture.component.spec.ts` with the same cases as T060.
-- [ ] T063 [P] [US2] Implement `src/consent/media-capture/media-capture.component.{ts,html,css}`.
+- [X] T061 [P] [US2] Implement `v2/consent/media-capture/media-capture.component.{ts,html}`, opening the host `CameraDialogComponent` for photos (as recorded in T059) and using `RecordRTC` from `recordrtc` for voice (already an MMU-UI dependency; research R7).
+- [X] T062 [P] [US2] Write `src/consent/media-capture/media-capture.component.spec.ts` with the same cases as T060.
+- [X] T063 [P] [US2] Implement `src/consent/media-capture/media-capture.component.{ts,html,css}`.
 
 ### Proof step and dialog wiring
 
-- [ ] T064 [US2] Extend `v2/consent/consent-dialog/proof-step/proof-step.component.spec.ts` with one `describe` per mode:
+- [X] T064 [US2] Extend `v2/consent/consent-dialog/proof-step/proof-step.component.spec.ts` with one `describe` per mode:
     - `READ_ALOUD`: requires `workerConfirm`, and `audioPlayedToEnd` when the notice has audio.
     - `VOICE_CLIP`: a `media-capture` voice emits a blob and duration.
     - `WITNESSED`: name and relationship are required, ≤ 100 characters.
     - `SIGNATURE_PHOTO`: two `media-capture` photos (`patientPhoto`, `signedFormPhoto`) are both required; retake clears validity.
     - `OTP`: `otp-verify` with the patient phone input; verified sets `otpVerified`.
     - A mode change clears the previous proof.
-- [ ] T065 [US2] Implement the remaining mode branches in `v2/consent/consent-dialog/proof-step/proof-step.component.{ts,html}`. Validity comes from `proofValid` in the core.
-- [ ] T066 [US2] Extend `src/consent/consent-dialog/proof-step/proof-step.component.spec.ts` with the same cases as T064.
-- [ ] T067 [US2] Implement the remaining mode branches in `src/consent/consent-dialog/proof-step/proof-step.component.{ts,html,css}`.
-- [ ] T068 [US2] Extend both `consent-dialog.component.spec.ts` files (v2 and src). On Accept with `VOICE_CLIP` or `SIGNATURE_PHOTO`:
+- [X] T065 [US2] Implement the remaining mode branches in `v2/consent/consent-dialog/proof-step/proof-step.component.{ts,html}`. Validity comes from `proofValid` in the core.
+- [X] T066 [US2] Extend `src/consent/consent-dialog/proof-step/proof-step.component.spec.ts` with the same cases as T064.
+- [X] T067 [US2] Implement the remaining mode branches in `src/consent/consent-dialog/proof-step/proof-step.component.{ts,html,css}`.
+- [X] T068 [US2] Extend both `consent-dialog.component.spec.ts` files (v2 and src). On Accept with `VOICE_CLIP` or `SIGNATURE_PHOTO`:
     - each blob is uploaded first via `uploadEvidence` (type, `sha256Hex` result or `''`, `durationSec`, own key);
     - then `saveConsent` is called with the returned `evidenceIds`;
     - an upload failure stops the save and shows `retry`;
     - a retry re-uploads only the failed files;
     - blobs and object URLs are released on close (FR-015).
-- [ ] T069 [US2] Implement the evidence-upload-then-save sequence in `v2/consent/consent-dialog/consent-dialog.component.ts` and `src/consent/consent-dialog/consent-dialog.component.ts`.
+- [X] T069 [US2] Implement the evidence-upload-then-save sequence in `v2/consent/consent-dialog/consent-dialog.component.ts` and `src/consent/consent-dialog/consent-dialog.component.ts`.
 
 **Checkpoint**: All 6 modes are covered by passing specs on both tracks; quickstart rows 10–11 pass.
 

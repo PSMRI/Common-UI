@@ -38,6 +38,9 @@ instruments only files under `sourceRoot`, then restores `angular.json`.
 | 2026-10-13 | MMU-UI, AOT (`CONSENT_AOT=1`) | lines added to `v2/registrar/registration/registration.component.ts` | 9 pass | — | 100 % (11/11) | — | 100 % (12/12) |
 
 | 2026-10-13 | HWC-UI (Common-UI `4677d34` + `src/consent` + hooked registration), JIT | `src/consent/**` + lines added to `src/registrar/registration/registration.component.ts` (US1 src + core) | 128 pass | — | 100 % (179/179) | 100 % (132/132) | 100 % (337/337) |
+| 2026-10-14 | MMU-UI (Common-UI `001-consent-management-ui-v2`), JIT | `src/consent/**`, `v2/consent/**` (US1–US2 v2 + core) | 151 pass | — | 100 % (235/235) | 100 % (182/182) | 100 % (489/489) |
+| 2026-10-14 | HWC-UI (Common-UI `4677d34` + src track), JIT | `src/consent/**` + added hook lines (US1–US2 src + core) | 160 pass | — | 100 % (246/246) | 100 % (184/184) | 100 % (501/501) |
+
 ### Builds with the feature off (no-regression check, US1)
 
 | Date | Host | Common-UI | Result |

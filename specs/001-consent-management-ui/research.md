@@ -114,23 +114,24 @@ Findings come from a read-only survey of `FE/MMU-UI/Common-UI` (`main` @ 100f09a
 
 ## R7. Proof capture
 
-- **Photos — reuse the host `camera-dialog`**:
-  - It exists at `src/app/app-modules/core/components/camera-dialog/camera-dialog.component` in HWC-UI,
-    MMU-UI and TM-UI and is built on `ngx-webcam`.
-  - Common-UI opens it through the host dialog service, the same way it already reaches host components.
-  - `media-capture` only opens it, converts the returned data URL into a `Blob`, and offers
-    `<input type="file" accept="image/*">` when no camera is found.
-  - The result shape is verified per host before use (task T059). If a host differs, that track falls
-    back to `ngx-webcam` directly.
-- **Voice — use `recordrtc` directly** (`StereoAudioRecorder`), with an `accept="audio/*"` upload
-  fallback. The existing `AudioRecordingService` cannot be reused:
-  - it lives in `nurse-doctor/shared`, not core;
-  - it exists only in MMU-UI and TM-UI, not HWC-UI;
-  - it posts to its own endpoint.
-- **OTP — new `otp-verify` component**: `abha-enter-otp-component` is tied to ABHA enrolment calls on
-  `registrarService` and to `MAT_DIALOG_DATA`. Reusing it would mean editing it (Constitution IV).
-- **Rationale**: Reuse where the existing piece is reachable from Common-UI in all three hosts
-  (Constitution I). No new npm dependency (Constitution V).
+- **Photos: the host `CameraService.capture()`** (checked in T059, 2026-10-14).
+  - All three hosts export `CameraService` from `src/app/app-modules/core/services`, the same barrel
+    Common-UI already imports.
+  - HWC-UI and TM-UI open the camera dialog with `MatDialog`; MMU-UI uses `ZardDialogService`.
+    `capture()` returns `afterClosed()` in all three.
+  - A taken photo comes back as a data URL (`sysImage`, `imageAsDataUrl`); cancel gives `false` or
+    `undefined`.
+  - Common-UI's registration step already uses `cameraService.capture()` the same way.
+  - `media-capture` converts the data URL into a `Blob`. It always offers image upload as well.
+- **Voice: the browser's `MediaRecorder`** (no library), with an `accept="audio/*"` upload fallback.
+  The 30–60 s rule uses the recording time, or the audio metadata for an upload.
+  - Changed from `recordrtc` during implementation: HWC-UI has `recordrtc` but no `@types/recordrtc`,
+    so importing it from shared code fails HWC-UI's strict compile.
+  - `MediaRecorder` is built into every supported browser, so no dependency is needed (Constitution V).
+  - The host `AudioRecordingService` is not reused: it lives in `nurse-doctor/shared`, is missing in
+    HWC-UI, and posts to its own endpoint.
+- **OTP: a new `otp-verify` component.** `abha-enter-otp-component` is tied to ABHA enrolment calls and
+  `MAT_DIALOG_DATA`. It emits `{ challengeId, phone }` so the guardian step (US3) can reuse it.
 
 ## R8. Fingerprints and request keys on van servers (insecure context)
 

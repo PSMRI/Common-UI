@@ -37,8 +37,14 @@ from the notice API in the patient's language.
 | `witnessRelationship` | Relationship to patient |
 | `patientPhoto` | Photo of patient |
 | `signedFormPhoto` | Photo of signed / thumb-printed form |
+| `takePhoto` | Take photo |
+| `stopRecording` | Stop recording |
 | `retake` | Retake |
 | `upload` | Upload instead |
+| `phoneNumber` | Phone number |
+| `enterOtp` | Enter OTP |
+| `resendIn` | Resend in |
+| `otpVerified` | OTP verified |
 | `sendOtp` | Send OTP |
 | `verifyOtp` | Verify |
 | `otpSentTo` | OTP sent to {phone} |
