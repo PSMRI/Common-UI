@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Directive, EventEmitter, Input, OnDestroy, Output, inject } from '@angular/core';
+import { Directive, EventEmitter, Input, OnDestroy, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { ConsentApiService } from '../consent-api.service';
 import { OtpPurpose } from '../consent.models';
 import { maskPhone, uuidV4 } from '../evidence.util';
@@ -51,6 +51,8 @@ export abstract class OtpVerifyBase implements OnDestroy {
   resendIn = 0;
 
   protected consentApi = inject(ConsentApiService);
+  // Zard's dialog container is OnPush: async updates must mark this view for checking.
+  protected cdr = inject(ChangeDetectorRef);
   private timer: ReturnType<typeof setInterval> | null = null;
 
   get canSend(): boolean {
@@ -80,10 +82,12 @@ export abstract class OtpVerifyBase implements OnDestroy {
         this.challengeId = challenge.challengeId;
         this.maskedPhone = challenge.maskedPhone;
         this.startResendTimer();
+        this.cdr.markForCheck();
       },
       error: () => {
         this.sending = false;
         this.error = 'serviceUnavailable';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -104,10 +108,12 @@ export abstract class OtpVerifyBase implements OnDestroy {
         } else {
           this.error = 'otpInvalid';
         }
+        this.cdr.markForCheck();
       },
       error: (err: { kind?: string }) => {
         this.verifying = false;
         this.error = err && err.kind === 'UNAVAILABLE' ? 'serviceUnavailable' : 'otpInvalid';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -125,6 +131,7 @@ export abstract class OtpVerifyBase implements OnDestroy {
         this.resendIn = 0;
         this.stopTimer();
       }
+      this.cdr.markForCheck();
     }, 1000);
   }
 
