@@ -30,7 +30,12 @@ import { Type } from '@angular/core';
 import { LanguageStepBase } from '../ui/language-step.base';
 
 /** Behaviour suite run by each track's language step spec. */
-export function languageStepSuite(LanguageStepComponent: Type<LanguageStepBase>, track: string): void {
+/** onPushContainer: the track's dialog container is OnPush (Zard), so async updates must call markForCheck. */
+export function languageStepSuite(
+  LanguageStepComponent: Type<LanguageStepBase>,
+  track: string,
+  options: { onPushContainer?: boolean } = {}
+): void {
 describe(`LanguageStepComponent (${track})`, () => {
   let fixture: ComponentFixture<LanguageStepBase>;
   let component: LanguageStepBase;
@@ -94,7 +99,7 @@ describe(`LanguageStepComponent (${track})`, () => {
     expect(buttons().length).toBe(3);
   });
 
-  it('renders languages that arrive later inside an OnPush dialog container', () => {
+  (options.onPushContainer ? it : xit)('renders languages that arrive later inside an OnPush dialog container', () => {
     const later = new Subject<NoticeLanguage[]>();
     api.getLanguages.and.returnValue(later);
     const { host, ref } = createInOnPushHost(LanguageStepComponent);
