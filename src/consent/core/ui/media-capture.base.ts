@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Directive, EventEmitter, Input, OnDestroy, Output, inject } from '@angular/core';
+import { Directive, EventEmitter, Input, OnDestroy, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { CameraService } from 'src/app/app-modules/core/services';
 import { isVoiceDurationValid } from '../evidence.util';
 
@@ -58,6 +58,8 @@ export abstract class MediaCaptureBase implements OnDestroy {
   error: 'voiceTooShort' | 'voiceTooLong' | null = null;
 
   protected cameraService = inject(CameraService);
+  // Zard's dialog container is OnPush: async updates must mark this view for checking.
+  protected cdr = inject(ChangeDetectorRef);
   private recorder: MediaRecorder | null = null;
   private stream: MediaStream | null = null;
   private chunks: Blob[] = [];
@@ -84,9 +86,11 @@ export abstract class MediaCaptureBase implements OnDestroy {
         this.startedAt = Date.now();
         this.recorder.start();
         this.recording = true;
+        this.cdr.markForCheck();
       })
       .catch(() => {
         this.micDenied = true;
+        this.cdr.markForCheck();
       });
   }
 
@@ -141,6 +145,7 @@ export abstract class MediaCaptureBase implements OnDestroy {
     } else {
       this.error = seconds < 30 ? 'voiceTooShort' : 'voiceTooLong';
     }
+    this.cdr.markForCheck();
   }
 
   private accept(blob: Blob, durationSec: number | null): void {
@@ -148,6 +153,7 @@ export abstract class MediaCaptureBase implements OnDestroy {
     this.error = null;
     this.previewUrl = URL.createObjectURL(blob);
     this.captured.emit({ blob, durationSec });
+    this.cdr.markForCheck();
   }
 
   private revoke(): void {

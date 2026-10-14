@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Directive, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Directive, EventEmitter, Input, OnInit, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { ConsentApiService } from '../consent-api.service';
 import { filterRtl } from '../consent-draft';
 import { NoticeLanguage } from '../consent.models';
@@ -37,6 +37,8 @@ export abstract class LanguageStepBase implements OnInit {
   failed = false;
 
   protected consentApi = inject(ConsentApiService);
+  // Zard's dialog container is OnPush: async updates must mark this view for checking.
+  protected cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.load();
@@ -50,11 +52,13 @@ export abstract class LanguageStepBase implements OnInit {
         this.languages = filterRtl(languages);
         this.failed = this.languages.length === 0;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.languages = [];
         this.failed = true;
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

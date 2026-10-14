@@ -23,6 +23,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CameraService } from 'src/app/app-modules/core/services';
 import { of, Subject, throwError } from 'rxjs';
+import { Notice } from '../consent.models';
+import { createInOnPushHost } from './on-push-host';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { ConsentApiService } from '../consent-api.service';
@@ -357,6 +359,19 @@ describe(`ConsentDialogComponent (${track})`, () => {
       expect(component.draft.proof).toEqual({});
       expect(component.draft.notice).toBeNull();
     });
+  });
+
+  it('shows a notice that arrives later inside an OnPush dialog container', () => {
+    const later = new Subject<Notice>();
+    api.getNotice.and.returnValue(later);
+    const { host, ref } = createInOnPushHost(ConsentDialogComponent);
+    host.detectChanges();
+    host.detectChanges();
+    expect(host.nativeElement.querySelector('app-consent-language-step')).not.toBeNull();
+    ref.instance.loadNotice('hi');
+    later.next(mockNotice('hi'));
+    host.detectChanges();
+    expect(host.nativeElement.querySelector('app-consent-notice-step')).not.toBeNull();
   });
 });
 }
