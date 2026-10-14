@@ -20,7 +20,9 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Directive, DoCheck, OnInit, inject } from '@angular/core';
+import { Directive, DoCheck, OnDestroy, OnInit, inject } from '@angular/core';
+import { forkJoin, from, Observable, of } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -42,12 +44,20 @@ import {
   ConsentDialogResult,
   ConsentDraft,
   ConsentMode,
+  EvidenceType,
   ProofDraft,
 } from '../consent.models';
+import { sha256Hex, uuidV4 } from '../evidence.util';
+
+interface EvidenceItem {
+  type: EvidenceType;
+  blob: Blob;
+  durationSec: number | null;
+}
 
 /** Consent dialog state machine shared by both tracks (FR-001 to FR-012, data-model.md). */
 @Directive()
-export abstract class ConsentDialogBase implements OnInit, DoCheck {
+export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   currentLanguageSet: any;
   draft: ConsentDraft = createDraft();
   step: 'LANGUAGE' | 'DECIDE' = 'LANGUAGE';
@@ -55,6 +65,9 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck {
   saving = false;
   failed = false;
   private retryAction: (() => void) | null = null;
+  // Keyed by the captured file, so a retry re-uploads only failed files and a retake uploads anew.
+  private evidenceIds = new WeakMap<Blob, string>();
+  private uploadKeys = new WeakMap<Blob, string>();
 
   /** Options passed by the caller through the track's dialog data token. */
   abstract options: ConsentDialogOptions;
@@ -69,6 +82,11 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck {
 
   ngOnInit(): void {
     this.assignSelectedLanguage();
+  }
+
+  ngOnDestroy(): void {
+    // Drop captured proof from memory when the dialog closes (FR-015).
+    this.draft = createDraft();
   }
 
   ngDoCheck(): void {
@@ -140,7 +158,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck {
       .confirm(this.text?.title, this.text?.cannotContinue, this.text?.confirmDecline, this.text?.close)
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.save(declineAll(this.draft));
+          this.save(declineAll(this.draft), false);
         }
       });
   }
@@ -158,41 +176,90 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck {
     this.closeDialog(noDecisionResult());
   }
 
-  private save(draft: ConsentDraft): void {
+  private save(draft: ConsentDraft, withEvidence = true): void {
     if (this.saving || !draft.notice) {
       return;
     }
     const notice = draft.notice;
+    const evidence = withEvidence ? this.evidenceItems(draft) : [];
     this.saving = true;
     this.failed = false;
-    const request = toSaveRequest(
-      draft,
-      this.consentContext.context(),
-      this.options.beneficiaryRegId,
-      [],
-      []
-    );
-    this.consentApi.saveConsent(request, draft.idempotencyKey).subscribe({
-      next: (response) => {
-        this.saving = false;
-        this.closeDialog({
-          outcome: outcomeOf(notice.purposes, draft.decisions),
-          consentId: response.consentId,
-          consentingParty: request.consentingParty,
-          decisions: decisionList(notice.purposes, draft.decisions),
-          syncStatus: response.syncStatus,
-        });
-      },
-      error: (err: ConsentApiError) => {
-        this.saving = false;
-        if (err.kind === 'STALE') {
-          this.confirmationService.alert(this.text?.staleReload, 'info');
-          this.loadNotice(notice.languageCode);
-        } else {
-          this.fail(() => this.save(draft));
-        }
-      },
+    this.uploadAll(evidence)
+      .pipe(
+        switchMap((evidenceIds) => {
+          const request = toSaveRequest(
+            draft,
+            this.consentContext.context(),
+            this.options.beneficiaryRegId,
+            evidenceIds,
+            []
+          );
+          return this.consentApi
+            .saveConsent(request, draft.idempotencyKey)
+            .pipe(map((response) => ({ request, response })));
+        })
+      )
+      .subscribe({
+        next: ({ request, response }) => {
+          this.saving = false;
+          this.closeDialog({
+            outcome: outcomeOf(notice.purposes, draft.decisions),
+            consentId: response.consentId,
+            consentingParty: request.consentingParty,
+            decisions: decisionList(notice.purposes, draft.decisions),
+            syncStatus: response.syncStatus,
+          });
+        },
+        error: (err: ConsentApiError) => {
+          this.saving = false;
+          if (err.kind === 'STALE') {
+            this.confirmationService.alert(this.text?.staleReload, 'info');
+            this.loadNotice(notice.languageCode);
+          } else {
+            this.fail(() => this.save(draft, withEvidence));
+          }
+        },
+      });
+  }
+
+  /** Files to upload before the consent: voice clip, or patient photo + signed form photo. */
+  private evidenceItems(draft: ConsentDraft): EvidenceItem[] {
+    const proof = draft.proof;
+    if (draft.mode === 'VOICE_CLIP' && proof.voiceClip) {
+      return [{ type: 'VOICE_CLIP', blob: proof.voiceClip, durationSec: proof.voiceDurationSec ?? null }];
+    }
+    if (draft.mode === 'SIGNATURE_PHOTO' && proof.patientPhoto && proof.signedFormPhoto) {
+      return [
+        { type: 'PATIENT_PHOTO', blob: proof.patientPhoto, durationSec: null },
+        { type: 'SIGNED_FORM_PHOTO', blob: proof.signedFormPhoto, durationSec: null },
+      ];
+    }
+    return [];
+  }
+
+  /** Uploads files not uploaded yet; resolves to all evidence ids in order. */
+  private uploadAll(items: EvidenceItem[]): Observable<string[]> {
+    const pending = items.filter((item) => !this.evidenceIds.has(item.blob));
+    const uploads = pending.map((item) => {
+      if (!this.uploadKeys.has(item.blob)) {
+        this.uploadKeys.set(item.blob, uuidV4());
+      }
+      return from(sha256Hex(item.blob)).pipe(
+        switchMap((hash) =>
+          this.consentApi.uploadEvidence(
+            item.blob,
+            item.type,
+            hash,
+            item.durationSec,
+            this.uploadKeys.get(item.blob) as string
+          )
+        ),
+        tap((res) => this.evidenceIds.set(item.blob, res.evidenceId))
+      );
     });
+    return (uploads.length ? forkJoin(uploads) : of([])).pipe(
+      map(() => items.map((item) => this.evidenceIds.get(item.blob) as string))
+    );
   }
 
   private fail(retryAction: () => void): void {

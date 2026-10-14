@@ -22,6 +22,7 @@
 
 import { Directive, EventEmitter, Input, Output } from '@angular/core';
 import { ConsentMode, Notice, ProofDraft } from '../consent.models';
+import { CapturedMedia } from './media-capture.base';
 
 export const CONSENT_MODES: { mode: ConsentMode; key: string }[] = [
   { mode: 'SELF_READ', key: 'modeSelfRead' },
@@ -32,20 +33,51 @@ export const CONSENT_MODES: { mode: ConsentMode; key: string }[] = [
   { mode: 'OTP', key: 'modeOtp' },
 ];
 
-/** Consent mode picker and proof capture shared by both tracks (FR-013, FR-014). */
+/** Consent mode picker and the proof each mode needs, shared by both tracks (FR-013 to FR-016). */
 @Directive()
 export abstract class ProofStepBase {
   @Input() text: any;
   @Input() notice: Notice | null = null;
   @Input() audioPlayedToEnd = false;
   @Input() mode: ConsentMode | null = null;
+  @Input() patientPhone: string | null = null;
   @Output() modeChange = new EventEmitter<ConsentMode>();
   @Output() proofChange = new EventEmitter<ProofDraft>();
 
   readonly modes = CONSENT_MODES;
+  proof: ProofDraft = {};
 
   selectMode(mode: unknown): void {
+    this.proof = {};
     this.modeChange.emit(mode as ConsentMode);
-    this.proofChange.emit({});
+    this.proofChange.emit(this.proof);
+  }
+
+  setWorkerConfirmed(checked: boolean): void {
+    this.update({ workerConfirmed: checked });
+  }
+
+  setWitness(field: 'witnessName' | 'witnessRelationship', value: string): void {
+    this.update({ [field]: value });
+  }
+
+  onVoice(media: CapturedMedia | null): void {
+    this.update({
+      voiceClip: media ? media.blob : null,
+      voiceDurationSec: media ? media.durationSec : null,
+    });
+  }
+
+  onPhoto(field: 'patientPhoto' | 'signedFormPhoto', media: CapturedMedia | null): void {
+    this.update({ [field]: media ? media.blob : null });
+  }
+
+  onOtpVerified(event: { challengeId: string }): void {
+    this.update({ otpChallengeId: event.challengeId, otpVerified: true });
+  }
+
+  private update(change: Partial<ProofDraft>): void {
+    this.proof = { ...this.proof, ...change };
+    this.proofChange.emit(this.proof);
   }
 }
