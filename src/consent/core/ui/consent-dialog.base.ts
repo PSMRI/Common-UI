@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Directive, DoCheck, OnDestroy, OnInit, inject } from '@angular/core';
+import { Directive, DoCheck, OnDestroy, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { forkJoin, from, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
@@ -76,6 +76,8 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   protected consentContext = inject(ConsentContextService);
   protected confirmationService = inject(ConfirmationService);
   httpServiceService = inject(HttpServiceService);
+  // Zard's dialog container is OnPush: async updates must mark this view for checking.
+  protected cdr = inject(ChangeDetectorRef);
 
   /** Closes the track's dialog with the result. */
   protected abstract closeDialog(result: ConsentDialogResult): void;
@@ -115,6 +117,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
         this.draft = withNotice(this.draft, notice);
         this.step = 'DECIDE';
         this.loadingNotice = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loadingNotice = false;
@@ -184,6 +187,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     const evidence = withEvidence ? this.evidenceItems(draft) : [];
     this.saving = true;
     this.failed = false;
+    this.cdr.markForCheck();
     this.uploadAll(evidence)
       .pipe(
         switchMap((evidenceIds) => {
@@ -265,5 +269,6 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   private fail(retryAction: () => void): void {
     this.failed = true;
     this.retryAction = retryAction;
+    this.cdr.markForCheck();
   }
 }
