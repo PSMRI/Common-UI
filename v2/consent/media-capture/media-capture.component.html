@@ -1,0 +1,44 @@
+<div class="flex flex-col gap-2">
+  <span class="text-sm font-medium text-foreground">{{ label }}</span>
+  @if (previewUrl) {
+    @if (kind === 'photo') {
+      <img class="max-h-40 w-fit rounded-lg border border-input" [src]="previewUrl" [alt]="label" />
+    } @else {
+      <audio controls class="w-full" [src]="previewUrl"></audio>
+    }
+    <button z-button zType="outline" type="button" class="consent-media-retake w-fit" (click)="retake()">
+      {{ text?.retake }}
+    </button>
+  } @else {
+    <div class="flex flex-wrap items-center gap-2">
+      @if (kind === 'photo') {
+        <button z-button type="button" class="consent-media-capture" (click)="takePhoto()">
+          {{ text?.takePhoto }}
+        </button>
+      } @else if (!micDenied) {
+        @if (recording) {
+          <button z-button type="button" class="consent-media-stop" (click)="stopRecording()">
+            {{ text?.stopRecording }}
+          </button>
+        } @else {
+          <button z-button type="button" class="consent-media-record" (click)="startRecording()">
+            {{ text?.recordVoice }}
+          </button>
+        }
+      }
+      <label class="text-sm text-primary">
+        {{ text?.upload }}
+        <input
+          #file
+          type="file"
+          class="sr-only"
+          [attr.accept]="kind === 'photo' ? 'image/*' : 'audio/*'"
+          (change)="onFile(file)"
+        />
+      </label>
+    </div>
+  }
+  @if (error) {
+    <p class="text-sm text-destructive" role="alert">{{ text?.[error] }}</p>
+  }
+</div>

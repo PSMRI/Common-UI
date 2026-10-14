@@ -1,0 +1,48 @@
+<div class="flex flex-col gap-2">
+  @if (!challengeId) {
+    <label class="flex flex-col gap-1 text-sm text-foreground">
+      {{ text?.phoneNumber }}
+      <input
+        z-input
+        type="tel"
+        inputmode="numeric"
+        maxlength="10"
+        name="consent-otp-phone"
+        [value]="phoneNumber"
+        (input)="phoneNumber = $any($event.target).value"
+      />
+    </label>
+  } @else {
+    <p class="text-sm text-muted-foreground">{{ text?.otpSentTo }} {{ displayPhone }}</p>
+    <label class="flex flex-col gap-1 text-sm text-foreground">
+      {{ text?.enterOtp }}
+      <input
+        z-input
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="one-time-code"
+        name="consent-otp-code"
+        [value]="otp"
+        [disabled]="isVerified"
+        (input)="otp = $any($event.target).value"
+      />
+    </label>
+  }
+  <div class="flex flex-wrap gap-2">
+    <button z-button zType="outline" type="button" class="consent-otp-send" [disabled]="!canSend" (click)="send()">
+      {{ resendIn > 0 ? text?.resendIn + ' ' + resendIn : text?.sendOtp }}
+    </button>
+    @if (challengeId) {
+      <button z-button type="button" class="consent-otp-verify" [disabled]="!canVerify" (click)="verify()">
+        {{ text?.verifyOtp }}
+      </button>
+    }
+  </div>
+  @if (isVerified) {
+    <p class="text-sm text-foreground" role="status">{{ text?.otpVerified }}</p>
+  }
+  @if (error) {
+    <p class="text-sm text-destructive" role="alert">{{ text?.[error] }}</p>
+  }
+</div>

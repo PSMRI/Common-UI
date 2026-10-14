@@ -22,14 +22,26 @@
 
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ZardCheckboxComponent } from 'Common-UI/v2/ui/checkbox';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
 import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
 import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
 import { ProofStepBase } from '../../../../src/consent/core/ui/proof-step.base';
+import { MediaCaptureComponent } from '../../media-capture/media-capture.component';
+import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
 
 @Component({
   selector: 'app-consent-proof-step',
   templateUrl: './proof-step.component.html',
   standalone: true,
-  imports: [FormsModule, ZardRadioGroupComponent, ZardRadioComponent],
+  imports: [
+    FormsModule,
+    ZardRadioGroupComponent,
+    ZardRadioComponent,
+    ZardCheckboxComponent,
+    ZardInputDirective,
+    MediaCaptureComponent,
+    OtpVerifyComponent,
+  ],
 })
 export class ProofStepComponent extends ProofStepBase {}
