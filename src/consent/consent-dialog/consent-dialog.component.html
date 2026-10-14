@@ -35,6 +35,7 @@
         [text]="text"
         [notice]="draft.notice"
         [mode]="draft.mode"
+        [patientPhone]="options.patientPhone || null"
         [audioPlayedToEnd]="draft.audioPlayedToEnd"
         (modeChange)="onMode($event)"
         (proofChange)="onProof($event)"

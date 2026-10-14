@@ -10,4 +10,66 @@
       {{ text?.[option.key] }}
     </mat-radio-button>
   </mat-radio-group>
+
+  <ng-container [ngSwitch]="mode">
+    <mat-checkbox
+      *ngSwitchCase="'READ_ALOUD'"
+      [checked]="proof.workerConfirmed === true"
+      (change)="setWorkerConfirmed($event.checked)"
+    >
+      {{ text?.workerConfirm }}
+    </mat-checkbox>
+    <app-consent-media-capture
+      *ngSwitchCase="'VOICE_CLIP'"
+      kind="voice"
+      [text]="text"
+      [label]="text?.recordVoice"
+      (captured)="onVoice($event)"
+    ></app-consent-media-capture>
+    <div *ngSwitchCase="'WITNESSED'" class="consent-row">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ text?.witnessName }}</mat-label>
+        <input
+          matInput
+          type="text"
+          name="consent-witness-name"
+          maxlength="100"
+          [value]="proof.witnessName || ''"
+          (input)="setWitness('witnessName', $any($event.target).value)"
+        />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ text?.witnessRelationship }}</mat-label>
+        <input
+          matInput
+          type="text"
+          name="consent-witness-relationship"
+          maxlength="100"
+          [value]="proof.witnessRelationship || ''"
+          (input)="setWitness('witnessRelationship', $any($event.target).value)"
+        />
+      </mat-form-field>
+    </div>
+    <div *ngSwitchCase="'SIGNATURE_PHOTO'" class="consent-row">
+      <app-consent-media-capture
+        kind="photo"
+        [text]="text"
+        [label]="text?.patientPhoto"
+        (captured)="onPhoto('patientPhoto', $event)"
+      ></app-consent-media-capture>
+      <app-consent-media-capture
+        kind="photo"
+        [text]="text"
+        [label]="text?.signedFormPhoto"
+        (captured)="onPhoto('signedFormPhoto', $event)"
+      ></app-consent-media-capture>
+    </div>
+    <app-consent-otp-verify
+      *ngSwitchCase="'OTP'"
+      purpose="CONSENT"
+      [text]="text"
+      [phone]="patientPhone"
+      (verified)="onOtpVerified($event)"
+    ></app-consent-otp-verify>
+  </ng-container>
 </fieldset>

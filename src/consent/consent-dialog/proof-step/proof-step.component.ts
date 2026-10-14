@@ -20,16 +20,31 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { NgFor } from '@angular/common';
+import { NgFor, NgSwitch, NgSwitchCase } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { ProofStepBase } from '../../core/ui/proof-step.base';
+import { MediaCaptureComponent } from '../../media-capture/media-capture.component';
+import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
 
 @Component({
   selector: 'app-consent-proof-step',
   templateUrl: './proof-step.component.html',
   styleUrls: ['./proof-step.component.css'],
   standalone: true,
-  imports: [NgFor, MatRadioModule],
+  imports: [
+    NgFor,
+    NgSwitch,
+    NgSwitchCase,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MediaCaptureComponent,
+    OtpVerifyComponent,
+  ],
 })
 export class ProofStepComponent extends ProofStepBase {}
