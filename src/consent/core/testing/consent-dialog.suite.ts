@@ -21,6 +21,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CameraService } from 'src/app/app-modules/core/services';
 import { of, Subject, throwError } from 'rxjs';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -28,6 +29,7 @@ import { ConsentApiService } from '../consent-api.service';
 import { ConsentContextService } from '../consent-context.service';
 import { ConsentCaptureContext, SaveConsentResponse } from '../consent.models';
 import {
+  mockEvidenceResponse,
   mockLanguages,
   mockNotice,
   mockSaveResponse,
@@ -90,7 +92,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
   }
 
   beforeEach(() => {
-    api = jasmine.createSpyObj<ConsentApiService>('ConsentApiService', ['getLanguages', 'getNotice', 'saveConsent']);
+    api = jasmine.createSpyObj<ConsentApiService>('ConsentApiService', ['getLanguages', 'getNotice', 'saveConsent', 'uploadEvidence']);
     api.getLanguages.and.returnValue(of(mockLanguages()));
     api.getNotice.and.callFake((_c, lang) => of(mockNotice(lang)));
     api.saveConsent.and.returnValue(of(mockSaveResponse()));
@@ -106,6 +108,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
         { provide: ConsentApiService, useValue: api },
         { provide: ConsentContextService, useValue: context },
         { provide: ConfirmationService, useValue: confirmation },
+        { provide: CameraService, useValue: jasmine.createSpyObj('CameraService', ['capture']) },
         { provide: HttpServiceService, useValue: { currentLangugae$: of({ consent: text }) } },
       ],
     });
@@ -260,6 +263,100 @@ describe(`ConsentDialogComponent (${track})`, () => {
     component.failed = true;
     component.retry();
     expect(component.failed).toBeFalse();
+  });
+
+  describe('evidence', () => {
+    const voice = new Blob(['voice']);
+    const face = new Blob(['face']);
+    const form = new Blob(['form']);
+
+    async function settle(): Promise<void> {
+      for (let i = 0; i < 50 && api.saveConsent.calls.count() === 0 && !component.failed; i++) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+    }
+
+    function withProof(mode: 'VOICE_CLIP' | 'SIGNATURE_PHOTO', proof: object): void {
+      ready();
+      component.onMode(mode);
+      component.onProof(proof);
+    }
+
+    beforeEach(() => {
+      let n = 0;
+      api.uploadEvidence.and.callFake(() => of(mockEvidenceResponse('e-' + ++n)));
+    });
+
+    it('uploads a voice clip first, then saves with its evidence id', async () => {
+      withProof('VOICE_CLIP', { voiceClip: voice, voiceDurationSec: 45 });
+      component.accept();
+      await settle();
+      const [file, type, hash, duration, key] = api.uploadEvidence.calls.mostRecent().args;
+      expect(file).toBe(voice);
+      expect(type).toBe('VOICE_CLIP');
+      expect(hash === null || /^[0-9a-f]{64}$/.test(hash as string)).toBeTrue();
+      expect(duration).toBe(45);
+      expect(key).not.toBe(component.draft.idempotencyKey);
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1']);
+    });
+
+    it('uploads both photos in order for signature/thumb', async () => {
+      withProof('SIGNATURE_PHOTO', { patientPhoto: face, signedFormPhoto: form });
+      component.accept();
+      await settle();
+      expect(api.uploadEvidence.calls.allArgs().map((a) => a[1])).toEqual(['PATIENT_PHOTO', 'SIGNED_FORM_PHOTO']);
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1', 'e-2']);
+    });
+
+    it('stops on an upload failure and retries only the failed file with the same key', async () => {
+      let calls = 0;
+      api.uploadEvidence.and.callFake((blob: Blob) => {
+        calls++;
+        if (blob === form && calls === 2) {
+          return throwError(() => ({ kind: 'UNAVAILABLE', message: 'x' }));
+        }
+        return of(mockEvidenceResponse(blob === face ? 'e-face' : 'e-form'));
+      });
+      withProof('SIGNATURE_PHOTO', { patientPhoto: face, signedFormPhoto: form });
+      component.accept();
+      await settle();
+      expect(component.failed).toBeTrue();
+      expect(api.saveConsent).not.toHaveBeenCalled();
+      const failedKey = api.uploadEvidence.calls.argsFor(1)[4];
+      component.retry();
+      await settle();
+      expect(api.uploadEvidence.calls.count()).toBe(3);
+      expect(api.uploadEvidence.calls.argsFor(2)[0]).toBe(form);
+      expect(api.uploadEvidence.calls.argsFor(2)[4]).toBe(failedKey);
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-face', 'e-form']);
+    });
+
+    it('uploads nothing for a decline or for modes without files', async () => {
+      confirmation.confirm.and.returnValue(of(true));
+      withProof('VOICE_CLIP', { voiceClip: voice, voiceDurationSec: 45 });
+      component.decline();
+      await settle();
+      expect(api.uploadEvidence).not.toHaveBeenCalled();
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual([]);
+    });
+
+    it('sends no evidence when a photo is missing', async () => {
+      withProof('SIGNATURE_PHOTO', { patientPhoto: face });
+      (component as any).save(component.draft);
+      await settle();
+      expect(api.uploadEvidence).not.toHaveBeenCalled();
+      withProof('VOICE_CLIP', { voiceDurationSec: 45 });
+      expect((component as any).evidenceItems(component.draft)).toEqual([]);
+      withProof('VOICE_CLIP', { voiceClip: voice });
+      expect((component as any).evidenceItems(component.draft)[0].durationSec).toBeNull();
+    });
+
+    it('drops captured proof when the dialog is destroyed', () => {
+      withProof('VOICE_CLIP', { voiceClip: voice, voiceDurationSec: 45 });
+      fixture.destroy();
+      expect(component.draft.proof).toEqual({});
+      expect(component.draft.notice).toBeNull();
+    });
   });
 });
 }
