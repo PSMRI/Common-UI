@@ -47,6 +47,8 @@ instruments only files under `sourceRoot`, then restores `angular.json`.
 | --- | --- | --- | --- |
 | 2026-10-13 | MMU-UI, Node 22, `ng build` (production) | `001-consent-management-ui-v2` @ 6b64ea0 | Pass, 2 min 47 s, 35 warnings, none from consent code |
 | 2026-10-13 | HWC-UI, Node 18, `ng build` (production) | `4677d34` + `src/consent` + hooked registration | Pass, 2 min 27 s, 32 warnings, none from consent code (the one naming "consent" is the existing `abha-consent-form` CSS) |
+| 2026-10-14 | MMU-UI, Node 22, `ng build` (production), after US2 | `001-consent-management-ui-v2` @ eb8f5f7 | Pass, 35 warnings (unchanged), none from consent code |
+| 2026-10-14 | HWC-UI, Node 18, `ng build` (production), after US2 | `4677d34` + src track @ c7a0be8 | Pass, 32 warnings (unchanged), none from consent code |
 
 There is no warning count from before this feature to compare against; T105 records them at the pinned
 commits.
