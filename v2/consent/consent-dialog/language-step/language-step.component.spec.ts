@@ -23,4 +23,5 @@
 import { languageStepSuite } from '../../../../src/consent/core/testing/language-step.suite';
 import { LanguageStepComponent } from './language-step.component';
 
-languageStepSuite(LanguageStepComponent, 'v2');
+// Zard's dialog container is OnPush.
+languageStepSuite(LanguageStepComponent, 'v2', { onPushContainer: true });

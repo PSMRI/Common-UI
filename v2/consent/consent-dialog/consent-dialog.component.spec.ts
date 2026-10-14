@@ -24,4 +24,5 @@ import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { consentDialogSuite } from '../../../src/consent/core/testing/consent-dialog.suite';
 import { ConsentDialogComponent } from './consent-dialog.component';
 
-consentDialogSuite(ConsentDialogComponent, 'v2', { data: Z_MODAL_DATA, ref: ZardDialogRef });
+// Zard's dialog container is OnPush.
+consentDialogSuite(ConsentDialogComponent, 'v2', { data: Z_MODAL_DATA, ref: ZardDialogRef }, { onPushContainer: true });
