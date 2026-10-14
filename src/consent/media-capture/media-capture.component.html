@@ -1,0 +1,28 @@
+<div class="consent-media">
+  <span class="consent-media-label">{{ label }}</span>
+  <ng-container *ngIf="previewUrl">
+    <img *ngIf="kind === 'photo'" class="consent-media-preview" [src]="previewUrl" [alt]="label" />
+    <audio *ngIf="kind === 'voice'" controls [src]="previewUrl"></audio>
+    <button mat-stroked-button type="button" class="consent-media-retake" (click)="retake()">
+      {{ text?.retake }}
+    </button>
+  </ng-container>
+  <div *ngIf="!previewUrl" class="consent-media-actions">
+    <button *ngIf="kind === 'photo'" mat-flat-button color="primary" type="button" class="consent-media-capture" (click)="takePhoto()">
+      {{ text?.takePhoto }}
+    </button>
+    <ng-container *ngIf="kind === 'voice' && !micDenied">
+      <button *ngIf="recording" mat-flat-button color="warn" type="button" class="consent-media-stop" (click)="stopRecording()">
+        {{ text?.stopRecording }}
+      </button>
+      <button *ngIf="!recording" mat-flat-button color="primary" type="button" class="consent-media-record" (click)="startRecording()">
+        {{ text?.recordVoice }}
+      </button>
+    </ng-container>
+    <label class="consent-media-upload">
+      {{ text?.upload }}
+      <input #file type="file" [attr.accept]="kind === 'photo' ? 'image/*' : 'audio/*'" (change)="onFile(file)" />
+    </label>
+  </div>
+  <p *ngIf="error" class="consent-error" role="alert">{{ text?.[error] }}</p>
+</div>

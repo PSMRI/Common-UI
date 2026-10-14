@@ -1,0 +1,49 @@
+<div class="consent-otp">
+  <mat-form-field *ngIf="!challengeId" appearance="outline">
+    <mat-label>{{ text?.phoneNumber }}</mat-label>
+    <input
+      matInput
+      type="tel"
+      inputmode="numeric"
+      maxlength="10"
+      name="consent-otp-phone"
+      [value]="phoneNumber"
+      (input)="phoneNumber = $any($event.target).value"
+    />
+  </mat-form-field>
+  <ng-container *ngIf="challengeId">
+    <p class="consent-hint">{{ text?.otpSentTo }} {{ displayPhone }}</p>
+    <mat-form-field appearance="outline">
+      <mat-label>{{ text?.enterOtp }}</mat-label>
+      <input
+        matInput
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        autocomplete="one-time-code"
+        name="consent-otp-code"
+        [value]="otp"
+        [disabled]="isVerified"
+        (input)="otp = $any($event.target).value"
+      />
+    </mat-form-field>
+  </ng-container>
+  <div class="consent-otp-actions">
+    <button mat-stroked-button type="button" class="consent-otp-send" [disabled]="!canSend" (click)="send()">
+      {{ resendIn > 0 ? text?.resendIn + ' ' + resendIn : text?.sendOtp }}
+    </button>
+    <button
+      *ngIf="challengeId"
+      mat-flat-button
+      color="primary"
+      type="button"
+      class="consent-otp-verify"
+      [disabled]="!canVerify"
+      (click)="verify()"
+    >
+      {{ text?.verifyOtp }}
+    </button>
+  </div>
+  <p *ngIf="isVerified" role="status">{{ text?.otpVerified }}</p>
+  <p *ngIf="error" class="consent-error" role="alert">{{ text?.[error] }}</p>
+</div>
