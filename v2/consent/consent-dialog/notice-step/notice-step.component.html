@@ -13,6 +13,19 @@
       ></audio>
     </div>
   }
+  @if (canSpeak && (!notice.audioUrl || audioFailed)) {
+    <button
+      z-button
+      zType="outline"
+      type="button"
+      class="consent-notice-speak w-fit"
+      [attr.aria-pressed]="speaking"
+      (click)="speaking ? stopNotice() : playNotice()"
+    >
+      <ng-icon [name]="speaking ? 'lucideSquare' : 'lucideVolume2'"></ng-icon>
+      {{ speaking ? text?.stopAudio : text?.playAudio }}
+    </button>
+  }
   <div
     #scrollBox
     class="max-h-64 overflow-y-auto rounded-lg border border-input bg-background p-3 text-sm text-foreground"
