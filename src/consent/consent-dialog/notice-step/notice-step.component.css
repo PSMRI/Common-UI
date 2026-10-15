@@ -7,3 +7,4 @@
 .consent-notice-box dd { margin: 0; }
 .consent-end-marker { height: 1px; }
 .consent-hint { margin: 0; font-size: 12px; color: #616161; }
+.consent-notice-speak { width: fit-content; }
