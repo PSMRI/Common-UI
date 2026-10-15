@@ -22,6 +22,7 @@
 
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Directive,
   ElementRef,
   EventEmitter,
@@ -31,11 +32,17 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  inject,
 } from '@angular/core';
 import { Notice } from '../consent.models';
 
 /** Largest gap (s) between two timeupdate events still counted as listening, not seeking. */
 const MAX_PLAY_STEP = 1.5;
+
+/** BCP 47 tag for speech: 'hi' -> 'hi-IN'; tags that already have a region are kept. */
+export function speechLang(code: string): string {
+  return code.indexOf('-') === -1 ? code + '-IN' : code;
+}
 
 /** Notice step logic shared by both tracks: read or heard to the end (FR-003 to FR-005, research R9). */
 @Directive()
@@ -49,6 +56,10 @@ export abstract class NoticeStepBase implements AfterViewInit, OnChanges, OnDest
   @ViewChild('endMarker') endMarker?: ElementRef<HTMLElement>;
 
   audioFailed = false;
+  speaking = false;
+  // Zard's dialog container is OnPush: async updates must mark this view for checking.
+  protected cdr = inject(ChangeDetectorRef);
+  private utterance: SpeechSynthesisUtterance | null = null;
   private observer: IntersectionObserver | null = null;
   private reported = false;
   private lastTime = 0;
@@ -56,6 +67,7 @@ export abstract class NoticeStepBase implements AfterViewInit, OnChanges, OnDest
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['notice'] && !changes['notice'].firstChange) {
+      this.stopNotice();
       this.reset();
       this.watchEnd();
     }
@@ -66,7 +78,59 @@ export abstract class NoticeStepBase implements AfterViewInit, OnChanges, OnDest
   }
 
   ngOnDestroy(): void {
+    this.stopNotice();
     this.disconnect();
+  }
+
+  /** The browser can read text aloud (Web Speech API). */
+  get canSpeak(): boolean {
+    return !!window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function';
+  }
+
+  /** Reads the displayed notice aloud; hearing it to the end counts like playing notice audio. */
+  playNotice(): void {
+    const box = this.scrollBox?.nativeElement;
+    if (!this.canSpeak || !box) {
+      return;
+    }
+    this.stopNotice();
+    const synth = window.speechSynthesis;
+    const lang = speechLang(this.notice.languageCode);
+    const utterance = new SpeechSynthesisUtterance(box.innerText);
+    utterance.lang = lang;
+    const voices = synth.getVoices();
+    const voice =
+      voices.find((v) => v.lang === lang) ||
+      voices.find((v) => v.lang.indexOf(this.notice.languageCode) === 0);
+    if (voice) {
+      utterance.voice = voice;
+    }
+    utterance.onend = () => this.finishSpeech(utterance, true);
+    utterance.onerror = () => this.finishSpeech(utterance, false);
+    this.utterance = utterance;
+    this.speaking = true;
+    synth.speak(utterance);
+  }
+
+  stopNotice(): void {
+    if (this.utterance) {
+      this.utterance = null;
+      this.speaking = false;
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  private finishSpeech(utterance: SpeechSynthesisUtterance, completed: boolean): void {
+    if (this.utterance !== utterance) {
+      return; // stopped or replaced
+    }
+    this.utterance = null;
+    this.speaking = false;
+    if (completed) {
+      this.audioPlayedToEnd.emit();
+      this.reportRead();
+    }
+    this.cdr.markForCheck();
   }
 
   onScroll(): void {
