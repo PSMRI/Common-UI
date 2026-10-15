@@ -22,6 +22,8 @@
 
 import { NgIf } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { NoticeStepBase } from '../../core/ui/notice-step.base';
 
 @Component({
@@ -29,6 +31,6 @@ import { NoticeStepBase } from '../../core/ui/notice-step.base';
   templateUrl: './notice-step.component.html',
   styleUrls: ['./notice-step.component.css'],
   standalone: true,
-  imports: [NgIf],
+  imports: [NgIf, MatButtonModule, MatIconModule],
 })
 export class NoticeStepComponent extends NoticeStepBase {}

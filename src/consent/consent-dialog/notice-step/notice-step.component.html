@@ -10,6 +10,17 @@
       (error)="onAudioError()"
     ></audio>
   </div>
+  <button
+    *ngIf="canSpeak && (!notice.audioUrl || audioFailed)"
+    mat-stroked-button
+    type="button"
+    class="consent-notice-speak"
+    [attr.aria-pressed]="speaking"
+    (click)="speaking ? stopNotice() : playNotice()"
+  >
+    <mat-icon>{{ speaking ? 'stop' : 'volume_up' }}</mat-icon>
+    {{ speaking ? text?.stopAudio : text?.playAudio }}
+  </button>
   <div
     #scrollBox
     class="consent-notice-box"
