@@ -23,7 +23,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { mockNotice, mockNoticeNoAudio } from './consent.mock';
 import { Type } from '@angular/core';
-import { NoticeStepBase } from '../ui/notice-step.base';
+import { NoticeStepBase, speechLang } from '../ui/notice-step.base';
 
 class FakeIntersectionObserver {
   static last: FakeIntersectionObserver;
@@ -56,7 +56,7 @@ describe(`NoticeStepComponent (${track})`, () => {
     fixture = TestBed.createComponent(NoticeStepComponent);
     component = fixture.componentInstance;
     component.notice = notice;
-    component.text = { playAudio: 'Play', readToEnd: 'Read to end', title: 'Consent' };
+    component.text = { playAudio: 'Play', stopAudio: 'Stop', readToEnd: 'Read to end', title: 'Consent' };
     reads = 0;
     played = 0;
     component.readComplete.subscribe(() => reads++);
@@ -190,6 +190,136 @@ describe(`NoticeStepComponent (${track})`, () => {
     component.endMarker = undefined;
     (component as any).watchEnd();
     expect(component).toBeTruthy();
+  });
+
+  describe('read aloud (text to speech)', () => {
+    class FakeUtterance {
+      static last: FakeUtterance;
+      lang = '';
+      voice: unknown = null;
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(public text: string) {
+        FakeUtterance.last = this;
+      }
+    }
+    let synth: jasmine.SpyObj<SpeechSynthesis>;
+    let realUtterance: unknown;
+    let speechGetter: jasmine.Spy;
+
+    function speakButton(): HTMLButtonElement | null {
+      return fixture.nativeElement.querySelector('button.consent-notice-speak');
+    }
+
+    beforeEach(() => {
+      synth = jasmine.createSpyObj<SpeechSynthesis>('speechSynthesis', ['speak', 'cancel', 'getVoices']);
+      synth.getVoices.and.returnValue([{ lang: 'en-IN' }, { lang: 'hi-IN' }] as SpeechSynthesisVoice[]);
+      speechGetter = spyOnProperty(window, 'speechSynthesis', 'get').and.returnValue(synth);
+      realUtterance = (window as any).SpeechSynthesisUtterance;
+      (window as any).SpeechSynthesisUtterance = FakeUtterance;
+    });
+
+    afterEach(() => {
+      (window as any).SpeechSynthesisUtterance = realUtterance;
+    });
+
+    it('offers to read the notice aloud when there is no audio file', () => {
+      create(mockNoticeNoAudio('en'));
+      expect(speakButton()).not.toBeNull();
+      expect(speakButton()!.textContent).toContain('Play');
+    });
+
+    it('uses the audio file instead when there is one, and speech if it fails', () => {
+      create(mockNotice('hi'));
+      expect(speakButton()).toBeNull();
+      component.onAudioError();
+      fixture.detectChanges();
+      expect(speakButton()).not.toBeNull();
+    });
+
+    it('hides the button when the browser cannot speak', () => {
+      speechGetter.and.returnValue(undefined);
+      create(mockNoticeNoAudio('en'));
+      expect(component.canSpeak).toBeFalse();
+      expect(speakButton()).toBeNull();
+    });
+
+    it('speaks the displayed text in the notice language and unlocks when finished', () => {
+      create(mockNoticeNoAudio('en'));
+      speakButton()!.click();
+      fixture.detectChanges();
+      const spoken = FakeUtterance.last;
+      expect(synth.speak).toHaveBeenCalledWith(spoken as unknown as SpeechSynthesisUtterance);
+      expect(spoken.text).toContain('Notice body');
+      expect(spoken.text).toContain('Kept for 5 years');
+      expect(spoken.lang).toBe('en-IN');
+      expect(spoken.voice).toEqual({ lang: 'en-IN' });
+      expect(component.speaking).toBeTrue();
+      expect(speakButton()!.getAttribute('aria-pressed')).toBe('true');
+      expect(speakButton()!.textContent).toContain('Stop');
+      spoken.onend!();
+      fixture.detectChanges();
+      expect(played).toBe(1);
+      expect(reads).toBe(1);
+      expect(component.speaking).toBeFalse();
+    });
+
+    it('picks a voice by language prefix, or none', () => {
+      synth.getVoices.and.returnValue([{ lang: 'as' }] as SpeechSynthesisVoice[]);
+      create(mockNoticeNoAudio('as'));
+      component.playNotice();
+      expect(FakeUtterance.last.voice).toEqual({ lang: 'as' });
+      synth.getVoices.and.returnValue([]);
+      component.playNotice();
+      expect(FakeUtterance.last.voice).toBeNull();
+    });
+
+    it('stops on demand and ignores the cancelled utterance', () => {
+      create(mockNoticeNoAudio('en'));
+      speakButton()!.click();
+      const first = FakeUtterance.last;
+      speakButton()!.click();
+      fixture.detectChanges();
+      expect(synth.cancel).toHaveBeenCalled();
+      expect(component.speaking).toBeFalse();
+      first.onend!();
+      expect(played).toBe(0);
+      component.stopNotice();
+      expect(synth.cancel).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not unlock on a speech error', () => {
+      create(mockNoticeNoAudio('en'));
+      component.playNotice();
+      FakeUtterance.last.onerror!();
+      expect(component.speaking).toBeFalse();
+      expect(played).toBe(0);
+    });
+
+    it('stops speaking when the notice changes or the step is destroyed', () => {
+      create(mockNoticeNoAudio('en'));
+      component.playNotice();
+      component.notice = mockNoticeNoAudio('hi');
+      component.ngOnChanges({
+        notice: { previousValue: null, currentValue: component.notice, firstChange: false, isFirstChange: () => false },
+      });
+      expect(synth.cancel).toHaveBeenCalledTimes(1);
+      component.playNotice();
+      fixture.destroy();
+      expect(synth.cancel).toHaveBeenCalledTimes(2);
+    });
+
+    it('does nothing without the notice box', () => {
+      create(mockNoticeNoAudio('en'));
+      component.scrollBox = undefined;
+      component.playNotice();
+      expect(synth.speak).not.toHaveBeenCalled();
+    });
+
+    it('speechLang adds the India region unless one is given', () => {
+      expect(speechLang('hi')).toBe('hi-IN');
+      expect(speechLang('en-GB')).toBe('en-GB');
+    });
   });
 });
 }
