@@ -14,6 +14,7 @@ from the notice API in the patient's language.
 | `title` | Patient consent |
 | `chooseLanguage` | Choose the patient's language |
 | `playAudio` | Play notice aloud |
+| `stopAudio` | Stop |
 | `noticeDataItems` | What data we collect |
 | `noticeRetention` | How long it is kept |
 | `noticeRecipients` | Who it is shared with |

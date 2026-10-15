@@ -12,10 +12,15 @@ const purposes = [
   { purposeCode: 'P-REM', name: 'SMS reminders', description: 'Visit and medicine reminders', isMandatory: false, isWithdrawable: true, validityDays: 365 },
   { purposeCode: 'P-SHR', name: 'Share with other facilities', description: 'Referral history', isMandatory: false, isWithdrawable: true, validityDays: 365 },
 ];
+// The existing registration consent pop-up's message (consent-form component + consentFormText).
+const OLD_CONSENT_MESSAGE = {
+  en: 'To provide you with better service, we would request your personal information. The information that you will provide will be kept confidential and will only be used for research and analysis.',
+  hi: 'आपको बेहतर सेवा प्रदान करने के लिए, हम आपकी व्यक्तिगत जानकारी का अनुरोध करते हैं। आपके द्वारा प्रदान की जाने वाली जानकारी को गोपनीय रखा जाएगा और इसका उपयोग केवल अनुसंधान और विश्लेषण के लिए किया जाएगा।',
+};
 const notice = (lang) => ({
   noticeVersionId: 12, languageCode: lang, context: 'REGISTRATION', textHash: 'hash-' + lang,
   audioUrl: null,
-  body: '<p>Mock notice in ' + lang + '.</p>' + '<p>Scroll to the end to unlock Accept.</p>'.repeat(15),
+  body: '<p>' + (OLD_CONSENT_MESSAGE[lang] || OLD_CONSENT_MESSAGE.en) + '</p>',
   dataItems: 'Name, age, gender, phone, address', retention: 'Kept for 5 years after the last visit',
   recipients: 'Treating facility; referral facility only if you agree', withdrawalInfo: 'Ask staff at any visit',
   grievanceInfo: 'Contact the DPO at dpo@example.org', purposes,
