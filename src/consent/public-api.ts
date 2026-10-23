@@ -27,3 +27,7 @@ export { consentRefusalFrom } from './core/consent-refusal';
 export { ConsentApiService } from './core/consent-api.service';
 export { ConsentDialogService } from './consent-dialog.service';
 export { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
+// Feature 002: per-project consent configuration.
+export * from './core/consent-config.models';
+export { DEFAULT_CONTEXT_CONFIG } from './core/consent-config';
+export { ConsentConfigService } from './core/consent-config.service';
