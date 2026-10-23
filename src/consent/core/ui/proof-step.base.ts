@@ -44,7 +44,8 @@ export abstract class ProofStepBase {
   @Output() modeChange = new EventEmitter<ConsentMode | null>();
   @Output() proofChange = new EventEmitter<ProofDraft>();
 
-  readonly modes = CONSENT_MODES;
+  /** Feature 002: the project's allowed modes in order; all six by default. */
+  @Input() modes: { mode: ConsentMode; key: string }[] = CONSENT_MODES;
   proof: ProofDraft = {};
 
   /** Modes are single-choice checkboxes: ticking one picks it, unticking the picked one clears it. */

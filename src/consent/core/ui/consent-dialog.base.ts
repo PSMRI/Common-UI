@@ -26,6 +26,9 @@ import { map, switchMap, tap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
+import { allowedModes, DEFAULT_CONTEXT_CONFIG } from '../consent-config';
+import { ContextConfig, ResolvedConsentConfig } from '../consent-config.models';
+import { ConsentConfigService } from '../consent-config.service';
 import { ConsentApiService } from '../consent-api.service';
 import { ConsentContextService } from '../consent-context.service';
 import {
@@ -48,6 +51,7 @@ import {
   ProofDraft,
 } from '../consent.models';
 import { sha256Hex, uuidV4 } from '../evidence.util';
+import { CONSENT_MODES } from './proof-step.base';
 
 interface EvidenceItem {
   type: EvidenceType;
@@ -64,6 +68,11 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   loadingNotice = false;
   saving = false;
   failed = false;
+  /** Feature 002: configuration frozen for this opening (FR-022); null while loading. */
+  config: ResolvedConsentConfig | null = null;
+  configFailed = false;
+  /** Allowed modes in order, set once per configuration so bindings stay stable. */
+  modes: { mode: ConsentMode; key: string }[] = CONSENT_MODES;
   private retryAction: (() => void) | null = null;
   // Keyed by the captured file, so a retry re-uploads only failed files and a retake uploads anew.
   private evidenceIds = new WeakMap<Blob, string>();
@@ -74,6 +83,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
 
   protected consentApi = inject(ConsentApiService);
   protected consentContext = inject(ConsentContextService);
+  protected consentConfig = inject(ConsentConfigService);
   protected confirmationService = inject(ConfirmationService);
   httpServiceService = inject(HttpServiceService);
   // Zard's dialog container is OnPush: async updates must mark this view for checking.
@@ -84,6 +94,53 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
 
   ngOnInit(): void {
     this.assignSelectedLanguage();
+    this.resolveConfig();
+  }
+
+  /** Uses the caller's configuration, or loads it once (FR-013, FR-020). */
+  resolveConfig(): void {
+    if (this.options.config) {
+      this.setConfig(this.options.config);
+      return;
+    }
+    this.configFailed = false;
+    this.consentConfig.load(this.options.context).subscribe({
+      next: (config) => {
+        this.setConfig(config);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.configFailed = true;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  get contextConfig(): ContextConfig {
+    return this.config ? this.config.config : DEFAULT_CONTEXT_CONFIG;
+  }
+
+  /** OTP is the only allowed mode but there is no phone to send it to. */
+  get otpNoPhone(): boolean {
+    return (
+      this.modes.length === 1 &&
+      this.modes[0].mode === 'OTP' &&
+      !this.options.patientPhone
+    );
+  }
+
+  private setConfig(config: ResolvedConsentConfig): void {
+    this.config = config;
+    this.modes = allowedModes(config.config);
+  }
+
+  /** The configured default, or the only allowed mode (FR-014, FR-015). */
+  private defaultMode(): ConsentMode | null {
+    const configured = this.contextConfig.defaultMode;
+    if (configured && this.modes.some((m) => m.mode === configured)) {
+      return configured;
+    }
+    return this.modes.length === 1 ? this.modes[0].mode : null;
   }
 
   ngOnDestroy(): void {
@@ -106,7 +163,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   }
 
   get acceptEnabled(): boolean {
-    return canAccept(this.draft, false, this.saving);
+    return !!this.config && !this.otpNoPhone && canAccept(this.draft, false, this.saving);
   }
 
   loadNotice(languageCode: string): void {
@@ -115,6 +172,9 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     this.consentApi.getNotice('REGISTRATION', languageCode).subscribe({
       next: (notice) => {
         this.draft = withNotice(this.draft, notice);
+        if (!this.draft.mode) {
+          this.draft = { ...this.draft, mode: this.defaultMode() };
+        }
         this.step = 'DECIDE';
         this.loadingNotice = false;
         this.cdr.markForCheck();

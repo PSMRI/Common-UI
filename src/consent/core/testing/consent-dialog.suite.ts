@@ -39,6 +39,10 @@ import {
 } from './consent.mock';
 import { InjectionToken, Type } from '@angular/core';
 import { ConsentDialogBase } from '../ui/consent-dialog.base';
+import { DEFAULT_CONTEXT_CONFIG, defaultResolvedConfig } from '../consent-config';
+import { ConsentConfigUnavailable, ResolvedConsentConfig } from '../consent-config.models';
+import { ConsentConfigService } from '../consent-config.service';
+import { mockResolvedConfig } from './consent-config.mock';
 
 /** The dialog data token and dialog ref class of a track. */
 export interface DialogTokens {
@@ -60,7 +64,10 @@ describe(`ConsentDialogComponent (${track})`, () => {
   let api: jasmine.SpyObj<ConsentApiService>;
   let dialogRef: jasmine.SpyObj<{ close: (r?: unknown) => void }>;
   let confirmation: jasmine.SpyObj<ConfirmationService>;
+  let configService: jasmine.SpyObj<ConsentConfigService>;
   const text = {
+    configLoadFailed: 'Settings failed',
+    configOtpNoPhone: 'OTP needs a phone',
     title: 'Consent',
     cannotContinue: 'Cannot continue',
     confirmDecline: 'Confirm decline',
@@ -106,6 +113,8 @@ describe(`ConsentDialogComponent (${track})`, () => {
     api.saveConsent.and.returnValue(of(mockSaveResponse()));
     dialogRef = jasmine.createSpyObj('DialogRef', ['close']);
     confirmation = jasmine.createSpyObj<ConfirmationService>('ConfirmationService', ['confirm', 'alert']);
+    configService = jasmine.createSpyObj<ConsentConfigService>('ConsentConfigService', ['load']);
+    configService.load.and.returnValue(of(defaultResolvedConfig('REGISTRATION')));
     const context = jasmine.createSpyObj<ConsentContextService>('ConsentContextService', ['context']);
     context.context.and.returnValue(ctx);
     TestBed.configureTestingModule({
@@ -115,6 +124,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
         { provide: tokens.ref, useValue: dialogRef },
         { provide: ConsentApiService, useValue: api },
         { provide: ConsentContextService, useValue: context },
+        { provide: ConsentConfigService, useValue: configService },
         { provide: ConfirmationService, useValue: confirmation },
         { provide: CameraService, useValue: jasmine.createSpyObj('CameraService', ['capture']) },
         { provide: HttpServiceService, useValue: { currentLangugae$: of({ consent: text }) } },
@@ -378,6 +388,102 @@ describe(`ConsentDialogComponent (${track})`, () => {
     later.next(mockNotice('hi'));
     host.detectChanges();
     expect(host.nativeElement.querySelector('app-consent-notice-step')).not.toBeNull();
+  });
+  describe('project configuration (feature 002)', () => {
+    function useConfig(config: ResolvedConsentConfig, patientPhone: string | null = '9876543212'): void {
+      component.options.config = config;
+      component.options.patientPhone = patientPhone;
+      component.resolveConfig();
+      fixture.detectChanges();
+    }
+
+    afterEach(() => {
+      delete component.options.config;
+      delete component.options.patientPhone;
+    });
+
+    it('loads the configuration once for the dialog context', () => {
+      expect(configService.load).toHaveBeenCalledOnceWith('REGISTRATION');
+      expect(component.config?.source).toBe('DEFAULT');
+      expect(component.modes.length).toBe(6);
+    });
+
+    it("uses the caller's configuration without loading it again", () => {
+      useConfig(mockResolvedConfig('full'));
+      expect(configService.load).toHaveBeenCalledTimes(1);
+      expect(component.config?.version).toBe(4);
+      expect(component.modes.map((m) => m.mode)).toEqual(['OTP', 'WITNESSED']);
+    });
+
+    it('pre-ticks the default mode when the notice loads', () => {
+      useConfig(mockResolvedConfig('full'));
+      component.loadNotice('hi');
+      expect(component.draft.mode).toBe('OTP');
+    });
+
+    it("keeps the registrar's mode when the language changes", () => {
+      useConfig(mockResolvedConfig('full'));
+      component.loadNotice('hi');
+      component.onMode('WITNESSED');
+      component.loadNotice('en');
+      expect(component.draft.mode).toBe('WITNESSED');
+    });
+
+    it('uses the only allowed mode when no default is set', () => {
+      const single = mockResolvedConfig('single');
+      useConfig({ ...single, config: { ...single.config, defaultMode: null } });
+      component.loadNotice('hi');
+      expect(component.draft.mode).toBe('WITNESSED');
+      expect(fixture.nativeElement.querySelector('.consent-modes')).toBeNull();
+    });
+
+    it('ignores a default mode that is not allowed', () => {
+      const full = mockResolvedConfig('full');
+      useConfig({ ...full, config: { ...full.config, defaultMode: 'VOICE_CLIP' } });
+      component.loadNotice('hi');
+      expect(component.draft.mode).toBeNull();
+    });
+
+    it('pre-ticks nothing with the platform default', () => {
+      component.loadNotice('hi');
+      expect(component.draft.mode).toBeNull();
+    });
+
+    it('blocks Accept when OTP is the only mode and there is no phone', () => {
+      const full = mockResolvedConfig('full');
+      useConfig({ ...full, config: { ...full.config, modes: [{ mode: 'OTP', rank: 1, settings: {} }] } }, null);
+      expect(component.otpNoPhone).toBeTrue();
+      expect(fixture.nativeElement.textContent).toContain('OTP needs a phone');
+      ready();
+      component.onProof({ otpVerified: true, otpChallengeId: 'c-1' });
+      component.onMode('OTP');
+      expect(component.acceptEnabled).toBeFalse();
+      component.options.patientPhone = '9876543212';
+      expect(component.otpNoPhone).toBeFalse();
+      expect(component.acceptEnabled).toBeTrue();
+    });
+
+    it('shows a load error with Retry and no language step when nothing can be loaded', () => {
+      configService.load.and.returnValue(throwError(() => new ConsentConfigUnavailable()));
+      const failed = TestBed.createComponent(ConsentDialogComponent);
+      failed.detectChanges();
+      const dialog = failed.componentInstance;
+      expect(dialog.configFailed).toBeTrue();
+      expect(dialog.config).toBeNull();
+      expect(dialog.contextConfig).toBe(DEFAULT_CONTEXT_CONFIG);
+      expect(dialog.acceptEnabled).toBeFalse();
+      expect(failed.nativeElement.textContent).toContain('Settings failed');
+      expect(failed.nativeElement.querySelector('app-consent-language-step')).toBeNull();
+      configService.load.and.returnValue(of(mockResolvedConfig('full')));
+      const retry = Array.from(failed.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find(
+        (b) => b.textContent!.trim() === 'Retry'
+      )!;
+      retry.click();
+      failed.detectChanges();
+      expect(dialog.configFailed).toBeFalse();
+      expect(dialog.config?.version).toBe(4);
+      expect(failed.nativeElement.querySelector('app-consent-language-step')).not.toBeNull();
+    });
   });
 });
 }

@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { NgFor, NgSwitch, NgSwitchCase } from '@angular/common';
+import { NgFor, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -36,6 +36,7 @@ import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
   standalone: true,
   imports: [
     NgFor,
+    NgIf,
     NgSwitch,
     NgSwitchCase,
     MatCheckboxModule,

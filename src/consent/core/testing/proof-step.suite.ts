@@ -26,7 +26,7 @@ import { CameraService } from 'src/app/app-modules/core/services';
 import { ConsentApiService } from '../consent-api.service';
 import { ConsentMode, ProofDraft } from '../consent.models';
 import { Type } from '@angular/core';
-import { ProofStepBase } from '../ui/proof-step.base';
+import { CONSENT_MODES, ProofStepBase } from '../ui/proof-step.base';
 
 /** Behaviour suite run by each track's proof step spec. */
 export function proofStepSuite(ProofStepComponent: Type<ProofStepBase>, track: string): void {
@@ -78,6 +78,32 @@ describe(`ProofStepComponent (${track})`, () => {
     expect(modes).toEqual([]);
     component.toggleMode('OTP', false);
     expect(modes).toEqual([null]);
+  });
+
+  describe('configured modes (feature 002)', () => {
+    function labels(): string[] {
+      return Array.from(
+        fixture.nativeElement.querySelectorAll('.consent-modes mat-checkbox') as NodeListOf<HTMLElement>
+      ).map((e) => (e.textContent || '').trim());
+    }
+
+    it('shows only the configured modes in the configured order', () => {
+      component.modes = [CONSENT_MODES[5], CONSENT_MODES[0]];
+      fixture.detectChanges();
+      expect(labels()).toEqual(['OTP', 'Patient read it']);
+    });
+
+    it('hides the mode choice and shows the proof when one mode is allowed', () => {
+      component.modes = [CONSENT_MODES[3]];
+      component.mode = 'WITNESSED';
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.consent-modes')).toBeNull();
+      expect(fixture.nativeElement.querySelector('input[name="consent-witness-name"]')).not.toBeNull();
+    });
+
+    it('offers all six modes by default', () => {
+      expect(component.modes).toEqual(CONSENT_MODES);
+    });
   });
 
   describe('per mode', () => {
