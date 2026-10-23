@@ -22,6 +22,8 @@
 
 // View models for consent management (specs/001-consent-management-ui/data-model.md).
 
+import { ModeSettings, ResolvedConsentConfig } from './consent-config.models';
+
 export type PurposeStatus =
   | 'GRANTED'
   | 'DENIED'
@@ -56,7 +58,7 @@ export type SyncStatus = 'SYNCED' | 'NOT_SYNCED';
 export type EvidenceType = 'VOICE_CLIP' | 'PATIENT_PHOTO' | 'SIGNED_FORM_PHOTO';
 export type AccessGrantStatus = 'PENDING' | 'ACTIVE' | 'REVOKED' | 'EXPIRED';
 export type AccessGrantType = 'CONSENTED' | 'BREAK_GLASS';
-export type ConsentContextType = 'REGISTRATION';
+export type ConsentContextType = 'REGISTRATION' | 'REVISIT';
 export type OtpPurpose = 'CONSENT' | 'GUARDIAN' | 'ACCESS_GRANT';
 export type RefusalAction = 'OPEN_CONSENT' | 'REQUEST_ACCESS' | null;
 
@@ -193,6 +195,9 @@ export interface SaveConsentRequest {
     otpChallengeId: string | null;
   };
   guardian: SaveConsentGuardian | null;
+  /** Feature 002: project configuration in force; both null when the platform default was used. */
+  projectId?: number | null;
+  configVersion?: number | null;
 }
 
 export interface SaveConsentResponse {
@@ -286,6 +291,8 @@ export interface ConsentDialogOptions {
   dob?: string | null;
   guardianRequired?: boolean;
   patientPhone?: string | null;
+  /** Feature 002: configuration already loaded by the caller; the dialog loads it when absent. */
+  config?: ResolvedConsentConfig;
 }
 
 export interface ConsentDialogResult {
@@ -318,6 +325,8 @@ export interface ConsentApiError {
 export interface ProofContext {
   notice: Notice | null;
   audioPlayedToEnd: boolean;
+  /** Feature 002: settings of the chosen mode; absent means the feature 001 rules. */
+  settings?: ModeSettings;
 }
 
 /** Session-derived values attached to every consent (research R13). */
