@@ -25,7 +25,6 @@ import { Component } from '@angular/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatRadioModule } from '@angular/material/radio';
 import { ProofStepBase } from '../../core/ui/proof-step.base';
 import { MediaCaptureComponent } from '../../media-capture/media-capture.component';
 import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
@@ -39,7 +38,6 @@ import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
     NgFor,
     NgSwitch,
     NgSwitchCase,
-    MatRadioModule,
     MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,

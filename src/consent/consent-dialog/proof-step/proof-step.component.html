@@ -1,15 +1,15 @@
 <fieldset class="consent-proof">
   <legend>{{ text?.mode }}</legend>
-  <mat-radio-group
-    name="consent-mode"
-    class="consent-modes"
-    [value]="mode"
-    (change)="selectMode($event.value)"
-  >
-    <mat-radio-button *ngFor="let option of modes" [value]="option.mode">
+  <div class="consent-modes" role="group">
+    <mat-checkbox
+      *ngFor="let option of modes"
+      name="consent-mode"
+      [checked]="mode === option.mode"
+      (change)="toggleMode(option.mode, $event.checked)"
+    >
       {{ text?.[option.key] }}
-    </mat-radio-button>
-  </mat-radio-group>
+    </mat-checkbox>
+  </div>
 
   <ng-container [ngSwitch]="mode">
     <mat-checkbox
@@ -27,7 +27,7 @@
       (captured)="onVoice($event)"
     ></app-consent-media-capture>
     <div *ngSwitchCase="'WITNESSED'" class="consent-row">
-      <mat-form-field appearance="outline">
+      <mat-form-field class="consent-field">
         <mat-label>{{ text?.witnessName }}</mat-label>
         <input
           matInput
@@ -38,7 +38,7 @@
           (input)="setWitness('witnessName', $any($event.target).value)"
         />
       </mat-form-field>
-      <mat-form-field appearance="outline">
+      <mat-form-field class="consent-field">
         <mat-label>{{ text?.witnessRelationship }}</mat-label>
         <input
           matInput

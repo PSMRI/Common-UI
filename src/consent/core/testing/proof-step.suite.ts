@@ -49,19 +49,35 @@ describe(`ProofStepComponent (${track})`, () => {
   });
 
   it('offers all six consent modes', () => {
-    const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]');
-    expect(radios.length).toBe(6);
+    const boxes = fixture.nativeElement.querySelectorAll('.consent-modes input[type="checkbox"]');
+    expect(boxes.length).toBe(6);
     expect(fixture.nativeElement.textContent).toContain('Patient read it');
   });
 
   it('emits the mode and an empty proof for self-read', () => {
-    const modes: ConsentMode[] = [];
+    const modes: (ConsentMode | null)[] = [];
     const proofs: ProofDraft[] = [];
     component.modeChange.subscribe((m) => modes.push(m));
     component.proofChange.subscribe((p) => proofs.push(p));
-    (fixture.nativeElement.querySelector('input[type="radio"]') as HTMLInputElement).click();
+    (fixture.nativeElement.querySelector('.consent-modes input[type="checkbox"]') as HTMLInputElement).click();
     expect(modes).toEqual(['SELF_READ']);
     expect(proofs).toEqual([{}]);
+  });
+
+  it('ticks only the chosen mode and unticking it clears the mode', () => {
+    const modes: (ConsentMode | null)[] = [];
+    component.modeChange.subscribe((m) => modes.push(m));
+    component.mode = 'OTP';
+    fixture.detectChanges();
+    const boxes: HTMLInputElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.consent-modes input[type="checkbox"]'),
+    );
+    expect(boxes.filter((b) => b.checked).length).toBe(1);
+    expect(boxes[5].checked).toBeTrue();
+    component.toggleMode('SELF_READ', false);
+    expect(modes).toEqual([]);
+    component.toggleMode('OTP', false);
+    expect(modes).toEqual([null]);
   });
 
   describe('per mode', () => {
@@ -89,7 +105,7 @@ describe(`ProofStepComponent (${track})`, () => {
 
     it('read aloud records the worker confirmation', () => {
       show('READ_ALOUD');
-      (fixture.nativeElement.querySelector('fieldset input[type="checkbox"]') as HTMLInputElement).click();
+      (fixture.nativeElement.querySelector('fieldset > input[type="checkbox"], fieldset > mat-checkbox input[type="checkbox"]') as HTMLInputElement).click();
       expect(proofs[proofs.length - 1]).toEqual({ workerConfirmed: true });
       component.setWorkerConfirmed(false);
       expect(proofs[proofs.length - 1]).toEqual({ workerConfirmed: false });

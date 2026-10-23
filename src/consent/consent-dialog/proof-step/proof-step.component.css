@@ -1,4 +1,5 @@
 .consent-proof { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .consent-proof legend { font-weight: 500; }
-.consent-modes { display: flex; flex-wrap: wrap; gap: 16px; }
-.consent-row { display: flex; flex-wrap: wrap; gap: 16px; }
+.consent-modes { display: flex; flex-wrap: wrap; column-gap: 24px; row-gap: 4px; }
+.consent-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+.consent-field { flex: 1 1 220px; min-width: 0; }

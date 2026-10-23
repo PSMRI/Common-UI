@@ -41,15 +41,24 @@ export abstract class ProofStepBase {
   @Input() audioPlayedToEnd = false;
   @Input() mode: ConsentMode | null = null;
   @Input() patientPhone: string | null = null;
-  @Output() modeChange = new EventEmitter<ConsentMode>();
+  @Output() modeChange = new EventEmitter<ConsentMode | null>();
   @Output() proofChange = new EventEmitter<ProofDraft>();
 
   readonly modes = CONSENT_MODES;
   proof: ProofDraft = {};
 
-  selectMode(mode: unknown): void {
+  /** Modes are single-choice checkboxes: ticking one picks it, unticking the picked one clears it. */
+  toggleMode(mode: ConsentMode, checked: boolean): void {
+    if (checked) {
+      this.selectMode(mode);
+    } else if (this.mode === mode) {
+      this.selectMode(null);
+    }
+  }
+
+  selectMode(mode: ConsentMode | null): void {
     this.proof = {};
-    this.modeChange.emit(mode as ConsentMode);
+    this.modeChange.emit(mode);
     this.proofChange.emit(this.proof);
   }
 
