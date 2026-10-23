@@ -1,6 +1,6 @@
 <fieldset class="consent-proof">
   <legend>{{ text?.mode }}</legend>
-  <div class="consent-modes" role="group">
+  <div *ngIf="modes.length > 1" class="consent-modes" role="group">
     <mat-checkbox
       *ngFor="let option of modes"
       name="consent-mode"
