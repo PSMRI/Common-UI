@@ -142,7 +142,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     this.draft = { ...this.draft, decisions };
   }
 
-  onMode(mode: ConsentMode): void {
+  onMode(mode: ConsentMode | null): void {
     this.draft = { ...this.draft, mode };
   }
 
