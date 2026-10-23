@@ -7,8 +7,15 @@
   </div>
 
   <div class="consent-body">
+    <div *ngIf="configFailed" class="consent-alert" role="alert">
+      <span>{{ text?.configLoadFailed }}</span>
+      <button mat-stroked-button type="button" (click)="resolveConfig()">{{ text?.retry }}</button>
+    </div>
+
+    <p *ngIf="otpNoPhone" class="consent-alert" role="alert">{{ text?.configOtpNoPhone }}</p>
+
     <app-consent-language-step
-      *ngIf="step === 'LANGUAGE'"
+      *ngIf="step === 'LANGUAGE' && config"
       [text]="text"
       [selected]="draft.languageCode"
       (languageSelected)="loadNotice($event)"
@@ -35,6 +42,7 @@
         [text]="text"
         [notice]="draft.notice"
         [mode]="draft.mode"
+        [modes]="modes"
         [patientPhone]="options.patientPhone || null"
         [audioPlayedToEnd]="draft.audioPlayedToEnd"
         (modeChange)="onMode($event)"
