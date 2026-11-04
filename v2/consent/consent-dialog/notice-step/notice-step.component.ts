@@ -22,7 +22,7 @@
 
 import { Component } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideSquare, lucideVolume2 } from '@ng-icons/lucide';
+import { lucideInfo, lucideSquare, lucideVolume2 } from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { NoticeStepBase } from '../../../../src/consent/core/ui/notice-step.base';
 
@@ -31,6 +31,6 @@ import { NoticeStepBase } from '../../../../src/consent/core/ui/notice-step.base
   templateUrl: './notice-step.component.html',
   standalone: true,
   imports: [NgIcon, ZardButtonComponent],
-  viewProviders: [provideIcons({ lucideSquare, lucideVolume2 })],
+  viewProviders: [provideIcons({ lucideInfo, lucideSquare, lucideVolume2 })],
 })
 export class NoticeStepComponent extends NoticeStepBase {}

@@ -20,9 +20,20 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
+import { DatePipe } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideX } from '@ng-icons/lucide';
+import {
+  lucideCircleAlert,
+  lucideCircleCheck,
+  lucideCloudOff,
+  lucideInfo,
+  lucideLanguages,
+  lucideMessageSquare,
+  lucideRotateCw,
+  lucideShieldCheck,
+  lucideX,
+} from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { ZardDialogRef, Z_MODAL_DATA } from 'Common-UI/v2/ui/dialog';
 import { ConsentDialogOptions, ConsentDialogResult } from '../../../src/consent/core/consent.models';
@@ -37,6 +48,7 @@ import { PurposesStepComponent } from './purposes-step/purposes-step.component';
   templateUrl: './consent-dialog.component.html',
   standalone: true,
   imports: [
+    DatePipe,
     NgIcon,
     ZardButtonComponent,
     LanguageStepComponent,
@@ -44,7 +56,19 @@ import { PurposesStepComponent } from './purposes-step/purposes-step.component';
     PurposesStepComponent,
     ProofStepComponent,
   ],
-  viewProviders: [provideIcons({ lucideX })],
+  viewProviders: [
+    provideIcons({
+      lucideCircleAlert,
+      lucideCircleCheck,
+      lucideCloudOff,
+      lucideInfo,
+      lucideLanguages,
+      lucideMessageSquare,
+      lucideRotateCw,
+      lucideShieldCheck,
+      lucideX,
+    }),
+  ],
 })
 export class ConsentDialogComponent extends ConsentDialogBase {
   constructor(

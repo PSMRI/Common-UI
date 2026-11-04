@@ -179,5 +179,13 @@ export function otpVerifySuite(OtpVerifyComponent: Type<OtpVerifyBase>, track: s
       component.phone = '9876543212';
       expect(component.displayPhone).toBe('98******12');
     });
+
+    it('fills the {phone} placeholder in the sent-to text', () => {
+      component.maskedPhone = '******3210';
+      component.text = { ...text, otpSentTo: 'OTP sent to {phone}' };
+      expect(component.otpSentText).toBe('OTP sent to ******3210');
+      component.text = text;
+      expect(component.otpSentText).toBe('OTP sent to ******3210');
+    });
   });
 }

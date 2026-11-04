@@ -21,6 +21,7 @@
  */
 
 import { Component } from '@angular/core';
+import { ZardBadgeComponent } from 'Common-UI/v2/ui/badge';
 import { ZardCheckboxComponent } from 'Common-UI/v2/ui/checkbox';
 import { PurposesStepBase } from '../../../../src/consent/core/ui/purposes-step.base';
 
@@ -28,6 +29,6 @@ import { PurposesStepBase } from '../../../../src/consent/core/ui/purposes-step.
   selector: 'app-consent-purposes-step',
   templateUrl: './purposes-step.component.html',
   standalone: true,
-  imports: [ZardCheckboxComponent],
+  imports: [ZardBadgeComponent, ZardCheckboxComponent],
 })
 export class PurposesStepComponent extends PurposesStepBase {}

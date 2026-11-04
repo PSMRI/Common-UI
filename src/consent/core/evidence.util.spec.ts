@@ -22,7 +22,10 @@
 
 import {
   getDeviceId,
+  isEvidenceSizeValid,
   isVoiceDurationValid,
+  MAX_AUDIO_BYTES,
+  MAX_PHOTO_BYTES,
   maskPhone,
   sha256Hex,
   uuidV4,
@@ -58,11 +61,33 @@ describe('evidence.util', () => {
     });
   });
 
+  describe('isEvidenceSizeValid', () => {
+    const sized = (bytes: number) => ({ size: bytes } as Blob);
+
+    it('accepts audio up to 5 MB and photos up to 2 MB', () => {
+      expect(MAX_AUDIO_BYTES).toBe(5 * 1024 * 1024);
+      expect(MAX_PHOTO_BYTES).toBe(2 * 1024 * 1024);
+      expect(isEvidenceSizeValid(sized(MAX_AUDIO_BYTES), 'voice')).toBeTrue();
+      expect(isEvidenceSizeValid(sized(MAX_PHOTO_BYTES), 'photo')).toBeTrue();
+    });
+
+    it('rejects anything over the limit', () => {
+      expect(isEvidenceSizeValid(sized(MAX_AUDIO_BYTES + 1), 'voice')).toBeFalse();
+      expect(isEvidenceSizeValid(sized(MAX_PHOTO_BYTES + 1), 'photo')).toBeFalse();
+    });
+  });
+
   describe('isVoiceDurationValid', () => {
     it('accepts 30 to 60 seconds inclusive', () => {
       expect(isVoiceDurationValid(30)).toBeTrue();
       expect(isVoiceDurationValid(45)).toBeTrue();
       expect(isVoiceDurationValid(60)).toBeTrue();
+    });
+
+    it('takes other limits (feature 003)', () => {
+      expect(isVoiceDurationValid(2, 2, 60)).toBeTrue();
+      expect(isVoiceDurationValid(1.9, 2, 60)).toBeFalse();
+      expect(isVoiceDurationValid(61, 2, 60)).toBeFalse();
     });
 
     it('rejects out of range or missing values', () => {

@@ -27,7 +27,7 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from 'src/environments/environment';
-import { ConsentApiService, toConsentApiError } from './consent-api.service';
+import { ConsentApiService, PENDING_BATCH_MAX, toConsentApiError } from './consent-api.service';
 import { ConsentApiError, SaveConsentRequest } from './consent.models';
 import {
   mockAccessGrants,
@@ -79,6 +79,62 @@ describe('ConsentApiService', () => {
       .expectOne('http://api/consent/v1/notices/active?context=REGISTRATION&lang=hi')
       .flush(mockOk(mockNotice('hi')));
     expect(out).toEqual(mockNotice('hi'));
+  });
+
+  it("gets the project's notice (feature 003)", () => {
+    service.getNotice('REVISIT', 'hi', 12).subscribe();
+    http
+      .expectOne('http://api/consent/v1/notices/active?context=REVISIT&lang=hi&projectId=12')
+      .flush(mockOk(mockNotice('hi')));
+  });
+
+  it('gets pending actions of many patients in one call (feature 003)', () => {
+    let out: unknown;
+    service.getPendingActionsBatch([101, 102]).subscribe((v) => (out = v));
+    const req = http.expectOne('http://api/consent/v1/principals/pending-actions/batch');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ beneficiaryRegIds: [101, 102] });
+    req.flush(mockOk({ '101': mockPendingActions(), '102': [] }));
+    expect(out).toEqual({ '101': mockPendingActions(), '102': [] });
+  });
+
+  it('splits more than PENDING_BATCH_MAX ids into several batch calls and merges them', () => {
+    const ids = Array.from({ length: PENDING_BATCH_MAX + 1 }, (_, i) => i + 1);
+    let out: unknown;
+    service.getPendingActionsBatch(ids).subscribe((v) => (out = v));
+    const reqs = http.match('http://api/consent/v1/principals/pending-actions/batch');
+    expect(reqs.length).toBe(2);
+    expect(reqs[0].request.body.beneficiaryRegIds.length).toBe(PENDING_BATCH_MAX);
+    expect(reqs[1].request.body).toEqual({ beneficiaryRegIds: [PENDING_BATCH_MAX + 1] });
+    reqs[0].flush(mockOk({ '1': mockPendingActions() }));
+    reqs[1].flush(mockOk({ [String(PENDING_BATCH_MAX + 1)]: [] }));
+    expect(out).toEqual({ '1': mockPendingActions(), [String(PENDING_BATCH_MAX + 1)]: [] });
+  });
+
+  it('makes no batch call for an empty id list', () => {
+    let out: unknown;
+    service.getPendingActionsBatch([]).subscribe((v) => (out = v));
+    http.expectNone('http://api/consent/v1/principals/pending-actions/batch');
+    expect(out).toEqual({});
+  });
+
+  it('gets a stored recording as a blob for playback (API 16)', () => {
+    let out: Blob | undefined;
+    service.getEvidenceFile('ev 1').subscribe((v) => (out = v));
+    const req = http.expectOne('http://api/consent/v1/evidence/ev%201');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['x'], { type: 'audio/wav' }));
+    expect(out?.type).toBe('audio/wav');
+  });
+
+  it('maps a missing recording to a failed consent error', () => {
+    let err: ConsentApiError | undefined;
+    service.getEvidenceFile('nope').subscribe({ error: (e) => (err = e) });
+    http
+      .expectOne('http://api/consent/v1/evidence/nope')
+      .flush(new Blob(), { status: 404, statusText: 'Not Found' });
+    expect(err?.kind).toBe('FAILED');
   });
 
   it('saves a consent with an Idempotency-Key header', () => {

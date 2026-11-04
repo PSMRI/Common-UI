@@ -1,44 +1,87 @@
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2 rounded-lg border border-input bg-card p-3">
+  <input
+    #file
+    type="file"
+    class="sr-only"
+    tabindex="-1"
+    aria-hidden="true"
+    [attr.accept]="kind === 'photo' ? 'image/*' : 'audio/*'"
+    (change)="onFile(file)"
+  />
   <span class="text-sm font-medium text-foreground">{{ label }}</span>
   @if (previewUrl) {
     @if (kind === 'photo') {
-      <img class="max-h-40 w-fit rounded-lg border border-input" [src]="previewUrl" [alt]="label" />
+      <img class="max-h-40 w-fit rounded-lg border border-input object-contain" [src]="previewUrl" [alt]="label" />
     } @else {
-      <audio controls class="w-full" [src]="previewUrl"></audio>
+      <audio controls controlslist="nodownload" class="w-full" [src]="previewUrl"></audio>
     }
-    <button z-button zType="outline" type="button" class="consent-media-retake w-fit" (click)="retake()">
-      {{ text?.retake }}
-    </button>
+    <div class="flex flex-wrap items-center gap-2">
+      <button z-button zType="outline" zSize="sm" type="button" class="consent-media-retake w-fit" (click)="retake()">
+        <ng-icon name="lucideRotateCcw"></ng-icon>
+        {{ text?.retake }}
+      </button>
+      <!-- Feature 003: send the accepted recording to the server now (it is otherwise sent on Accept). -->
+      @if (serverUpload && !error) {
+        @if (uploadState === 'DONE') {
+          <span class="consent-media-uploaded flex items-center gap-1.5 text-sm text-primary" role="status">
+            <ng-icon name="lucideCloudCheck" size="16"></ng-icon>
+            {{ text?.recordingUploaded }}
+          </span>
+        } @else {
+          <button
+            z-button
+            zSize="sm"
+            type="button"
+            class="consent-media-server-upload w-fit"
+            [disabled]="uploadState === 'UPLOADING'"
+            [zLoading]="uploadState === 'UPLOADING'"
+            (click)="uploadRequested.emit()"
+          >
+            <ng-icon name="lucideCloudUpload"></ng-icon>
+            {{ uploadState === 'UPLOADING' ? text?.uploadingRecording : text?.uploadToServer }}
+          </button>
+        }
+        @if (uploadState === 'FAILED') {
+          <span class="text-sm text-destructive" role="alert">{{ text?.recordingUploadFailed }}</span>
+        }
+      }
+    </div>
   } @else {
     <div class="flex flex-wrap items-center gap-2">
       @if (kind === 'photo') {
         <button z-button type="button" class="consent-media-capture" (click)="takePhoto()">
+          <ng-icon name="lucideCamera"></ng-icon>
           {{ text?.takePhoto }}
         </button>
       } @else if (!micDenied) {
         @if (recording) {
-          <button z-button type="button" class="consent-media-stop" (click)="stopRecording()">
+          <button z-button zType="destructive" type="button" class="consent-media-stop" (click)="stopRecording()">
+            <ng-icon name="lucideSquare"></ng-icon>
             {{ text?.stopRecording }}
           </button>
+          <span class="flex items-center gap-1.5 text-sm tabular-nums text-foreground" aria-live="polite">
+            <span class="size-2 animate-pulse rounded-full bg-destructive" aria-hidden="true"></span>
+            {{ elapsedLabel }}
+          </span>
         } @else {
           <button z-button type="button" class="consent-media-record" (click)="startRecording()">
-            {{ text?.recordVoice }}
+            <ng-icon name="lucideMic"></ng-icon>
+            {{ recordLabel || text?.recordVoice }}
           </button>
         }
       }
-      <label class="text-sm text-primary">
-        {{ text?.upload }}
-        <input
-          #file
-          type="file"
-          class="sr-only"
-          [attr.accept]="kind === 'photo' ? 'image/*' : 'audio/*'"
-          (change)="onFile(file)"
-        />
-      </label>
+      @if (!recording) {
+        <button z-button zType="outline" type="button" class="consent-media-upload" (click)="file.click()">
+          <ng-icon name="lucideUpload"></ng-icon>
+          {{ uploadLabel || text?.upload }}
+        </button>
+      }
     </div>
   }
   @if (error) {
-    <p class="text-sm text-destructive" role="alert">{{ text?.[error] }}</p>
+    <p class="m-0 flex items-center gap-1.5 text-sm text-destructive" role="alert">
+      <ng-icon name="lucideCircleAlert" size="14" class="shrink-0"></ng-icon>
+      {{ errorText }}
+    </p>
   }
 </div>

@@ -1,38 +1,129 @@
 <fieldset class="flex flex-col gap-3">
-  <legend class="text-sm font-medium text-foreground">{{ text?.mode }}</legend>
-  <z-radio-group
-    name="consent-mode"
-    zOrientation="horizontal"
-    class="flex-wrap gap-4"
-    [ngModel]="mode"
-    (zChange)="selectMode($event)"
-  >
-    @for (option of modes; track option.mode) {
-      <z-radio [value]="option.mode">{{ text?.[option.key] }}</z-radio>
-    }
-  </z-radio-group>
+  <legend class="mb-1 text-sm font-semibold text-foreground">{{ text?.mode }}</legend>
+  @if (modes.length > 1) {
+    <div class="consent-modes flex flex-wrap gap-x-6 gap-y-3" role="group">
+      @for (option of modes; track option.mode) {
+        <z-checkbox
+          name="consent-mode"
+          [attr.data-consent-mode]="option.mode"
+          [zChecked]="mode === option.mode"
+          (zCheckedChange)="toggleMode(option.mode, $event)"
+        >
+          {{ text?.[option.key] }}
+        </z-checkbox>
+      }
+    </div>
+  }
+
+  @if (mode) {
+    <div
+      class="consent-declaration flex flex-col gap-1 rounded-lg border border-primary/30 bg-primary/5 p-3"
+      [attr.lang]="languageCode"
+    >
+      <p class="m-0 text-sm font-semibold text-foreground">{{ text?.declarationTitle }}</p>
+      <p class="consent-declaration-text m-0 text-sm leading-relaxed text-foreground">{{ declaration }}</p>
+    </div>
+  }
 
   @switch (mode) {
-    @case ('READ_ALOUD') {
-      <z-checkbox
-        zId="consent-worker-confirm"
-        [zChecked]="proof.workerConfirmed === true"
-        (zCheckedChange)="setWorkerConfirmed($event)"
-      >
-        {{ text?.workerConfirm }}
-      </z-checkbox>
+    @case ('SELF_READ') {
+      <div class="flex flex-col gap-3">
+        <div class="consent-declaration-agree">
+          <z-checkbox
+            [zChecked]="proof.declarationAgreed === true"
+            (zCheckedChange)="setDeclarationAgreed($event)"
+          >
+            {{ text?.declarationAgree }}
+          </z-checkbox>
+        </div>
+        <app-consent-media-capture
+          kind="voice"
+          [text]="text"
+          [label]="text?.recordAgreement"
+          [recordLabel]="text?.recordAgreementButton"
+          [uploadLabel]="text?.uploadRecording"
+          [serverUpload]="true"
+          [uploadState]="recordingUpload"
+          (uploadRequested)="uploadRecording.emit()"
+          [minSeconds]="agreementMinSeconds"
+          [maxSeconds]="agreementMaxSeconds"
+          (captured)="onVoice($event)"
+        ></app-consent-media-capture>
+      </div>
     }
-    @case ('VOICE_CLIP') {
-      <app-consent-media-capture
-        kind="voice"
-        [text]="text"
-        [label]="text?.recordVoice"
-        (captured)="onVoice($event)"
-      ></app-consent-media-capture>
+    @case ('READ_ALOUD') {
+      <div class="flex flex-col gap-3">
+        <ol class="consent-read-aloud-steps m-0 flex list-decimal flex-col gap-1 pl-5 text-sm text-foreground">
+          <li>{{ text?.readAloudStepRead }}</li>
+          <li>{{ text?.readAloudStepAsk }}</li>
+          <li>{{ text?.readAloudStepAnswer }}</li>
+        </ol>
+        @if (declarationAudioUrl && !audioFailed) {
+          <audio
+            class="consent-declaration-audio w-full"
+            controls
+            [src]="declarationAudioUrl"
+            (ended)="onDeclarationAudioEnded()"
+            (error)="onDeclarationAudioError()"
+          ></audio>
+        } @else if (canPlayDeclaration) {
+          <button
+            z-button
+            zType="outline"
+            zSize="sm"
+            type="button"
+            class="consent-declaration-play w-fit"
+            [attr.aria-pressed]="speaking"
+            (click)="speaking ? stopDeclaration() : playDeclaration()"
+          >
+            <ng-icon [name]="speaking ? 'lucideSquare' : 'lucideVolume2'"></ng-icon>
+            {{ speaking ? text?.stopDeclaration : text?.playDeclaration }}
+          </button>
+        }
+        <app-consent-media-capture
+          kind="voice"
+          [text]="text"
+          [label]="text?.recordConversation"
+          [recordLabel]="text?.recordAgreementButton"
+          [uploadLabel]="text?.uploadRecording"
+          [serverUpload]="true"
+          [uploadState]="recordingUpload"
+          (uploadRequested)="uploadRecording.emit()"
+          [minSeconds]="agreementMinSeconds"
+          [maxSeconds]="readAloudMaxSeconds"
+          (captured)="onVoice($event)"
+        ></app-consent-media-capture>
+        <div
+          class="flex flex-wrap items-center gap-3 rounded-lg bg-muted/50 px-3 py-2"
+          role="group"
+          [attr.aria-label]="text?.declarationQuestion"
+        >
+          <span class="flex-1 text-sm font-medium text-foreground">{{ text?.declarationQuestion }}</span>
+          <button
+            z-button
+            type="button"
+            class="consent-declaration-yes min-w-20"
+            [zType]="proof.declarationAgreed === true ? 'default' : 'outline'"
+            [attr.aria-pressed]="proof.declarationAgreed === true"
+            (click)="answerDeclaration(true)"
+          >
+            {{ text?.answerYes }}
+          </button>
+          <button
+            z-button
+            zType="outline"
+            type="button"
+            class="consent-declaration-no min-w-20"
+            (click)="answerDeclaration(false)"
+          >
+            {{ text?.answerNo }}
+          </button>
+        </div>
+      </div>
     }
     @case ('WITNESSED') {
-      <div class="flex flex-wrap gap-3">
-        <label class="flex flex-col gap-1 text-sm text-foreground">
+      <div class="grid gap-3 sm:grid-cols-2">
+        <label class="flex flex-col gap-1.5 text-sm font-medium text-foreground">
           {{ text?.witnessName }}
           <input
             z-input
@@ -43,7 +134,7 @@
             (input)="setWitness('witnessName', $any($event.target).value)"
           />
         </label>
-        <label class="flex flex-col gap-1 text-sm text-foreground">
+        <label class="flex flex-col gap-1.5 text-sm font-medium text-foreground">
           {{ text?.witnessRelationship }}
           <input
             z-input
@@ -55,24 +146,23 @@
           />
         </label>
       </div>
+      <div class="consent-declaration-agree">
+        <z-checkbox
+          [zChecked]="proof.declarationAgreed === true"
+          (zCheckedChange)="setDeclarationAgreed($event)"
+        >
+          {{ text?.representativeAgree }}
+        </z-checkbox>
+      </div>
     }
     @case ('SIGNATURE_PHOTO') {
-      <div class="flex flex-wrap gap-6">
-        <app-consent-media-capture
-          kind="photo"
-          class="consent-patient-photo"
-          [text]="text"
-          [label]="text?.patientPhoto"
-          (captured)="onPhoto('patientPhoto', $event)"
-        ></app-consent-media-capture>
-        <app-consent-media-capture
-          kind="photo"
-          class="consent-form-photo"
-          [text]="text"
-          [label]="text?.signedFormPhoto"
-          (captured)="onPhoto('signedFormPhoto', $event)"
-        ></app-consent-media-capture>
-      </div>
+      <app-consent-media-capture
+        kind="photo"
+        class="consent-form-photo"
+        [text]="text"
+        [label]="text?.signedFormPhoto"
+        (captured)="onPhoto('signedFormPhoto', $event)"
+      ></app-consent-media-capture>
     }
     @case ('OTP') {
       <app-consent-otp-verify

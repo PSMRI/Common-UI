@@ -35,9 +35,25 @@ describe('CONSENT_PATHS', () => {
     );
   });
 
+  it("adds the project for the project's own notice (feature 003)", () => {
+    expect(CONSENT_PATHS.noticeLanguages('REVISIT', 12)).toBe(
+      '/consent/v1/notices/active/languages?context=REVISIT&projectId=12'
+    );
+    expect(CONSENT_PATHS.activeNotice('REVISIT', 'hi', 12)).toBe(
+      '/consent/v1/notices/active?context=REVISIT&lang=hi&projectId=12'
+    );
+    expect(CONSENT_PATHS.activeNotice('REVISIT', 'hi', null)).toBe(
+      '/consent/v1/notices/active?context=REVISIT&lang=hi'
+    );
+    expect(CONSENT_PATHS.pendingActionsBatch).toBe(
+      '/consent/v1/principals/pending-actions/batch'
+    );
+  });
+
   it('has fixed write paths', () => {
     expect(CONSENT_PATHS.consents).toBe('/consent/v1/consents');
     expect(CONSENT_PATHS.evidence).toBe('/consent/v1/evidence');
+    expect(CONSENT_PATHS.evidenceFile('ev/1')).toBe('/consent/v1/evidence/ev%2F1');
     expect(CONSENT_PATHS.otpChallenges).toBe('/consent/v1/otp/challenges');
   });
 

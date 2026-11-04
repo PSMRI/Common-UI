@@ -1,6 +1,6 @@
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-3">
   @if (!challengeId) {
-    <label class="flex flex-col gap-1 text-sm text-foreground">
+    <label class="flex w-full max-w-xs flex-col gap-1.5 text-sm font-medium text-foreground">
       {{ text?.phoneNumber }}
       <input
         z-input
@@ -13,8 +13,8 @@
       />
     </label>
   } @else {
-    <p class="text-sm text-muted-foreground">{{ text?.otpSentTo }} {{ displayPhone }}</p>
-    <label class="flex flex-col gap-1 text-sm text-foreground">
+    <p class="m-0 text-sm text-muted-foreground">{{ otpSentText }}</p>
+    <label class="flex w-full max-w-xs flex-col gap-1.5 text-sm font-medium text-foreground">
       {{ text?.enterOtp }}
       <input
         z-input
@@ -31,7 +31,7 @@
   }
   <div class="flex flex-wrap gap-2">
     <button z-button zType="outline" type="button" class="consent-otp-send" [disabled]="!canSend" (click)="send()">
-      {{ resendIn > 0 ? text?.resendIn + ' ' + resendIn : text?.sendOtp }}
+      {{ resendIn > 0 ? text?.resendIn + ' ' + resendIn + 's' : text?.sendOtp }}
     </button>
     @if (challengeId) {
       <button z-button type="button" class="consent-otp-verify" [disabled]="!canVerify" (click)="verify()">
@@ -40,9 +40,15 @@
     }
   </div>
   @if (isVerified) {
-    <p class="text-sm text-foreground" role="status">{{ text?.otpVerified }}</p>
+    <p class="m-0 flex items-center gap-1.5 text-sm font-medium text-success" role="status">
+      <ng-icon name="lucideCircleCheck" size="16" class="shrink-0"></ng-icon>
+      {{ text?.otpVerified }}
+    </p>
   }
   @if (error) {
-    <p class="text-sm text-destructive" role="alert">{{ text?.[error] }}</p>
+    <p class="m-0 flex items-center gap-1.5 text-sm text-destructive" role="alert">
+      <ng-icon name="lucideCircleAlert" size="14" class="shrink-0"></ng-icon>
+      {{ text?.[error] }}
+    </p>
   }
 </div>

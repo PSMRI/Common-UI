@@ -21,15 +21,23 @@
  */
 
 // Consent-API paths, appended to consentApiBase() (research R5).
+// Appends the project, so the service returns that project's own notice (feature 003).
+const withProject = (projectId?: number | null) =>
+  projectId === null || projectId === undefined ? '' : `&projectId=${projectId}`;
+
 export const CONSENT_PATHS = {
-  noticeLanguages: (context: string) =>
-    `/consent/v1/notices/active/languages?context=${encodeURIComponent(context)}`,
-  activeNotice: (context: string, lang: string) =>
+  noticeLanguages: (context: string, projectId?: number | null) =>
+    `/consent/v1/notices/active/languages?context=${encodeURIComponent(
+      context
+    )}${withProject(projectId)}`,
+  activeNotice: (context: string, lang: string, projectId?: number | null) =>
     `/consent/v1/notices/active?context=${encodeURIComponent(
       context
-    )}&lang=${encodeURIComponent(lang)}`,
+    )}&lang=${encodeURIComponent(lang)}${withProject(projectId)}`,
   consents: '/consent/v1/consents',
   evidence: '/consent/v1/evidence',
+  evidenceFile: (evidenceId: string) =>
+    `/consent/v1/evidence/${encodeURIComponent(evidenceId)}`,
   otpChallenges: '/consent/v1/otp/challenges',
   otpVerify: (challengeId: string) =>
     `/consent/v1/otp/challenges/${encodeURIComponent(challengeId)}/verify`,
@@ -37,6 +45,7 @@ export const CONSENT_PATHS = {
     `/consent/v1/principals/${benRegId}/consents`,
   pendingActions: (benRegId: number) =>
     `/consent/v1/principals/${benRegId}/pending-actions`,
+  pendingActionsBatch: '/consent/v1/principals/pending-actions/batch',
   preferences: (benRegId: number) =>
     `/consent/v1/principals/${benRegId}/preferences`,
   withdrawals: (benRegId: number) =>

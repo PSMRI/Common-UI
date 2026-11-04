@@ -67,6 +67,14 @@ export abstract class OtpVerifyBase implements OnDestroy {
     return this.maskedPhone || maskPhone(this.phoneNumber);
   }
 
+  /** The text carries a {phone} placeholder; fill it rather than appending the number. */
+  get otpSentText(): string {
+    const template: string = this.text?.otpSentTo || '';
+    return template.includes('{phone}')
+      ? template.replace('{phone}', this.displayPhone)
+      : `${template} ${this.displayPhone}`;
+  }
+
   send(): void {
     if (!this.canSend) {
       return;

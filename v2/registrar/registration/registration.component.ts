@@ -19,7 +19,13 @@ import { PersonalInformationComponent } from './personal-information/personal-in
 import { LocationInformationComponent } from './location-information/location-information.component';
 import { OtherInformationComponent } from './other-information/other-information.component';
 import { AbhaInformationComponent } from './abha-information/abha-information.component';
-import { ConsentDialogResult, ConsentDialogService, isConsentFeatureEnabled } from 'Common-UI/v2/consent/public-api';
+import {
+  ConsentConfigService,
+  ConsentDialogResult,
+  ConsentDialogService,
+  isConsentFeatureEnabled,
+  ResolvedConsentConfig,
+} from 'Common-UI/v2/consent/public-api';
 
 @Component({
     selector: 'app-registration',
@@ -48,6 +54,7 @@ export class RegistrationComponent {
   consentGranted: any;
   consentResult: ConsentDialogResult | null = null;
   private readonly consentDialog = inject(ConsentDialogService);
+  private readonly consentConfig = inject(ConsentConfigService);
   disableGenerateOTP = false;
   today = new Date();
 
@@ -315,29 +322,43 @@ export class RegistrationComponent {
 
   openConsent() {
     if (this.patientRevisit === false && isConsentFeatureEnabled()) {
-      this.consentDialog
-        .open({ context: 'REGISTRATION', beneficiaryRegId: null })
-        .subscribe((result) => {
-          this.consentResult = result;
-          if (result.outcome === 'BLOCKED' || result.outcome === 'NO_DECISION') {
-            this.router.navigate(['/registrar/search/']);
-          }
-        });
+      // Feature 002: the project's configuration decides the dialog or the legacy pop-up (FR-023).
+      this.consentConfig.load('REGISTRATION').subscribe({
+        next: (config) =>
+          config.config.enabled ? this.openConsentDialog(config) : this.openLegacyConsent(),
+        error: () => this.openConsentDialog(),
+      });
       return;
     }
     if (this.patientRevisit === false) {
-      const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
-        zContent: ConsentFormComponent,
-        zWidth: '50%',
-        zHideFooter: true,
-        zClosable: false,
-        zViewContainerRef: this.viewContainerRef,
-      });
-      mdDialogRef.afterClosed().subscribe((consentProvided) => {
-        this.consentGranted = consentProvided;
-        this.registrarService.sendConsentStatus(consentProvided);
-      });
+      this.openLegacyConsent();
     }
+  }
+
+  private openConsentDialog(config?: ResolvedConsentConfig) {
+    const mandatory = config ? config.config.mandatory : true;
+    this.consentDialog
+      .open({ context: 'REGISTRATION', beneficiaryRegId: null, ...(config ? { config } : {}) })
+      .subscribe((result) => {
+        this.consentResult = result;
+        if (mandatory && (result.outcome === 'BLOCKED' || result.outcome === 'NO_DECISION')) {
+          this.router.navigate(['/registrar/search/']);
+        }
+      });
+  }
+
+  private openLegacyConsent() {
+    const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
+      zContent: ConsentFormComponent,
+      zWidth: '50%',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
+    mdDialogRef.afterClosed().subscribe((consentProvided) => {
+      this.consentGranted = consentProvided;
+      this.registrarService.sendConsentStatus(consentProvided);
+    });
   }
 
     /**

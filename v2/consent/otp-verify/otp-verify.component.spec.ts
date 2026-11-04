@@ -20,7 +20,30 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
+import { TestBed } from '@angular/core/testing';
+import { ConsentApiService } from '../../../src/consent/core/consent-api.service';
 import { otpVerifySuite } from '../../../src/consent/core/testing/otp-verify.suite';
 import { OtpVerifyComponent } from './otp-verify.component';
 
 otpVerifySuite(OtpVerifyComponent, 'v2');
+
+describe('OtpVerifyComponent (v2) sent-to text', () => {
+  function create(otpSentTo: string): OtpVerifyComponent {
+    TestBed.configureTestingModule({
+      imports: [OtpVerifyComponent],
+      providers: [{ provide: ConsentApiService, useValue: {} }],
+    });
+    const component = TestBed.createComponent(OtpVerifyComponent).componentInstance;
+    component.text = { otpSentTo };
+    component.maskedPhone = '******3210';
+    return component;
+  }
+
+  it('fills the {phone} placeholder', () => {
+    expect(create('OTP sent to {phone}').otpSentText).toBe('OTP sent to ******3210');
+  });
+
+  it('appends the phone when the text has no placeholder', () => {
+    expect(create('OTP sent to').otpSentText).toBe('OTP sent to ******3210');
+  });
+});

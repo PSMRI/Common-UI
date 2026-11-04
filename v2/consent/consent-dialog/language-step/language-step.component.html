@@ -1,9 +1,14 @@
 <div class="flex flex-col gap-3">
-  <p class="text-sm font-medium text-foreground">{{ text?.chooseLanguage }}</p>
+  <p class="m-0 text-sm font-medium text-foreground">{{ text?.chooseLanguage }}</p>
   @if (failed) {
-    <div class="flex items-center gap-3" role="alert">
-      <p class="text-sm text-destructive">{{ text?.serviceUnavailable }}</p>
-      <button z-button zType="outline" type="button" (click)="load()">
+    <div
+      class="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+      role="alert"
+    >
+      <ng-icon name="lucideCircleAlert" size="18" class="mt-0.5 shrink-0 text-destructive"></ng-icon>
+      <p class="m-0 flex-1 text-sm text-destructive">{{ text?.serviceUnavailable }}</p>
+      <button z-button zType="outline" zSize="sm" type="button" (click)="load()">
+        <ng-icon name="lucideRotateCw"></ng-icon>
         {{ text?.retry }}
       </button>
     </div>
@@ -13,6 +18,7 @@
         <button
           z-button
           type="button"
+          class="min-w-24"
           [zType]="language.languageCode === selected ? 'default' : 'outline'"
           [attr.aria-pressed]="language.languageCode === selected"
           [attr.lang]="language.languageCode"

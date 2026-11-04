@@ -28,6 +28,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  NgZone,
   OnDestroy,
   Output,
   SimpleChanges,
@@ -59,6 +60,7 @@ export abstract class NoticeStepBase implements AfterViewInit, OnChanges, OnDest
   speaking = false;
   // Zard's dialog container is OnPush: async updates must mark this view for checking.
   protected cdr = inject(ChangeDetectorRef);
+  private zone = inject(NgZone);
   private utterance: SpeechSynthesisUtterance | null = null;
   private observer: IntersectionObserver | null = null;
   private reported = false;
@@ -105,8 +107,8 @@ export abstract class NoticeStepBase implements AfterViewInit, OnChanges, OnDest
     if (voice) {
       utterance.voice = voice;
     }
-    utterance.onend = () => this.finishSpeech(utterance, true);
-    utterance.onerror = () => this.finishSpeech(utterance, false);
+    utterance.onend = () => this.zone.run(() => this.finishSpeech(utterance, true));
+    utterance.onerror = () => this.zone.run(() => this.finishSpeech(utterance, false));
     this.utterance = utterance;
     this.speaking = true;
     synth.speak(utterance);
@@ -183,7 +185,8 @@ export abstract class NoticeStepBase implements AfterViewInit, OnChanges, OnDest
   private reportRead(): void {
     if (!this.reported) {
       this.reported = true;
-      this.readComplete.emit();
+      // IntersectionObserver and speech callbacks run outside Angular's zone; re-enter so Accept updates.
+      this.zone.run(() => this.readComplete.emit());
     }
   }
 

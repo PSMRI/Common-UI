@@ -21,6 +21,8 @@
  */
 
 import { Component } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleAlert, lucideRotateCw } from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { LanguageStepBase } from '../../../../src/consent/core/ui/language-step.base';
 
@@ -28,6 +30,7 @@ import { LanguageStepBase } from '../../../../src/consent/core/ui/language-step.
   selector: 'app-consent-language-step',
   templateUrl: './language-step.component.html',
   standalone: true,
-  imports: [ZardButtonComponent],
+  imports: [NgIcon, ZardButtonComponent],
+  viewProviders: [provideIcons({ lucideCircleAlert, lucideRotateCw })],
 })
 export class LanguageStepComponent extends LanguageStepBase {}

@@ -66,9 +66,26 @@ export function sha256Hex(blob: Blob): Promise<string | null> {
     });
 }
 
-/** Voice clips must be 30–60 seconds inclusive (FR-015). */
-export function isVoiceDurationValid(seconds: number | null | undefined): boolean {
-  return typeof seconds === 'number' && seconds >= 30 && seconds <= 60;
+/** Voice clips must be 30–60 seconds inclusive (FR-015); feature 003 passes other limits. */
+export function isVoiceDurationValid(
+  seconds: number | null | undefined,
+  min = 30,
+  max = 60
+): boolean {
+  return typeof seconds === 'number' && seconds >= min && seconds <= max;
+}
+
+/** Largest evidence files the Consent-API accepts: 5 MB audio, 2 MB photo. */
+export const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
+export const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+
+export function maxEvidenceBytes(kind: 'photo' | 'voice'): number {
+  return kind === 'photo' ? MAX_PHOTO_BYTES : MAX_AUDIO_BYTES;
+}
+
+/** The file fits the Consent-API size limit for its kind. */
+export function isEvidenceSizeValid(blob: Blob, kind: 'photo' | 'voice'): boolean {
+  return blob.size <= maxEvidenceBytes(kind);
 }
 
 /** '9876543212' -> '98******12' (FR-016). */

@@ -21,11 +21,11 @@
  */
 
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideSquare, lucideVolume2 } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { ZardCheckboxComponent } from 'Common-UI/v2/ui/checkbox';
 import { ZardInputDirective } from 'Common-UI/v2/ui/input';
-import { ZardRadioComponent } from 'Common-UI/v2/ui/radio';
-import { ZardRadioGroupComponent } from 'Common-UI/v2/ui/radio-group';
 import { ProofStepBase } from '../../../../src/consent/core/ui/proof-step.base';
 import { MediaCaptureComponent } from '../../media-capture/media-capture.component';
 import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
@@ -35,13 +35,13 @@ import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
   templateUrl: './proof-step.component.html',
   standalone: true,
   imports: [
-    FormsModule,
-    ZardRadioGroupComponent,
-    ZardRadioComponent,
+    NgIcon,
+    ZardButtonComponent,
     ZardCheckboxComponent,
     ZardInputDirective,
     MediaCaptureComponent,
     OtpVerifyComponent,
   ],
+  viewProviders: [provideIcons({ lucideSquare, lucideVolume2 })],
 })
 export class ProofStepComponent extends ProofStepBase {}

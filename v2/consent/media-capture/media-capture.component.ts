@@ -21,6 +21,17 @@
  */
 
 import { Component } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideCamera,
+  lucideCircleAlert,
+  lucideCloudCheck,
+  lucideCloudUpload,
+  lucideMic,
+  lucideRotateCcw,
+  lucideSquare,
+  lucideUpload,
+} from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { MediaCaptureBase } from '../../../src/consent/core/ui/media-capture.base';
 
@@ -28,6 +39,18 @@ import { MediaCaptureBase } from '../../../src/consent/core/ui/media-capture.bas
   selector: 'app-consent-media-capture',
   templateUrl: './media-capture.component.html',
   standalone: true,
-  imports: [ZardButtonComponent],
+  imports: [NgIcon, ZardButtonComponent],
+  viewProviders: [
+    provideIcons({
+      lucideCamera,
+      lucideCircleAlert,
+      lucideCloudCheck,
+      lucideCloudUpload,
+      lucideMic,
+      lucideRotateCcw,
+      lucideSquare,
+      lucideUpload,
+    }),
+  ],
 })
 export class MediaCaptureComponent extends MediaCaptureBase {}

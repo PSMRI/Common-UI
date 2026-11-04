@@ -21,6 +21,8 @@
  */
 
 import { Component } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideCircleAlert, lucideCircleCheck } from '@ng-icons/lucide';
 import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
 import { ZardInputDirective } from 'Common-UI/v2/ui/input';
 import { OtpVerifyBase } from '../../../src/consent/core/ui/otp-verify.base';
@@ -29,6 +31,7 @@ import { OtpVerifyBase } from '../../../src/consent/core/ui/otp-verify.base';
   selector: 'app-consent-otp-verify',
   templateUrl: './otp-verify.component.html',
   standalone: true,
-  imports: [ZardButtonComponent, ZardInputDirective],
+  imports: [NgIcon, ZardButtonComponent, ZardInputDirective],
+  viewProviders: [provideIcons({ lucideCircleAlert, lucideCircleCheck })],
 })
 export class OtpVerifyComponent extends OtpVerifyBase {}

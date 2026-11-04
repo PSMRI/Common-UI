@@ -22,7 +22,7 @@
 
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable, forkJoin, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { CONSENT_PATHS } from './consent-api.paths';
 import { consentApiBase } from './consent-feature';
@@ -70,23 +70,35 @@ export function toConsentApiError(err: unknown): ConsentApiError {
   return { kind: 'FAILED', message: 'Request failed' };
 }
 
+/** Most beneficiary ids one pending-actions batch call takes. */
+export const PENDING_BATCH_MAX = 100;
+
 /** The only client for Consent-API calls made by Common-UI screens (FR-030). */
 @Injectable({ providedIn: 'root' })
 export class ConsentApiService {
   constructor(private http: HttpClient) {}
 
-  getLanguages(context: ConsentContextType): Observable<NoticeLanguage[]> {
+  /** projectId: the project's own notice languages; without it, the central notice's. */
+  getLanguages(
+    context: ConsentContextType,
+    projectId?: number | null
+  ): Observable<NoticeLanguage[]> {
     return this.unwrap(
       this.http.get<OutputResponse<NoticeLanguage[]>>(
-        this.url(CONSENT_PATHS.noticeLanguages(context))
+        this.url(CONSENT_PATHS.noticeLanguages(context, projectId))
       )
     );
   }
 
-  getNotice(context: ConsentContextType, lang: string): Observable<Notice> {
+  /** projectId: the project's published notice, or the central one when it has none. */
+  getNotice(
+    context: ConsentContextType,
+    lang: string,
+    projectId?: number | null
+  ): Observable<Notice> {
     return this.unwrap(
       this.http.get<OutputResponse<Notice>>(
-        this.url(CONSENT_PATHS.activeNotice(context, lang))
+        this.url(CONSENT_PATHS.activeNotice(context, lang, projectId))
       )
     );
   }
@@ -127,6 +139,13 @@ export class ConsentApiService {
     );
   }
 
+  /** API 16: the stored recording or photo, for playback during an audit or grievance. */
+  getEvidenceFile(evidenceId: string): Observable<Blob> {
+    return this.http
+      .get(this.url(CONSENT_PATHS.evidenceFile(evidenceId)), { responseType: 'blob' })
+      .pipe(catchError((err) => throwError(() => toConsentApiError(err))));
+  }
+
   sendOtp(req: OtpSendRequest, idempotencyKey: string): Observable<OtpChallenge> {
     return this.unwrap(
       this.http.post<OutputResponse<OtpChallenge>>(
@@ -160,6 +179,30 @@ export class ConsentApiService {
         this.url(CONSENT_PATHS.pendingActions(benRegId))
       )
     );
+  }
+
+  /**
+   * Pending actions of many patients, keyed by beneficiaryRegId. The API takes at most
+   * PENDING_BATCH_MAX ids, so longer lists go in several calls and the results are merged.
+   */
+  getPendingActionsBatch(
+    benRegIds: number[]
+  ): Observable<{ [benRegId: string]: PendingAction[] }> {
+    if (benRegIds.length === 0) {
+      return of({});
+    }
+    const calls: Observable<{ [benRegId: string]: PendingAction[] }>[] = [];
+    for (let i = 0; i < benRegIds.length; i += PENDING_BATCH_MAX) {
+      calls.push(
+        this.unwrap(
+          this.http.post<OutputResponse<{ [benRegId: string]: PendingAction[] }>>(
+            this.url(CONSENT_PATHS.pendingActionsBatch),
+            { beneficiaryRegIds: benRegIds.slice(i, i + PENDING_BATCH_MAX) }
+          )
+        )
+      );
+    }
+    return forkJoin(calls).pipe(map((parts) => Object.assign({}, ...parts)));
   }
 
   changePreference(
