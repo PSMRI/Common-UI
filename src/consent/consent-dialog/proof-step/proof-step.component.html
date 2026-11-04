@@ -4,6 +4,7 @@
     <mat-checkbox
       *ngFor="let option of modes"
       name="consent-mode"
+      [attr.data-consent-mode]="option.mode"
       [checked]="mode === option.mode"
       (change)="toggleMode(option.mode, $event.checked)"
     >
@@ -11,52 +12,93 @@
     </mat-checkbox>
   </div>
 
+  <div *ngIf="mode" class="consent-declaration" [attr.lang]="languageCode">
+    <p class="consent-declaration-title">{{ text?.declarationTitle }}</p>
+    <p class="consent-declaration-text">{{ declaration }}</p>
+  </div>
+
   <ng-container [ngSwitch]="mode">
-    <mat-checkbox
-      *ngSwitchCase="'READ_ALOUD'"
-      [checked]="proof.workerConfirmed === true"
-      (change)="setWorkerConfirmed($event.checked)"
-    >
-      {{ text?.workerConfirm }}
-    </mat-checkbox>
-    <app-consent-media-capture
-      *ngSwitchCase="'VOICE_CLIP'"
-      kind="voice"
-      [text]="text"
-      [label]="text?.recordVoice"
-      (captured)="onVoice($event)"
-    ></app-consent-media-capture>
-    <div *ngSwitchCase="'WITNESSED'" class="consent-row">
-      <mat-form-field class="consent-field">
-        <mat-label>{{ text?.witnessName }}</mat-label>
-        <input
-          matInput
-          type="text"
-          name="consent-witness-name"
-          maxlength="100"
-          [value]="proof.witnessName || ''"
-          (input)="setWitness('witnessName', $any($event.target).value)"
-        />
-      </mat-form-field>
-      <mat-form-field class="consent-field">
-        <mat-label>{{ text?.witnessRelationship }}</mat-label>
-        <input
-          matInput
-          type="text"
-          name="consent-witness-relationship"
-          maxlength="100"
-          [value]="proof.witnessRelationship || ''"
-          (input)="setWitness('witnessRelationship', $any($event.target).value)"
-        />
-      </mat-form-field>
+    <div *ngSwitchCase="'SELF_READ'" class="consent-read-aloud">
+      <mat-checkbox
+        class="consent-declaration-agree"
+        [checked]="proof.declarationAgreed === true"
+        (change)="setDeclarationAgreed($event.checked)"
+      >
+        {{ text?.declarationAgree }}
+      </mat-checkbox>
+      <app-consent-media-capture
+        kind="voice"
+        [text]="text"
+        [label]="text?.recordAgreement"
+        [recordLabel]="text?.recordAgreementButton"
+        [uploadLabel]="text?.uploadRecording"
+        [serverUpload]="true"
+        [uploadState]="recordingUpload"
+        (uploadRequested)="uploadRecording.emit()"
+        [minSeconds]="agreementMinSeconds"
+        [maxSeconds]="agreementMaxSeconds"
+        (captured)="onVoice($event)"
+      ></app-consent-media-capture>
+    </div>
+    <div *ngSwitchCase="'READ_ALOUD'" class="consent-read-aloud">
+      <ol class="consent-read-aloud-steps">
+        <li>{{ text?.readAloudStepRead }}</li>
+        <li>{{ text?.readAloudStepAsk }}</li>
+        <li>{{ text?.readAloudStepAnswer }}</li>
+      </ol>
+      <audio
+        *ngIf="declarationAudioUrl && !audioFailed"
+        class="consent-declaration-audio"
+        controls
+        [src]="declarationAudioUrl"
+        (ended)="onDeclarationAudioEnded()"
+        (error)="onDeclarationAudioError()"
+      ></audio>
+      <button
+        *ngIf="(!declarationAudioUrl || audioFailed) && canPlayDeclaration"
+        type="button"
+        class="consent-btn consent-btn-secondary consent-declaration-play"
+        [attr.aria-pressed]="speaking"
+        (click)="speaking ? stopDeclaration() : playDeclaration()"
+      >
+        <mat-icon>{{ speaking ? 'stop' : 'volume_up' }}</mat-icon>
+        {{ speaking ? text?.stopDeclaration : text?.playDeclaration }}
+      </button>
+      <app-consent-media-capture
+        kind="voice"
+        [text]="text"
+        [label]="text?.recordConversation"
+        [recordLabel]="text?.recordAgreementButton"
+        [uploadLabel]="text?.uploadRecording"
+        [serverUpload]="true"
+        [uploadState]="recordingUpload"
+        (uploadRequested)="uploadRecording.emit()"
+        [minSeconds]="agreementMinSeconds"
+        [maxSeconds]="readAloudMaxSeconds"
+        (captured)="onVoice($event)"
+      ></app-consent-media-capture>
+      <div class="consent-declaration-question" role="group" [attr.aria-label]="text?.declarationQuestion">
+        <span class="consent-declaration-question-text">{{ text?.declarationQuestion }}</span>
+        <button
+          type="button"
+          class="consent-btn consent-declaration-yes"
+          [class.consent-btn-primary]="proof.declarationAgreed === true"
+          [class.consent-btn-secondary]="proof.declarationAgreed !== true"
+          [attr.aria-pressed]="proof.declarationAgreed === true"
+          (click)="answerDeclaration(true)"
+        >
+          {{ text?.answerYes }}
+        </button>
+        <button
+          type="button"
+          class="consent-btn consent-btn-secondary consent-declaration-no"
+          (click)="answerDeclaration(false)"
+        >
+          {{ text?.answerNo }}
+        </button>
+      </div>
     </div>
     <div *ngSwitchCase="'SIGNATURE_PHOTO'" class="consent-row">
-      <app-consent-media-capture
-        kind="photo"
-        [text]="text"
-        [label]="text?.patientPhoto"
-        (captured)="onPhoto('patientPhoto', $event)"
-      ></app-consent-media-capture>
       <app-consent-media-capture
         kind="photo"
         [text]="text"
@@ -64,6 +106,39 @@
         (captured)="onPhoto('signedFormPhoto', $event)"
       ></app-consent-media-capture>
     </div>
+    <ng-container *ngSwitchCase="'WITNESSED'">
+      <div class="consent-row">
+        <mat-form-field class="consent-field">
+          <mat-label>{{ text?.witnessName }}</mat-label>
+          <input
+            matInput
+            type="text"
+            name="consent-witness-name"
+            maxlength="100"
+            [value]="proof.witnessName || ''"
+            (input)="setWitness('witnessName', $any($event.target).value)"
+          />
+        </mat-form-field>
+        <mat-form-field class="consent-field">
+          <mat-label>{{ text?.witnessRelationship }}</mat-label>
+          <input
+            matInput
+            type="text"
+            name="consent-witness-relationship"
+            maxlength="100"
+            [value]="proof.witnessRelationship || ''"
+            (input)="setWitness('witnessRelationship', $any($event.target).value)"
+          />
+        </mat-form-field>
+      </div>
+      <mat-checkbox
+        class="consent-declaration-agree"
+        [checked]="proof.declarationAgreed === true"
+        (change)="setDeclarationAgreed($event.checked)"
+      >
+        {{ text?.representativeAgree }}
+      </mat-checkbox>
+    </ng-container>
     <app-consent-otp-verify
       *ngSwitchCase="'OTP'"
       purpose="CONSENT"
@@ -73,3 +148,4 @@
     ></app-consent-otp-verify>
   </ng-container>
 </fieldset>
+

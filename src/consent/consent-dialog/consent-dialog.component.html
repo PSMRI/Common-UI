@@ -1,30 +1,47 @@
 <section class="consent-dialog">
   <div class="consent-header">
     <span class="consent-title">{{ text?.title }}</span>
-    <button mat-icon-button type="button" [attr.aria-label]="text?.close" (click)="close()">
+    <button
+      type="button"
+      class="consent-close"
+      [attr.aria-label]="text?.close"
+      [attr.title]="text?.close"
+      (click)="close()"
+    >
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
   <div class="consent-body">
     <div *ngIf="configFailed" class="consent-alert" role="alert">
+      <mat-icon>error_outline</mat-icon>
       <span>{{ text?.configLoadFailed }}</span>
-      <button mat-stroked-button type="button" (click)="resolveConfig()">{{ text?.retry }}</button>
+      <button type="button" class="consent-btn consent-btn-secondary" (click)="resolveConfig()">
+        {{ text?.retry }}
+      </button>
     </div>
 
-    <p *ngIf="otpNoPhone" class="consent-alert" role="alert">{{ text?.configOtpNoPhone }}</p>
+    <div *ngIf="otpNoPhone" class="consent-alert" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ text?.configOtpNoPhone }}</span>
+    </div>
 
     <app-consent-language-step
       *ngIf="step === 'LANGUAGE' && config"
       [text]="text"
       [selected]="draft.languageCode"
+      [context]="options.context"
+      [projectId]="config.projectId"
       (languageSelected)="loadNotice($event)"
     ></app-consent-language-step>
 
     <ng-container *ngIf="step === 'DECIDE' && draft.notice">
       <div class="consent-language-row">
-        <span>{{ draft.notice.languageCode }}</span>
-        <button mat-button type="button" (click)="changeLanguage()">{{ text?.chooseLanguage }}</button>
+        <span class="consent-language">
+          <mat-icon>translate</mat-icon>
+          {{ draft.notice.languageCode | uppercase }}
+        </span>
+        <button type="button" class="consent-link" (click)="changeLanguage()">{{ text?.chooseLanguage }}</button>
       </div>
       <app-consent-notice-step
         [text]="text"
@@ -32,12 +49,14 @@
         (readComplete)="onReadComplete()"
         (audioPlayedToEnd)="onAudioPlayed()"
       ></app-consent-notice-step>
+      <p class="consent-section-title">{{ text?.purposes }}</p>
       <app-consent-purposes-step
         [text]="text"
         [purposes]="draft.notice.purposes"
         [decisions]="draft.decisions"
         (decisionsChange)="onDecisions($event)"
       ></app-consent-purposes-step>
+      <div class="consent-divider"></div>
       <app-consent-proof-step
         [text]="text"
         [notice]="draft.notice"
@@ -45,23 +64,91 @@
         [modes]="modes"
         [patientPhone]="options.patientPhone || null"
         [audioPlayedToEnd]="draft.audioPlayedToEnd"
+        [declaration]="declaration"
+        [languageCode]="draft.notice.languageCode"
+        [declarationAudioUrl]="draft.notice.declarationAudioUrl || null"
+        [recordingUpload]="recordingUpload"
+        (uploadRecording)="uploadRecording()"
+        (declarationRefused)="decline()"
         (modeChange)="onMode($event)"
         (proofChange)="onProof($event)"
       ></app-consent-proof-step>
     </ng-container>
 
+    <div *ngIf="step === 'DONE' && confirmation as c" class="consent-done" role="status">
+      <div class="consent-done-head">
+        <mat-icon class="consent-done-icon">check_circle</mat-icon>
+        <span class="consent-done-title">{{ text?.confirmationTitle }}</span>
+      </div>
+      <dl class="consent-done-ids">
+        <dt>{{ text?.consentIdLabel }}</dt>
+        <dd class="consent-done-id">{{ c.consentId }}</dd>
+        <dt>{{ text?.capturedAtLabel }}</dt>
+        <dd>{{ c.capturedAt | date: 'd MMM y, HH:mm' }}</dd>
+      </dl>
+      <p *ngIf="c.syncStatus === 'NOT_SYNCED'" class="consent-inline-hint consent-done-offline">
+        <mat-icon>cloud_off</mat-icon>
+        {{ text?.notSyncedNote }}
+      </p>
+      <div class="consent-done-grievance">
+        <p class="consent-section-title">{{ text?.grievanceTitle }}</p>
+        <dl *ngIf="c.grievance as g; else grievanceFallback">
+          <ng-container *ngIf="g.officerName">
+            <dt>{{ text?.grievanceOfficer }}</dt>
+            <dd>{{ g.officerName }}</dd>
+          </ng-container>
+          <ng-container *ngIf="g.phone">
+            <dt>{{ text?.grievancePhone }}</dt>
+            <dd>{{ g.phone }}</dd>
+          </ng-container>
+          <ng-container *ngIf="g.email">
+            <dt>{{ text?.grievanceEmail }}</dt>
+            <dd>{{ g.email }}</dd>
+          </ng-container>
+          <ng-container *ngIf="g.address">
+            <dt>{{ text?.grievanceAddress }}</dt>
+            <dd>{{ g.address }}</dd>
+          </ng-container>
+          <ng-container *ngIf="g.officeHours">
+            <dt>{{ text?.grievanceHours }}</dt>
+            <dd>{{ g.officeHours }}</dd>
+          </ng-container>
+        </dl>
+        <ng-template #grievanceFallback>
+          <p class="consent-done-grievance-text">{{ c.grievanceText }}</p>
+        </ng-template>
+      </div>
+      <p class="consent-inline-hint consent-done-sms">
+        <mat-icon>sms</mat-icon>
+        {{ smsMessage }}
+      </p>
+    </div>
+
     <div *ngIf="failed" class="consent-alert" role="alert">
+      <mat-icon>error_outline</mat-icon>
       <span>{{ text?.serviceUnavailable }}</span>
-      <button mat-stroked-button type="button" (click)="retry()">{{ text?.retry }}</button>
+      <button type="button" class="consent-btn consent-btn-secondary" (click)="retry()">
+        {{ text?.retry }}
+      </button>
     </div>
   </div>
 
   <div *ngIf="step === 'DECIDE'" class="consent-actions">
-    <button mat-stroked-button type="button" [disabled]="saving" (click)="decline()">
+    <p *ngIf="pendingKey" class="consent-inline-hint consent-pending" role="status">
+      <mat-icon>info_outline</mat-icon>
+      {{ text?.[pendingKey] }}
+    </p>
+    <button type="button" class="consent-btn consent-btn-secondary" [disabled]="saving" (click)="decline()">
       {{ text?.decline }}
     </button>
-    <button mat-flat-button color="primary" type="button" [disabled]="!acceptEnabled" (click)="accept()">
+    <button type="button" class="consent-btn consent-btn-primary" [disabled]="!acceptEnabled" (click)="accept()">
       {{ text?.accept }}
+    </button>
+  </div>
+
+  <div *ngIf="step === 'DONE'" class="consent-actions">
+    <button type="button" class="consent-btn consent-btn-primary consent-done-btn" (click)="done()">
+      {{ text?.done }}
     </button>
   </div>
 </section>

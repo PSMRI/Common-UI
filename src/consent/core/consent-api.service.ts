@@ -75,18 +75,27 @@ export function toConsentApiError(err: unknown): ConsentApiError {
 export class ConsentApiService {
   constructor(private http: HttpClient) {}
 
-  getLanguages(context: ConsentContextType): Observable<NoticeLanguage[]> {
+  /** projectId: the project's own notice languages; without it, the central notice's. */
+  getLanguages(
+    context: ConsentContextType,
+    projectId?: number | null
+  ): Observable<NoticeLanguage[]> {
     return this.unwrap(
       this.http.get<OutputResponse<NoticeLanguage[]>>(
-        this.url(CONSENT_PATHS.noticeLanguages(context))
+        this.url(CONSENT_PATHS.noticeLanguages(context, projectId))
       )
     );
   }
 
-  getNotice(context: ConsentContextType, lang: string): Observable<Notice> {
+  /** projectId: the project's published notice, or the central one when it has none. */
+  getNotice(
+    context: ConsentContextType,
+    lang: string,
+    projectId?: number | null
+  ): Observable<Notice> {
     return this.unwrap(
       this.http.get<OutputResponse<Notice>>(
-        this.url(CONSENT_PATHS.activeNotice(context, lang))
+        this.url(CONSENT_PATHS.activeNotice(context, lang, projectId))
       )
     );
   }
@@ -158,6 +167,18 @@ export class ConsentApiService {
     return this.unwrap(
       this.http.get<OutputResponse<PendingAction[]>>(
         this.url(CONSENT_PATHS.pendingActions(benRegId))
+      )
+    );
+  }
+
+  /** Pending actions of many patients in one call, keyed by beneficiaryRegId. */
+  getPendingActionsBatch(
+    benRegIds: number[]
+  ): Observable<{ [benRegId: string]: PendingAction[] }> {
+    return this.unwrap(
+      this.http.post<OutputResponse<{ [benRegId: string]: PendingAction[] }>>(
+        this.url(CONSENT_PATHS.pendingActionsBatch),
+        { beneficiaryRegIds: benRegIds }
       )
     );
   }

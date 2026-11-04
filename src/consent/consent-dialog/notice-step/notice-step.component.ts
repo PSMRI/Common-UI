@@ -29,7 +29,7 @@ import { NoticeStepBase } from '../../core/ui/notice-step.base';
 @Component({
   selector: 'app-consent-notice-step',
   templateUrl: './notice-step.component.html',
-  styleUrls: ['./notice-step.component.css'],
+  styleUrls: ['./notice-step.component.css', '../../consent-theme.css'],
   standalone: true,
   imports: [NgIf, MatButtonModule, MatIconModule],
 })

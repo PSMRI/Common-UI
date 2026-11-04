@@ -12,9 +12,8 @@
   </div>
   <button
     *ngIf="canSpeak && (!notice.audioUrl || audioFailed)"
-    mat-stroked-button
     type="button"
-    class="consent-notice-speak"
+    class="consent-btn consent-btn-secondary consent-notice-speak"
     [attr.aria-pressed]="speaking"
     (click)="speaking ? stopNotice() : playNotice()"
   >
@@ -44,5 +43,8 @@
     </dl>
     <div #endMarker class="consent-end-marker" aria-hidden="true"></div>
   </div>
-  <p class="consent-hint">{{ text?.readToEnd }}</p>
+  <p class="consent-inline-hint">
+    <mat-icon>info_outline</mat-icon>
+    {{ text?.readToEnd }}
+  </p>
 </div>

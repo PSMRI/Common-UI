@@ -65,6 +65,12 @@ describe('evidence.util', () => {
       expect(isVoiceDurationValid(60)).toBeTrue();
     });
 
+    it('takes other limits (feature 003)', () => {
+      expect(isVoiceDurationValid(2, 2, 60)).toBeTrue();
+      expect(isVoiceDurationValid(1.9, 2, 60)).toBeFalse();
+      expect(isVoiceDurationValid(61, 2, 60)).toBeFalse();
+    });
+
     it('rejects out of range or missing values', () => {
       expect(isVoiceDurationValid(29.9)).toBeFalse();
       expect(isVoiceDurationValid(60.1)).toBeFalse();

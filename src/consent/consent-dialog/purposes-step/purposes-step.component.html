@@ -8,7 +8,7 @@
       <span class="consent-purpose-name">{{ purpose.name }}</span>
       <span class="consent-purpose-desc">{{ purpose.description }}</span>
     </mat-slide-toggle>
-    <span class="consent-purpose-kind">
+    <span class="consent-purpose-kind" [class.consent-purpose-required]="purpose.isMandatory">
       {{ purpose.isMandatory ? text?.mandatory : text?.optional }}
     </span>
   </li>

@@ -66,9 +66,13 @@ export function sha256Hex(blob: Blob): Promise<string | null> {
     });
 }
 
-/** Voice clips must be 30–60 seconds inclusive (FR-015). */
-export function isVoiceDurationValid(seconds: number | null | undefined): boolean {
-  return typeof seconds === 'number' && seconds >= 30 && seconds <= 60;
+/** Voice clips must be 30–60 seconds inclusive (FR-015); feature 003 passes other limits. */
+export function isVoiceDurationValid(
+  seconds: number | null | undefined,
+  min = 30,
+  max = 60
+): boolean {
+  return typeof seconds === 'number' && seconds >= min && seconds <= max;
 }
 
 /** '9876543212' -> '98******12' (FR-016). */

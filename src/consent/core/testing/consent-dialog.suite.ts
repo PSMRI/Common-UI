@@ -21,6 +21,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { CameraService } from 'src/app/app-modules/core/services';
 import { of, Subject, throwError } from 'rxjs';
 import { Notice } from '../consent.models';
@@ -77,6 +78,14 @@ describe(`ConsentDialogComponent (${track})`, () => {
     retry: 'Retry',
     accept: 'Accept',
     decline: 'Decline',
+    defaultDeclaration: 'Default patient declaration',
+    defaultRepresentativeDeclaration: 'Default representative declaration',
+    defaultGrievance: 'Call 104',
+    smsSent: 'Sent to {phone}',
+    smsQueued: 'Queued to {phone}',
+    smsFailed: 'SMS failed',
+    smsNoPhone: 'No phone',
+    done: 'Done',
   };
   const ctx: ConsentCaptureContext = {
     capturedBy: 4521,
@@ -95,8 +104,9 @@ describe(`ConsentDialogComponent (${track})`, () => {
     const decisions: { [k: string]: boolean } = {};
     mockNotice('hi').purposes.forEach((p) => (decisions[p.purposeCode] = true));
     component.onDecisions(decisions);
-    component.onMode('SELF_READ');
-    component.onProof({});
+    // OTP proof has no file to upload, so the save stays synchronous in these tests.
+    component.onMode('OTP');
+    component.onProof({ otpVerified: true, otpChallengeId: 'otp-1' });
     fixture.detectChanges();
   }
 
@@ -120,6 +130,8 @@ describe(`ConsentDialogComponent (${track})`, () => {
     TestBed.configureTestingModule({
       imports: [ConsentDialogComponent],
       providers: [
+        // The OTP and Guardian / Representative proof render Material form fields.
+        provideNoopAnimations(),
         { provide: tokens.data, useValue: { context: 'REGISTRATION', beneficiaryRegId: null } },
         { provide: tokens.ref, useValue: dialogRef },
         { provide: ConsentApiService, useValue: api },
@@ -145,7 +157,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
   it('loads the notice in the chosen language with every switch off', () => {
     component.loadNotice('hi');
     fixture.detectChanges();
-    expect(api.getNotice).toHaveBeenCalledWith('REGISTRATION', 'hi');
+    expect(api.getNotice).toHaveBeenCalledWith('REGISTRATION', 'hi', null);
     expect(component.step).toBe('DECIDE');
     expect(Object.values(component.draft.decisions).every((v) => !v)).toBeTrue();
     expect(buttonByText('Accept').disabled).toBeTrue();
@@ -183,6 +195,40 @@ describe(`ConsentDialogComponent (${track})`, () => {
     expect(component.step).toBe('DECIDE');
   });
 
+  it('names the first thing still blocking Accept', () => {
+    component.loadNotice('hi');
+    fixture.detectChanges();
+    expect(component.pendingKey).toBe('pendingReadNotice');
+    component.onReadComplete();
+    expect(component.pendingKey).toBe('pendingRequiredPurposes');
+    const decisions: { [k: string]: boolean } = {};
+    mockNotice('hi').purposes.forEach((p) => (decisions[p.purposeCode] = true));
+    component.onDecisions(decisions);
+    component.onMode(null);
+    expect(component.pendingKey).toBe('pendingMode');
+    component.onMode('WITNESSED');
+    component.onProof({ witnessName: 'Asha' });
+    expect(component.pendingKey).toBe('pendingProof');
+    component.onProof({ witnessName: 'Asha', witnessRelationship: 'Sister' });
+    expect(component.pendingKey).toBe('pendingDeclaration');
+    component.onProof({ witnessName: 'Asha', witnessRelationship: 'Sister', declarationAgreed: true });
+    expect(component.pendingKey).toBeNull();
+    expect(component.acceptEnabled).toBeTrue();
+    component.onMode('SELF_READ');
+    component.onProof({});
+    expect(component.pendingKey).toBe('pendingDeclaration');
+    component.onProof({ declarationAgreed: true });
+    expect(component.pendingKey).toBe('pendingRecording');
+    component.onMode('READ_ALOUD');
+    component.onProof({});
+    expect(component.pendingKey).toBe('pendingPatientAnswer');
+    component.onProof({ declarationAgreed: true });
+    expect(component.pendingKey).toBe('pendingRecording');
+    component.onMode('OTP');
+    component.onProof({});
+    expect(component.pendingKey).toBe('pendingProof');
+  });
+
   it('accepts: saves once with the draft key and closes with the outcome', () => {
     ready();
     expect(component.acceptEnabled).toBeTrue();
@@ -190,9 +236,22 @@ describe(`ConsentDialogComponent (${track})`, () => {
     expect(api.saveConsent).toHaveBeenCalledTimes(1);
     const [req, key] = api.saveConsent.calls.mostRecent().args;
     expect(req.beneficiaryRegId).toBeNull();
-    expect(req.mode).toBe('SELF_READ');
+    expect(req.eventType).toBe('NEW');
+    expect(req.mode).toBe('OTP');
     expect(req.capturedBy).toBe(4521);
     expect(key).toBe(component.draft.idempotencyKey);
+    expect(req.declaration).toEqual({
+      text: 'Default patient declaration',
+      languageCode: 'hi',
+      noticeVersionId: 12,
+      wording: 'PATIENT',
+    });
+    expect(req.notify).toBeNull();
+    // Feature 003: the confirmation stays open until Done.
+    fixture.detectChanges();
+    expect(component.step).toBe('DONE');
+    expect(dialogRef.close).not.toHaveBeenCalled();
+    buttonByText('Done').click();
     expect(dialogRef.close).toHaveBeenCalledWith(
       jasmine.objectContaining({ outcome: 'GRANTED', consentId: 'c-1', consentingParty: 'SELF', syncStatus: 'SYNCED' })
     );
@@ -203,6 +262,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
     ready();
     component.onDecisions({ ...component.draft.decisions, 'P-REM': false });
     component.accept();
+    component.done();
     expect(dialogRef.close).toHaveBeenCalledWith(
       jasmine.objectContaining({ outcome: 'PARTIAL', syncStatus: 'NOT_SYNCED' })
     );
@@ -235,7 +295,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
     api.saveConsent.and.returnValue(of(mockSaveResponse()));
     component.retry();
     expect(api.saveConsent.calls.mostRecent().args[1]).toBe(firstKey);
-    expect(dialogRef.close).toHaveBeenCalled();
+    expect(component.step).toBe('DONE');
   });
 
   it('alerts and reloads the notice on a stale save', () => {
@@ -251,7 +311,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
     confirmation.confirm.and.returnValue(of(true));
     ready();
     buttonByText('Decline').click();
-    expect(confirmation.confirm).toHaveBeenCalledWith('Consent', 'Cannot continue', 'Confirm decline', 'Close');
+    expect(confirmation.confirm).toHaveBeenCalledWith('warn', 'Cannot continue', 'Confirm decline', 'Close');
     const req = api.saveConsent.calls.mostRecent().args[0];
     expect(req.decisions.every((d) => d.decision === 'DENY')).toBeTrue();
     expect(dialogRef.close).toHaveBeenCalledWith(jasmine.objectContaining({ outcome: 'BLOCKED' }));
@@ -318,35 +378,33 @@ describe(`ConsentDialogComponent (${track})`, () => {
       expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1']);
     });
 
-    it('uploads both photos in order for signature/thumb', async () => {
+    it('uploads only the signed form photo for signature/thumb, never a face photo', async () => {
       withProof('SIGNATURE_PHOTO', { patientPhoto: face, signedFormPhoto: form });
       component.accept();
       await settle();
-      expect(api.uploadEvidence.calls.allArgs().map((a) => a[1])).toEqual(['PATIENT_PHOTO', 'SIGNED_FORM_PHOTO']);
-      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1', 'e-2']);
+      expect(api.uploadEvidence.calls.allArgs().map((a) => a[1])).toEqual(['SIGNED_FORM_PHOTO']);
+      expect(api.uploadEvidence.calls.mostRecent().args[0]).toBe(form);
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1']);
     });
 
-    it('stops on an upload failure and retries only the failed file with the same key', async () => {
+    it('stops on an upload failure and retries the file with the same key', async () => {
       let calls = 0;
-      api.uploadEvidence.and.callFake((blob: Blob) => {
+      api.uploadEvidence.and.callFake(() => {
         calls++;
-        if (blob === form && calls === 2) {
-          return throwError(() => ({ kind: 'UNAVAILABLE', message: 'x' }));
-        }
-        return of(mockEvidenceResponse(blob === face ? 'e-face' : 'e-form'));
+        return calls === 1 ? throwError(() => ({ kind: 'UNAVAILABLE', message: 'x' })) : of(mockEvidenceResponse('e-form'));
       });
-      withProof('SIGNATURE_PHOTO', { patientPhoto: face, signedFormPhoto: form });
+      withProof('SIGNATURE_PHOTO', { signedFormPhoto: form });
       component.accept();
       await settle();
       expect(component.failed).toBeTrue();
       expect(api.saveConsent).not.toHaveBeenCalled();
-      const failedKey = api.uploadEvidence.calls.argsFor(1)[4];
+      const failedKey = api.uploadEvidence.calls.argsFor(0)[4];
       component.retry();
       await settle();
-      expect(api.uploadEvidence.calls.count()).toBe(3);
-      expect(api.uploadEvidence.calls.argsFor(2)[0]).toBe(form);
-      expect(api.uploadEvidence.calls.argsFor(2)[4]).toBe(failedKey);
-      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-face', 'e-form']);
+      expect(api.uploadEvidence.calls.count()).toBe(2);
+      expect(api.uploadEvidence.calls.argsFor(1)[0]).toBe(form);
+      expect(api.uploadEvidence.calls.argsFor(1)[4]).toBe(failedKey);
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-form']);
     });
 
     it('uploads nothing for a decline or for modes without files', async () => {
@@ -369,11 +427,205 @@ describe(`ConsentDialogComponent (${track})`, () => {
       expect((component as any).evidenceItems(component.draft)[0].durationSec).toBeNull();
     });
 
+    it('uploads the Read aloud agreement recording (feature 003)', async () => {
+      ready();
+      component.onMode('READ_ALOUD');
+      component.onProof({ declarationAgreed: true, voiceClip: voice, voiceDurationSec: 100 });
+      expect(component.acceptEnabled).toBeTrue();
+      component.accept();
+      await settle();
+      expect(api.uploadEvidence.calls.mostRecent().args[1]).toBe('VOICE_CLIP');
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1']);
+    });
+
+    it('uploads the recording on "Upload to server" and reuses it on Accept', async () => {
+      ready();
+      expect(component.recordingUpload).toBe('IDLE');
+      component.uploadRecording();
+      expect(api.uploadEvidence).not.toHaveBeenCalled();
+      component.onMode('SELF_READ');
+      component.onProof({ declarationAgreed: true, voiceClip: voice, voiceDurationSec: 6 });
+      component.uploadRecording();
+      expect(component.recordingUpload).toBe('UPLOADING');
+      component.uploadRecording();
+      for (let i = 0; i < 50 && component.recordingUpload !== 'DONE'; i++) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      expect(component.recordingUpload).toBe('DONE');
+      expect(api.uploadEvidence).toHaveBeenCalledTimes(1);
+      expect(api.uploadEvidence.calls.mostRecent().args[3]).toBe(6);
+      component.uploadRecording();
+      component.accept();
+      await settle();
+      expect(api.uploadEvidence).toHaveBeenCalledTimes(1);
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1']);
+    });
+
+    it('shows a failed upload and lets staff try again', async () => {
+      api.uploadEvidence.and.returnValue(throwError(() => ({ kind: 'UNAVAILABLE', message: 'x' })));
+      ready();
+      component.onMode('READ_ALOUD');
+      component.onProof({ declarationAgreed: true, voiceClip: voice });
+      component.uploadRecording();
+      for (let i = 0; i < 50 && component.recordingUpload !== 'FAILED'; i++) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      expect(component.recordingUpload).toBe('FAILED');
+      expect(api.uploadEvidence.calls.mostRecent().args[3]).toBeNull();
+      api.uploadEvidence.and.returnValue(of(mockEvidenceResponse('e-7')));
+      component.uploadRecording();
+      expect(component.recordingUpload).toBe('UPLOADING');
+    });
+
+    it('uploads the Self-read agreement recording', async () => {
+      ready();
+      component.onMode('SELF_READ');
+      component.onProof({ declarationAgreed: true, voiceClip: voice, voiceDurationSec: 6 });
+      expect(component.acceptEnabled).toBeTrue();
+      component.accept();
+      await settle();
+      expect(api.uploadEvidence.calls.mostRecent().args[0]).toBe(voice);
+      expect(api.saveConsent.calls.mostRecent().args[0].mode).toBe('SELF_READ');
+      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual(['e-1']);
+    });
+
+    it('a No to the read-aloud declaration asks to decline', () => {
+      confirmation.confirm.and.returnValue(of(false));
+      ready();
+      component.onMode('READ_ALOUD');
+      fixture.detectChanges();
+      (fixture.nativeElement.querySelector('.consent-declaration-no') as HTMLButtonElement).click();
+      expect(confirmation.confirm).toHaveBeenCalledWith('warn', 'Cannot continue', 'Confirm decline', 'Close');
+    });
+
     it('drops captured proof when the dialog is destroyed', () => {
       withProof('VOICE_CLIP', { voiceClip: voice, voiceDurationSec: 45 });
       fixture.destroy();
       expect(component.draft.proof).toEqual({});
       expect(component.draft.notice).toBeNull();
+    });
+  });
+
+  describe('declaration and confirmation (feature 003)', () => {
+    function accept(response: SaveConsentResponse = mockSaveResponse()): void {
+      api.saveConsent.and.returnValue(of(response));
+      ready();
+      component.accept();
+      fixture.detectChanges();
+    }
+
+    afterEach(() => {
+      delete component.options.patientPhone;
+    });
+
+    it('shows the declaration for the mode: project wording, representative wording, defaults', () => {
+      expect(component.declaration).toBe('');
+      api.getNotice.and.returnValue(
+        of({ ...mockNotice('hi'), declaration: 'Project patient', representativeDeclaration: 'Project rep' })
+      );
+      ready();
+      expect(component.declaration).toBe('Project patient');
+      expect(fixture.nativeElement.querySelector('.consent-declaration-text').textContent).toContain('Project patient');
+      component.onMode('WITNESSED');
+      expect(component.declaration).toBe('Project rep');
+      api.getNotice.and.returnValue(of(mockNotice('hi')));
+      component.loadNotice('hi');
+      expect(component.declaration).toBe('Default representative declaration');
+    });
+
+    it('saves Guardian / Representative consent as the guardian with the representative wording', () => {
+      ready();
+      component.onMode('WITNESSED');
+      component.onProof({ witnessName: 'Asha', witnessRelationship: 'Mother', declarationAgreed: true });
+      component.accept();
+      const req = api.saveConsent.calls.mostRecent().args[0];
+      expect(req.consentingParty).toBe('GUARDIAN');
+      expect(req.declaration!.wording).toBe('REPRESENTATIVE');
+      expect(req.declaration!.text).toBe('Default representative declaration');
+    });
+
+    it('shows the Consent ID, structured grievance contact and SMS sent', () => {
+      component.options.patientPhone = '9876543212';
+      api.getNotice.and.returnValue(
+        of({
+          ...mockNotice('hi'),
+          grievance: { officerName: 'Officer', phone: '1800', email: 'g@x.org', address: 'Addr', officeHours: '10-5' },
+        })
+      );
+      accept({ ...mockSaveResponse(), notification: { status: 'SENT', maskedPhone: '98******12' } });
+      expect(api.saveConsent.calls.mostRecent().args[0].notify).toEqual({ channel: 'SMS', phone: '9876543212' });
+      const view = fixture.nativeElement.querySelector('.consent-done') as HTMLElement;
+      expect(view.textContent).toContain('c-1');
+      ['Officer', '1800', 'g@x.org', 'Addr', '10-5'].forEach((t) => expect(view.textContent).toContain(t));
+      expect(component.smsMessage).toBe('Sent to 98******12');
+      expect(view.querySelector('.consent-done-grievance-text')).toBeNull();
+    });
+
+    it('hides empty grievance fields', () => {
+      api.getNotice.and.returnValue(
+        of({ ...mockNotice('hi'), grievance: { officerName: '', phone: '1800', email: null, address: null, officeHours: null } })
+      );
+      accept();
+      expect(fixture.nativeElement.querySelectorAll('.consent-done-grievance dt').length).toBe(1);
+    });
+
+    it('falls back to the notice grievance text, then the default', () => {
+      accept();
+      expect(fixture.nativeElement.querySelector('.consent-done-grievance-text').textContent).toContain('Contact the DPO');
+      expect(component.smsMessage).toBe('No phone');
+      expect(component.confirmation!.grievanceText).toBe('Contact the DPO');
+    });
+
+    it('uses the default grievance text when the notice has none', () => {
+      api.getNotice.and.returnValue(of({ ...mockNotice('hi'), grievanceInfo: '' }));
+      accept();
+      expect(component.confirmation!.grievanceText).toBe('Call 104');
+    });
+
+    it('notes an offline save and a queued SMS', () => {
+      component.options.patientPhone = '9876543212';
+      accept({ ...mockSaveResponseOffline(), notification: { status: 'QUEUED', maskedPhone: null } });
+      expect(fixture.nativeElement.querySelector('.consent-done-offline')).not.toBeNull();
+      expect(component.smsMessage).toBe('Queued to 98******12');
+    });
+
+    it('reports a failed or missing SMS status', () => {
+      component.options.patientPhone = '9876543212';
+      accept({ ...mockSaveResponse(), notification: { status: 'FAILED', maskedPhone: '98******12' } });
+      expect(component.smsMessage).toBe('SMS failed');
+      component.confirmation = { ...component.confirmation!, notification: null };
+      expect(component.smsMessage).toBe('SMS failed');
+      component.confirmation = null;
+      expect(component.smsMessage).toBe('');
+    });
+
+    it('the close button on the confirmation closes with the saved result', () => {
+      accept();
+      fixture.nativeElement.querySelector('button[aria-label="Close"]').click();
+      expect(dialogRef.close).toHaveBeenCalledWith(jasmine.objectContaining({ outcome: 'GRANTED', consentId: 'c-1' }));
+    });
+
+    it('done does nothing before a consent is saved', () => {
+      component.done();
+      expect(dialogRef.close).not.toHaveBeenCalled();
+    });
+
+    it('closes at once when nothing was granted', () => {
+      const notice = mockNotice('hi');
+      api.getNotice.and.returnValue(of({ ...notice, purposes: notice.purposes.map((p) => ({ ...p, isMandatory: false })) }));
+      ready();
+      const none: { [k: string]: boolean } = {};
+      Object.keys(component.draft.decisions).forEach((k) => (none[k] = false));
+      (component as any).save({ ...component.draft, decisions: none });
+      expect(component.step).not.toBe('DONE');
+      expect(dialogRef.close).toHaveBeenCalled();
+    });
+
+    it('shows the representative-free SMS line without a text set', () => {
+      accept();
+      component.currentLanguageSet = {};
+      expect(component.smsMessage).toBe('');
+      expect(component.declaration).toBe('');
     });
   });
 
@@ -405,7 +657,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
     it('loads the configuration once for the dialog context', () => {
       expect(configService.load).toHaveBeenCalledOnceWith('REGISTRATION');
       expect(component.config?.source).toBe('DEFAULT');
-      expect(component.modes.length).toBe(6);
+      expect(component.modes.length).toBe(5);
     });
 
     it("uses the caller's configuration without loading it again", () => {
@@ -413,6 +665,12 @@ describe(`ConsentDialogComponent (${track})`, () => {
       expect(configService.load).toHaveBeenCalledTimes(1);
       expect(component.config?.version).toBe(4);
       expect(component.modes.map((m) => m.mode)).toEqual(['OTP', 'WITNESSED']);
+    });
+
+    it("loads the project's own notice (feature 003)", () => {
+      useConfig(mockResolvedConfig('full'));
+      component.loadNotice('hi');
+      expect(api.getNotice).toHaveBeenCalledWith('REGISTRATION', 'hi', 12);
     });
 
     it('pre-ticks the default mode when the notice loads', () => {

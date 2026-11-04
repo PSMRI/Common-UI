@@ -24,9 +24,12 @@ import {
   ageInYears,
   canAccept,
   createDraft,
+  declarationText,
+  declarationWording,
   declineAll,
   decisionList,
   filterRtl,
+  grievanceText,
   guardianValid,
   mandatoryAllGranted,
   needsGuardian,
@@ -135,16 +138,24 @@ describe('consent-draft', () => {
     const withAudio = { notice: mockNotice('hi'), audioPlayedToEnd: false };
     const noAudio = { notice: mockNoticeNoAudio(), audioPlayedToEnd: false };
 
-    it('SELF_READ needs nothing', () => {
-      expect(proofValid('SELF_READ', {}, noAudio)).toBeTrue();
+    it('SELF_READ needs the declaration agreed and a 2-60 s agreement recording (feature 003)', () => {
+      const clip = { voiceClip: blob, voiceDurationSec: 3 };
+      expect(proofValid('SELF_READ', {}, noAudio)).toBeFalse();
+      expect(proofValid('SELF_READ', { declarationAgreed: true }, noAudio)).toBeFalse();
+      expect(proofValid('SELF_READ', { ...clip, declarationAgreed: false }, noAudio)).toBeFalse();
+      expect(proofValid('SELF_READ', { ...clip, declarationAgreed: true }, noAudio)).toBeTrue();
+      expect(proofValid('SELF_READ', { declarationAgreed: true, voiceClip: blob, voiceDurationSec: 1 }, noAudio)).toBeFalse();
     });
 
-    it('READ_ALOUD needs the tick, and full audio when the notice has audio', () => {
+    it('READ_ALOUD needs the patient\'s Yes and a 2-120 s recording of the conversation', () => {
+      const yes = { voiceClip: blob, voiceDurationSec: 90, declarationAgreed: true };
       expect(proofValid('READ_ALOUD', {}, noAudio)).toBeFalse();
-      expect(proofValid('READ_ALOUD', { workerConfirmed: true }, noAudio)).toBeTrue();
-      expect(proofValid('READ_ALOUD', { workerConfirmed: true }, withAudio)).toBeFalse();
-      expect(proofValid('READ_ALOUD', { workerConfirmed: true }, { ...withAudio, audioPlayedToEnd: true })).toBeTrue();
-      expect(proofValid('READ_ALOUD', { workerConfirmed: true }, { notice: null, audioPlayedToEnd: false })).toBeTrue();
+      expect(proofValid('READ_ALOUD', { declarationAgreed: true }, noAudio)).toBeFalse();
+      expect(proofValid('READ_ALOUD', { ...yes, declarationAgreed: false }, noAudio)).toBeFalse();
+      expect(proofValid('READ_ALOUD', { ...yes }, withAudio)).toBeTrue();
+      expect(proofValid('READ_ALOUD', { ...yes, voiceDurationSec: 1 }, noAudio)).toBeFalse();
+      expect(proofValid('READ_ALOUD', { ...yes, voiceDurationSec: 121 }, noAudio)).toBeFalse();
+      expect(proofValid('READ_ALOUD', { ...yes, voiceClip: null }, noAudio)).toBeFalse();
     });
 
     it('VOICE_CLIP needs a 30-60 s clip', () => {
@@ -153,15 +164,17 @@ describe('consent-draft', () => {
       expect(proofValid('VOICE_CLIP', { voiceClip: null, voiceDurationSec: 45 }, noAudio)).toBeFalse();
     });
 
-    it('WITNESSED needs name and relationship up to 100 chars', () => {
-      expect(proofValid('WITNESSED', { witnessName: 'Ravi', witnessRelationship: 'Neighbour' }, noAudio)).toBeTrue();
-      expect(proofValid('WITNESSED', { witnessName: '  ', witnessRelationship: 'Neighbour' }, noAudio)).toBeFalse();
-      expect(proofValid('WITNESSED', { witnessName: 'a'.repeat(101), witnessRelationship: 'N' }, noAudio)).toBeFalse();
-      expect(proofValid('WITNESSED', { witnessName: 'Ravi' }, noAudio)).toBeFalse();
+    it('WITNESSED (Guardian / Representative) needs name, relationship up to 100 chars and agreement', () => {
+      const agreed = { declarationAgreed: true };
+      expect(proofValid('WITNESSED', { witnessName: 'Ravi', witnessRelationship: 'Neighbour', ...agreed }, noAudio)).toBeTrue();
+      expect(proofValid('WITNESSED', { witnessName: 'Ravi', witnessRelationship: 'Neighbour' }, noAudio)).toBeFalse();
+      expect(proofValid('WITNESSED', { witnessName: '  ', witnessRelationship: 'Neighbour', ...agreed }, noAudio)).toBeFalse();
+      expect(proofValid('WITNESSED', { witnessName: 'a'.repeat(101), witnessRelationship: 'N', ...agreed }, noAudio)).toBeFalse();
+      expect(proofValid('WITNESSED', { witnessName: 'Ravi', ...agreed }, noAudio)).toBeFalse();
     });
 
-    it('SIGNATURE_PHOTO needs both photos', () => {
-      expect(proofValid('SIGNATURE_PHOTO', { patientPhoto: blob, signedFormPhoto: blob }, noAudio)).toBeTrue();
+    it('SIGNATURE_PHOTO needs only the signed form photo, never the face (feature 003)', () => {
+      expect(proofValid('SIGNATURE_PHOTO', { signedFormPhoto: blob }, noAudio)).toBeTrue();
       expect(proofValid('SIGNATURE_PHOTO', { patientPhoto: blob }, noAudio)).toBeFalse();
     });
 
@@ -199,11 +212,14 @@ describe('consent-draft', () => {
       expect(guardianValid(guardian({ verification: 'ID_SIGHTED', fallbackEvidence: { idSighted: false } }))).toBeFalse();
     });
 
-    it('UNVERIFIED needs a witness and a signed form photo', () => {
+    it('UNVERIFIED needs a representative name and a signed form photo', () => {
       expect(
         guardianValid(guardian({ verification: 'UNVERIFIED', fallbackEvidence: { witnessName: 'Ravi', signedFormPhoto: blob } }))
       ).toBeTrue();
       expect(guardianValid(guardian({ verification: 'UNVERIFIED', fallbackEvidence: { witnessName: 'Ravi' } }))).toBeFalse();
+      expect(
+        guardianValid(guardian({ verification: 'UNVERIFIED', fallbackEvidence: { witnessName: ' ', signedFormPhoto: blob } }))
+      ).toBeFalse();
       expect(guardianValid(guardian({ verification: 'UNVERIFIED', fallbackEvidence: null }))).toBeFalse();
     });
 
@@ -215,7 +231,12 @@ describe('consent-draft', () => {
   describe('canAccept', () => {
     function ready(): ConsentDraft {
       const d = grantAll(withNotice(createDraft(), mockNoticeNoAudio()));
-      return { ...d, noticeReadComplete: true, mode: 'SELF_READ' };
+      return {
+        ...d,
+        noticeReadComplete: true,
+        mode: 'SELF_READ',
+        proof: { declarationAgreed: true, voiceClip: blob, voiceDurationSec: 5 },
+      };
     }
 
     it('is true only when every condition holds', () => {
@@ -273,6 +294,8 @@ describe('consent-draft', () => {
       expect(req.decisions.find((x) => x.purposeCode === 'P-REG')!.decision).toBe('GRANT');
       expect(req.proof).toEqual({ workerConfirmed: null, witnessName: null, witnessRelationship: null, otpChallengeId: null });
       expect(req.guardian).toBeNull();
+      expect(req.eventType).toBe('NEW');
+      expect(toSaveRequest(d, ctx, 42, [], [], 'RENEWAL').eventType).toBe('RENEWAL');
     });
 
     it('fills mode-specific proof fields', () => {
@@ -290,9 +313,31 @@ describe('consent-draft', () => {
     });
 
     it('sends a decline with no mode and all DENY', () => {
-      const req = toSaveRequest(withNotice(createDraft(), mockNotice('hi')), ctx, null, [], []);
+      const req = toSaveRequest(withNotice(createDraft(), mockNotice('hi')), ctx, null, [], [], 'NEW', {
+        declarationText: 'I agree',
+        notifyPhone: '9876543212',
+      });
       expect(req.mode).toBeNull();
       expect(req.decisions.every((x) => x.decision === 'DENY')).toBeTrue();
+      expect(req.declaration).toBeNull();
+      expect(req.notify).toBeNull();
+    });
+
+    it('carries the declaration as shown and asks for the SMS (feature 003)', () => {
+      const d = { ...grantAll(withNotice(createDraft(), mockNotice('hi'))), mode: 'SELF_READ' as const };
+      const req = toSaveRequest(d, ctx, 42, [], [], 'NEW', { declarationText: 'I agree', notifyPhone: '9876543212' });
+      expect(req.declaration).toEqual({ text: 'I agree', languageCode: 'hi', noticeVersionId: 12, wording: 'PATIENT' });
+      expect(req.notify).toEqual({ channel: 'SMS', phone: '9876543212' });
+      const bare = toSaveRequest(d, ctx, 42, [], []);
+      expect(bare.declaration).toBeNull();
+      expect(bare.notify).toBeNull();
+    });
+
+    it('saves Guardian / Representative consent as the guardian\'s', () => {
+      const d = { ...grantAll(withNotice(createDraft(), mockNotice('hi'))), mode: 'WITNESSED' as const };
+      const req = toSaveRequest(d, ctx, 42, [], [], 'NEW', { declarationText: 'On behalf' });
+      expect(req.consentingParty).toBe('GUARDIAN');
+      expect(req.declaration!.wording).toBe('REPRESENTATIVE');
     });
 
     it('adds the guardian block', () => {
@@ -316,6 +361,33 @@ describe('consent-draft', () => {
       expect(u.guardian!.witnessName).toBe('Ravi');
     });
   });
+
+  describe('declaration and grievance (feature 003)', () => {
+    const defaults = { patient: 'Default patient', representative: 'Default representative' };
+
+    it('declarationWording is representative only for the Guardian / Representative mode', () => {
+      expect(declarationWording('WITNESSED')).toBe('REPRESENTATIVE');
+      expect(declarationWording('SELF_READ')).toBe('PATIENT');
+      expect(declarationWording(null)).toBe('PATIENT');
+    });
+
+    it('declarationText prefers the project wording and falls back', () => {
+      const plain = mockNotice('hi');
+      const own = { ...plain, declaration: 'Patient text', representativeDeclaration: 'Rep text' };
+      expect(declarationText(own, 'PATIENT', defaults)).toBe('Patient text');
+      expect(declarationText(own, 'REPRESENTATIVE', defaults)).toBe('Rep text');
+      expect(declarationText({ ...own, representativeDeclaration: undefined }, 'REPRESENTATIVE', defaults)).toBe('Patient text');
+      expect(declarationText({ ...plain, declaration: undefined }, 'PATIENT', defaults)).toBe('Default patient');
+      expect(declarationText({ ...plain, declaration: undefined }, 'REPRESENTATIVE', defaults)).toBe('Default representative');
+    });
+
+    it('grievanceText uses the notice text, else the fallback', () => {
+      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: 'Call 104' }, 'fb')).toBe('Call 104');
+      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: '  ' }, 'fb')).toBe('fb');
+      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: undefined as unknown as string }, 'fb')).toBe('fb');
+    });
+  });
+
   it('noDecisionResult saves nothing', () => {
     expect(noDecisionResult()).toEqual({
       outcome: 'NO_DECISION',
