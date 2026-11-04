@@ -23,13 +23,16 @@
 import { Directive, EventEmitter, Input, OnInit, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { ConsentApiService } from '../consent-api.service';
 import { filterRtl } from '../consent-draft';
-import { NoticeLanguage } from '../consent.models';
+import { ConsentContextType, NoticeLanguage } from '../consent.models';
 
 /** Language step logic shared by the Material and Zard tracks (FR-002). */
 @Directive()
 export abstract class LanguageStepBase implements OnInit {
   @Input() text: any;
   @Input() selected: string | null = null;
+  @Input() context: ConsentContextType = 'REGISTRATION';
+  /** The project whose notice languages are listed; null: the central notice's. */
+  @Input() projectId: number | null = null;
   @Output() languageSelected = new EventEmitter<string>();
 
   languages: NoticeLanguage[] = [];
@@ -47,7 +50,7 @@ export abstract class LanguageStepBase implements OnInit {
   load(): void {
     this.loading = true;
     this.failed = false;
-    this.consentApi.getLanguages('REGISTRATION').subscribe({
+    this.consentApi.getLanguages(this.context, this.projectId).subscribe({
       next: (languages) => {
         this.languages = filterRtl(languages);
         this.failed = this.languages.length === 0;

@@ -21,6 +21,7 @@
  */
 
 import {
+  activeMode,
   allowedLanguages,
   allowedModes,
   applyPurposes,
@@ -32,12 +33,18 @@ import { ContextConfig } from './consent-config.models';
 import { ConsentMode } from './consent.models';
 import { mockFullContext, mockSingleContext } from './testing/consent-config.mock';
 import { mockLanguages, mockPurposes } from './testing/consent.mock';
-import { CONSENT_MODES } from './ui/proof-step.base';
+import { ACTIVE_CONSENT_MODES, CONSENT_MODES, RETIRED_MODES } from './ui/proof-step.base';
 
 describe('consent-config', () => {
   describe('platform default', () => {
-    it('allows all six modes in the feature 001 order with nothing pre-ticked', () => {
-      expect(allowedModes(DEFAULT_CONTEXT_CONFIG)).toEqual(CONSENT_MODES);
+    it('allows the four active modes in order with nothing pre-ticked (feature 003)', () => {
+      expect(allowedModes(DEFAULT_CONTEXT_CONFIG).map((m) => m.mode)).toEqual([
+        'SELF_READ',
+        'READ_ALOUD',
+        'WITNESSED',
+        'SIGNATURE_PHOTO',
+        'OTP',
+      ]);
       expect(DEFAULT_CONTEXT_CONFIG.defaultMode).toBeNull();
       expect(DEFAULT_CONTEXT_CONFIG.enabled).toBeTrue();
       expect(DEFAULT_CONTEXT_CONFIG.guardian).toEqual({ enabled: true, ageThreshold: 18 });
@@ -71,13 +78,49 @@ describe('consent-config', () => {
       expect(allowedModes(config).map((m) => m.mode)).toEqual(['WITNESSED']);
     });
 
-    it('falls back to all six when no known mode is left', () => {
+    it('falls back to the active modes when no known mode is left', () => {
       const unknown: ContextConfig = {
         ...mockSingleContext(),
         modes: [{ mode: 'FACE_SCAN' as ConsentMode, rank: 1, settings: {} }],
       };
-      expect(allowedModes(unknown)).toEqual(CONSENT_MODES);
-      expect(allowedModes({ ...mockSingleContext(), modes: undefined as never })).toEqual(CONSENT_MODES);
+      expect(allowedModes(unknown)).toEqual(ACTIVE_CONSENT_MODES);
+      expect(allowedModes({ ...mockSingleContext(), modes: undefined as never })).toEqual(ACTIVE_CONSENT_MODES);
+    });
+
+    it('offers voice clip as Read aloud once and keeps the signature mode (feature 003)', () => {
+      const old: ContextConfig = {
+        ...mockSingleContext(),
+        modes: [
+          { mode: 'SIGNATURE_PHOTO', rank: 1, settings: {} },
+          { mode: 'VOICE_CLIP', rank: 2, settings: {} },
+          { mode: 'READ_ALOUD', rank: 3, settings: {} },
+          { mode: 'OTP', rank: 4, settings: {} },
+        ],
+      };
+      expect(allowedModes(old).map((m) => m.mode)).toEqual(['SIGNATURE_PHOTO', 'READ_ALOUD', 'OTP']);
+      const clipOnly: ContextConfig = { ...mockSingleContext(), modes: [{ mode: 'VOICE_CLIP', rank: 1, settings: {} }] };
+      expect(allowedModes(clipOnly).map((m) => m.mode)).toEqual(['READ_ALOUD']);
+    });
+  });
+
+  describe('retired modes (feature 003)', () => {
+    it('keeps every mode code but offers only the active ones', () => {
+      expect(CONSENT_MODES.length).toBe(6);
+      expect(RETIRED_MODES).toEqual(['VOICE_CLIP']);
+      expect(ACTIVE_CONSENT_MODES.map((m) => m.mode)).toEqual([
+        'SELF_READ',
+        'READ_ALOUD',
+        'WITNESSED',
+        'SIGNATURE_PHOTO',
+        'OTP',
+      ]);
+    });
+
+    it('activeMode maps voice clip to Read aloud and keeps the rest', () => {
+      expect(activeMode('VOICE_CLIP')).toBe('READ_ALOUD');
+      expect(activeMode('SIGNATURE_PHOTO')).toBe('SIGNATURE_PHOTO');
+      expect(activeMode('OTP')).toBe('OTP');
+      expect(activeMode(null)).toBeNull();
     });
   });
 

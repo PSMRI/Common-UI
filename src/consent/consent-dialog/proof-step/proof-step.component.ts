@@ -23,6 +23,7 @@
 import { NgFor, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ProofStepBase } from '../../core/ui/proof-step.base';
@@ -32,7 +33,7 @@ import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
 @Component({
   selector: 'app-consent-proof-step',
   templateUrl: './proof-step.component.html',
-  styleUrls: ['./proof-step.component.css'],
+  styleUrls: ['./proof-step.component.css', '../../consent-theme.css'],
   standalone: true,
   imports: [
     NgFor,
@@ -41,6 +42,7 @@ import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
     NgSwitchCase,
     MatCheckboxModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MediaCaptureComponent,
     OtpVerifyComponent,

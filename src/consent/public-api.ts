@@ -26,6 +26,13 @@ export { isConsentFeatureEnabled } from './core/consent-feature';
 export { consentRefusalFrom } from './core/consent-refusal';
 export { ConsentApiService } from './core/consent-api.service';
 export { ConsentDialogService } from './consent-dialog.service';
+// Feature 003: consent for patients who are already registered.
+export {
+  RevisitConsentService,
+  RevisitConsentResult,
+  RevisitPatient,
+  eventTypeFor,
+} from './revisit-consent.service';
 export { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 // Feature 002: per-project consent configuration.
 export * from './core/consent-config.models';

@@ -1,19 +1,23 @@
 <div class="consent-otp">
-  <mat-form-field *ngIf="!challengeId" appearance="outline">
+  <mat-form-field *ngIf="!challengeId" class="consent-otp-field">
     <mat-label>{{ text?.phoneNumber }}</mat-label>
     <input
       matInput
       type="tel"
       inputmode="numeric"
       maxlength="10"
+      autocomplete="tel"
       name="consent-otp-phone"
       [value]="phoneNumber"
       (input)="phoneNumber = $any($event.target).value"
     />
   </mat-form-field>
   <ng-container *ngIf="challengeId">
-    <p class="consent-hint">{{ text?.otpSentTo }} {{ displayPhone }}</p>
-    <mat-form-field appearance="outline">
+    <p class="consent-inline-hint">
+      <mat-icon>sms</mat-icon>
+      {{ otpSentText }}
+    </p>
+    <mat-form-field class="consent-otp-field">
       <mat-label>{{ text?.enterOtp }}</mat-label>
       <input
         matInput
@@ -29,21 +33,30 @@
     </mat-form-field>
   </ng-container>
   <div class="consent-otp-actions">
-    <button mat-stroked-button type="button" class="consent-otp-send" [disabled]="!canSend" (click)="send()">
-      {{ resendIn > 0 ? text?.resendIn + ' ' + resendIn : text?.sendOtp }}
+    <button
+      type="button"
+      class="consent-btn consent-btn-secondary consent-otp-send"
+      [disabled]="!canSend"
+      (click)="send()"
+    >
+      {{ resendIn > 0 ? text?.resendIn + ' ' + resendIn + 's' : text?.sendOtp }}
     </button>
     <button
       *ngIf="challengeId"
-      mat-flat-button
-      color="primary"
       type="button"
-      class="consent-otp-verify"
+      class="consent-btn consent-btn-primary consent-otp-verify"
       [disabled]="!canVerify"
       (click)="verify()"
     >
       {{ text?.verifyOtp }}
     </button>
   </div>
-  <p *ngIf="isVerified" role="status">{{ text?.otpVerified }}</p>
-  <p *ngIf="error" class="consent-error" role="alert">{{ text?.[error] }}</p>
+  <p *ngIf="isVerified" class="consent-inline-success" role="status">
+    <mat-icon>check_circle</mat-icon>
+    {{ text?.otpVerified }}
+  </p>
+  <p *ngIf="error" class="consent-inline-error" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    {{ text?.[error] }}
+  </p>
 </div>
