@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { NgIf } from '@angular/common';
+import { DatePipe, NgIf, UpperCasePipe } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -35,10 +35,12 @@ import { PurposesStepComponent } from './purposes-step/purposes-step.component';
 @Component({
   selector: 'app-consent-dialog',
   templateUrl: './consent-dialog.component.html',
-  styleUrls: ['./consent-dialog.component.css'],
+  styleUrls: ['./consent-dialog.component.css', '../consent-theme.css'],
   standalone: true,
   imports: [
     NgIf,
+    UpperCasePipe,
+    DatePipe,
     MatButtonModule,
     MatIconModule,
     LanguageStepComponent,

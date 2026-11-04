@@ -22,7 +22,7 @@
 
 import { NgIf } from '@angular/common';
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { OtpVerifyBase } from '../core/ui/otp-verify.base';
@@ -30,8 +30,8 @@ import { OtpVerifyBase } from '../core/ui/otp-verify.base';
 @Component({
   selector: 'app-consent-otp-verify',
   templateUrl: './otp-verify.component.html',
-  styleUrls: ['./otp-verify.component.css'],
+  styleUrls: ['./otp-verify.component.css', '../consent-theme.css'],
   standalone: true,
-  imports: [NgIf, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [NgIf, MatIconModule, MatFormFieldModule, MatInputModule],
 })
 export class OtpVerifyComponent extends OtpVerifyBase {}

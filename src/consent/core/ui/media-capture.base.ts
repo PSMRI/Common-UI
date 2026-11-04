@@ -22,6 +22,7 @@
 
 import { Directive, EventEmitter, Input, OnDestroy, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { CameraService } from 'src/app/app-modules/core/services';
+import { RecordingUploadState } from '../consent.models';
 import { isVoiceDurationValid } from '../evidence.util';
 
 export interface CapturedMedia {
@@ -50,10 +51,23 @@ export abstract class MediaCaptureBase implements OnDestroy {
   @Input() text: any;
   @Input() kind: 'photo' | 'voice' = 'photo';
   @Input() label = '';
+  /** Feature 003: voice length limits; Read aloud agreement uses 2–60. */
+  /** Feature 003: record button text; empty means the default voice clip text. */
+  @Input() recordLabel = '';
+  /** Feature 003: upload button text; empty means the default text. */
+  @Input() uploadLabel = '';
+  /** Feature 003: offer "Upload to server" for an accepted recording; the host does the upload. */
+  @Input() serverUpload = false;
+  @Input() uploadState: RecordingUploadState = 'IDLE';
+  @Output() uploadRequested = new EventEmitter<void>();
+  @Input() minSeconds = 30;
+  @Input() maxSeconds = 60;
   @Output() captured = new EventEmitter<CapturedMedia | null>();
 
   previewUrl: string | null = null;
   recording = false;
+  /** Seconds since recording started, shown next to the stop button. */
+  elapsedSec = 0;
   micDenied = false;
   error: 'voiceTooShort' | 'voiceTooLong' | null = null;
 
@@ -64,6 +78,7 @@ export abstract class MediaCaptureBase implements OnDestroy {
   private stream: MediaStream | null = null;
   private chunks: Blob[] = [];
   private startedAt = 0;
+  private ticker: ReturnType<typeof setInterval> | null = null;
 
   takePhoto(): void {
     this.cameraService.capture().subscribe((result: unknown) => {
@@ -74,6 +89,7 @@ export abstract class MediaCaptureBase implements OnDestroy {
   }
 
   startRecording(): void {
+    this.revoke();
     this.error = null;
     navigator.mediaDevices
       .getUserMedia({ audio: true })
@@ -86,6 +102,11 @@ export abstract class MediaCaptureBase implements OnDestroy {
         this.startedAt = Date.now();
         this.recorder.start();
         this.recording = true;
+        this.elapsedSec = 0;
+        this.ticker = setInterval(() => {
+          this.elapsedSec = Math.floor((Date.now() - this.startedAt) / 1000);
+          this.cdr.markForCheck();
+        }, 1000);
         this.cdr.markForCheck();
       })
       .catch(() => {
@@ -126,8 +147,30 @@ export abstract class MediaCaptureBase implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopTicker();
     this.revoke();
     this.releaseStream();
+  }
+
+  /** The error message; non-default limits use the `{min}` / `{max}` texts (feature 003). */
+  get errorText(): string {
+    if (!this.error) {
+      return '';
+    }
+    let key: string = this.error;
+    if (this.error === 'voiceTooShort' && this.minSeconds !== 30) {
+      key = 'voiceTooShortMin';
+    } else if (this.error === 'voiceTooLong' && this.maxSeconds !== 60) {
+      key = 'voiceTooLongMax';
+    }
+    const message: string = this.text?.[key] || '';
+    return message.replace('{min}', String(this.minSeconds)).replace('{max}', String(this.maxSeconds));
+  }
+
+  /** m:ss for the recording timer. */
+  get elapsedLabel(): string {
+    const seconds = this.elapsedSec % 60;
+    return `${Math.floor(this.elapsedSec / 60)}:${seconds < 10 ? '0' : ''}${seconds}`;
   }
 
   private onRecorded(): void {
@@ -135,15 +178,19 @@ export abstract class MediaCaptureBase implements OnDestroy {
     const type = this.recorder && this.recorder.mimeType ? this.recorder.mimeType : 'audio/webm';
     this.recording = false;
     this.recorder = null;
+    this.stopTicker();
     this.releaseStream();
     this.checkVoice(new Blob(this.chunks, { type }), seconds);
   }
 
   private checkVoice(blob: Blob, seconds: number): void {
-    if (isVoiceDurationValid(seconds)) {
+    if (isVoiceDurationValid(seconds, this.minSeconds, this.maxSeconds)) {
       this.accept(blob, Math.round(seconds));
     } else {
-      this.error = seconds < 30 ? 'voiceTooShort' : 'voiceTooLong';
+      // Keep the clip playable so staff can hear it, but do not offer it as proof.
+      this.revoke();
+      this.previewUrl = URL.createObjectURL(blob);
+      this.error = seconds < this.minSeconds ? 'voiceTooShort' : 'voiceTooLong';
     }
     this.cdr.markForCheck();
   }
@@ -160,6 +207,13 @@ export abstract class MediaCaptureBase implements OnDestroy {
     if (this.previewUrl) {
       URL.revokeObjectURL(this.previewUrl);
       this.previewUrl = null;
+    }
+  }
+
+  private stopTicker(): void {
+    if (this.ticker) {
+      clearInterval(this.ticker);
+      this.ticker = null;
     }
   }
 

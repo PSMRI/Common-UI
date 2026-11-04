@@ -1,16 +1,16 @@
 <div class="consent-step">
-  <p class="consent-label">{{ text?.chooseLanguage }}</p>
+  <p class="consent-section-title">{{ text?.chooseLanguage }}</p>
   <div *ngIf="failed" class="consent-alert" role="alert">
+    <mat-icon>error_outline</mat-icon>
     <span>{{ text?.serviceUnavailable }}</span>
-    <button mat-stroked-button type="button" (click)="load()">{{ text?.retry }}</button>
+    <button type="button" class="consent-btn consent-btn-secondary" (click)="load()">{{ text?.retry }}</button>
   </div>
   <div *ngIf="!failed" class="consent-options">
     <ng-container *ngFor="let language of languages">
       <button
         *ngIf="language.languageCode === selected"
-        mat-flat-button
-        color="primary"
         type="button"
+        class="consent-btn consent-btn-primary"
         aria-pressed="true"
         [attr.lang]="language.languageCode"
         (click)="select(language.languageCode)"
@@ -19,8 +19,8 @@
       </button>
       <button
         *ngIf="language.languageCode !== selected"
-        mat-stroked-button
         type="button"
+        class="consent-btn consent-btn-secondary"
         aria-pressed="false"
         [attr.lang]="language.languageCode"
         (click)="select(language.languageCode)"

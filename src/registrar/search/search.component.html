@@ -183,6 +183,13 @@
               style="max-width: 200px; word-break: break-word"
             >
               {{ beneficiary?.benName | titlecase }}
+              <span
+                *ngIf="beneficiary?.consentPending"
+                class="consent-pending-chip"
+                [title]="currentLanguageSet?.consent?.consentPendingHint"
+              >
+                {{ currentLanguageSet?.consent?.consentPending }}
+              </span>
             </td>
           </ng-container>
 

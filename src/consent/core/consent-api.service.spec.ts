@@ -81,6 +81,23 @@ describe('ConsentApiService', () => {
     expect(out).toEqual(mockNotice('hi'));
   });
 
+  it("gets the project's notice (feature 003)", () => {
+    service.getNotice('REVISIT', 'hi', 12).subscribe();
+    http
+      .expectOne('http://api/consent/v1/notices/active?context=REVISIT&lang=hi&projectId=12')
+      .flush(mockOk(mockNotice('hi')));
+  });
+
+  it('gets pending actions of many patients in one call (feature 003)', () => {
+    let out: unknown;
+    service.getPendingActionsBatch([101, 102]).subscribe((v) => (out = v));
+    const req = http.expectOne('http://api/consent/v1/principals/pending-actions/batch');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ beneficiaryRegIds: [101, 102] });
+    req.flush(mockOk({ '101': mockPendingActions(), '102': [] }));
+    expect(out).toEqual({ '101': mockPendingActions(), '102': [] });
+  });
+
   it('saves a consent with an Idempotency-Key header', () => {
     const body = { beneficiaryRegId: null } as unknown as SaveConsentRequest;
     let out: unknown;

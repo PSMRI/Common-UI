@@ -23,9 +23,12 @@
 // Pure consent-dialog rules shared by both UI tracks (data-model.md). No Angular imports.
 import {
   ConsentCaptureContext,
+  ConsentDeclaration,
   ConsentDialogResult,
   ConsentDraft,
+  ConsentEventType,
   ConsentMode,
+  DeclarationWording,
   DialogOutcome,
   GuardianDraft,
   GuardianNeedInput,
@@ -43,6 +46,20 @@ export const RTL_LANGUAGE_CODES = ['ur', 'ks', 'sd'];
 
 const MAX_TEXT = 100;
 const INDIAN_MOBILE = /^[6-9]\d{9}$/;
+
+/** Read aloud agreement recording limits in seconds (feature 003, research R4). */
+export const AGREEMENT_MIN_SECONDS = 2;
+export const AGREEMENT_MAX_SECONDS = 60;
+/** Read aloud records staff reading the declaration and the patient's answer, so it may run longer. */
+export const READ_ALOUD_MAX_SECONDS = 120;
+
+/** Extra save values from the dialog (feature 003). */
+export interface SaveExtras {
+  /** The declaration as shown; omitted when none was shown. */
+  declarationText?: string;
+  /** Patient phone for the Consent ID SMS. */
+  notifyPhone?: string | null;
+}
 
 export function createDraft(): ConsentDraft {
   return {
@@ -118,6 +135,14 @@ export function mandatoryAllGranted(
   return purposes.every((p) => !p.isMandatory || decisions[p.purposeCode] === true);
 }
 
+/** The patient's spoken agreement is recorded, 2–60 s (Self-read and Read aloud). */
+function agreementRecorded(proof: ProofDraft, maxSeconds = AGREEMENT_MAX_SECONDS): boolean {
+  return (
+    !!proof.voiceClip &&
+    isVoiceDurationValid(proof.voiceDurationSec, AGREEMENT_MIN_SECONDS, maxSeconds)
+  );
+}
+
 function filled(value: string | undefined | null): boolean {
   return !!value && value.trim().length > 0 && value.length <= MAX_TEXT;
 }
@@ -130,18 +155,21 @@ export function proofValid(
 ): boolean {
   switch (mode) {
     case 'SELF_READ':
-      return true;
+      return proof.declarationAgreed === true && agreementRecorded(proof);
     case 'READ_ALOUD':
-      return (
-        proof.workerConfirmed === true &&
-        (!ctx.notice || !ctx.notice.audioUrl || ctx.audioPlayedToEnd)
-      );
+      // Staff read the declaration and asked; the patient answered Yes; the conversation is recorded.
+      return proof.declarationAgreed === true && agreementRecorded(proof, READ_ALOUD_MAX_SECONDS);
     case 'VOICE_CLIP':
       return !!proof.voiceClip && isVoiceDurationValid(proof.voiceDurationSec);
     case 'WITNESSED':
-      return filled(proof.witnessName) && filled(proof.witnessRelationship);
+      return (
+        filled(proof.witnessName) &&
+        filled(proof.witnessRelationship) &&
+        proof.declarationAgreed === true
+      );
     case 'SIGNATURE_PHOTO':
-      return !!proof.patientPhoto && !!proof.signedFormPhoto;
+      // Feature 003: the signed / thumb-printed form only; no photo of the patient's face (FR-011).
+      return !!proof.signedFormPhoto;
     case 'OTP':
       return proof.otpVerified === true && !!proof.otpChallengeId;
     default:
@@ -211,6 +239,35 @@ export function decisionList(
   }));
 }
 
+/** Guardian / Representative consent is given on the patient's behalf (feature 003). */
+export function declarationWording(mode: ConsentMode | null): DeclarationWording {
+  return mode === 'WITNESSED' ? 'REPRESENTATIVE' : 'PATIENT';
+}
+
+/**
+ * The declaration to show (FR-001, FR-003): the project's wording, the patient wording when no
+ * representative wording is configured, otherwise the default text.
+ */
+export function declarationText(
+  notice: Notice,
+  wording: DeclarationWording,
+  defaults: { patient: string; representative: string }
+): string {
+  if (wording === 'REPRESENTATIVE') {
+    return notice.representativeDeclaration || notice.declaration || defaults.representative;
+  }
+  return notice.declaration || defaults.patient;
+}
+
+/** Grievance text for the confirmation when no structured contact exists (research R9). */
+export function grievanceText(notice: Notice, fallback: string): string {
+  return (notice.grievanceInfo || '').trim() || fallback;
+}
+
+function anyGranted(draft: ConsentDraft): boolean {
+  return Object.keys(draft.decisions).some((code) => draft.decisions[code] === true);
+}
+
 /**
  * Builds the save request (contracts/consent-api.md). A decline may have no mode chosen;
  * `mode` is then null and every purpose is DENY.
@@ -220,15 +277,27 @@ export function toSaveRequest(
   ctx: ConsentCaptureContext,
   beneficiaryRegId: number | null,
   evidenceIds: string[],
-  guardianEvidenceIds: string[]
+  guardianEvidenceIds: string[],
+  eventType: ConsentEventType = 'NEW',
+  extras: SaveExtras = {}
 ): SaveConsentRequest {
   const notice = draft.notice as Notice;
   const proof = draft.proof;
   const guardian = draft.guardian;
+  const granted = anyGranted(draft);
+  const declaration: ConsentDeclaration | null =
+    granted && extras.declarationText
+      ? {
+          text: extras.declarationText,
+          languageCode: notice.languageCode,
+          noticeVersionId: notice.noticeVersionId,
+          wording: declarationWording(draft.mode),
+        }
+      : null;
   return {
     beneficiaryRegId,
-    eventType: 'NEW',
-    consentingParty: guardian ? 'GUARDIAN' : 'SELF',
+    eventType,
+    consentingParty: guardian || draft.mode === 'WITNESSED' ? 'GUARDIAN' : 'SELF',
     noticeVersionId: notice.noticeVersionId,
     languageCode: notice.languageCode,
     textHash: notice.textHash,
@@ -265,6 +334,9 @@ export function toSaveRequest(
           evidenceIds: guardianEvidenceIds,
         }
       : null,
+    declaration,
+    notify:
+      granted && extras.notifyPhone ? { channel: 'SMS', phone: extras.notifyPhone } : null,
   };
 }
 

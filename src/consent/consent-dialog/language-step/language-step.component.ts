@@ -22,14 +22,14 @@
 
 import { NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { LanguageStepBase } from '../../core/ui/language-step.base';
 
 @Component({
   selector: 'app-consent-language-step',
   templateUrl: './language-step.component.html',
-  styleUrls: ['./language-step.component.css'],
+  styleUrls: ['./language-step.component.css', '../../consent-theme.css'],
   standalone: true,
-  imports: [NgIf, NgFor, MatButtonModule],
+  imports: [NgIf, NgFor, MatIconModule],
 })
 export class LanguageStepComponent extends LanguageStepBase {}

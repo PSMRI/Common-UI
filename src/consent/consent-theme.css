@@ -1,0 +1,130 @@
+/* Shared look for the consent dialog and its steps: matches the AMRIT blue (#0277bd) used across the app. */
+
+.consent-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 96px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 36px;
+  text-transform: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.consent-btn .mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 18px;
+  margin: 0;
+}
+
+.consent-btn-primary {
+  background-color: #0277bd !important;
+  border: 1px solid #0277bd !important;
+  color: #ffffff !important;
+}
+
+.consent-btn-primary:hover:not(:disabled) {
+  background-color: #01579b !important;
+}
+
+.consent-btn-secondary {
+  background-color: #ffffff !important;
+  border: 1px solid #0277bd !important;
+  color: #0277bd !important;
+}
+
+.consent-btn-secondary:hover:not(:disabled) {
+  background-color: #e1f5fe !important;
+}
+
+.consent-btn-danger {
+  background-color: #d32f2f !important;
+  border: 1px solid #d32f2f !important;
+  color: #ffffff !important;
+}
+
+.consent-btn:disabled {
+  background-color: #e0e0e0 !important;
+  border-color: #e0e0e0 !important;
+  color: rgba(0, 0, 0, 0.38) !important;
+  cursor: default;
+}
+
+.consent-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #0277bd;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.consent-link:hover {
+  text-decoration: underline;
+}
+
+.consent-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #f5c2c0;
+  border-radius: 6px;
+  background-color: #fdecea;
+  color: #b71c1c;
+  font-size: 14px;
+}
+
+.consent-alert > .mat-icon {
+  flex-shrink: 0;
+  color: #d32f2f;
+}
+
+.consent-alert > span,
+.consent-alert > p {
+  flex: 1;
+  margin: 0;
+}
+
+.consent-section-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #212121;
+}
+
+.consent-inline-error,
+.consent-inline-success,
+.consent-inline-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.consent-inline-error { color: #c62828; }
+.consent-inline-success { color: #2e7d32; font-weight: 500; }
+.consent-inline-hint { color: #616161; }
+
+.consent-inline-error .mat-icon,
+.consent-inline-success .mat-icon,
+.consent-inline-hint .mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 16px;
+  flex-shrink: 0;
+}

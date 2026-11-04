@@ -22,14 +22,14 @@
 
 import { NgIf } from '@angular/common';
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MediaCaptureBase } from '../core/ui/media-capture.base';
 
 @Component({
   selector: 'app-consent-media-capture',
   templateUrl: './media-capture.component.html',
-  styleUrls: ['./media-capture.component.css'],
+  styleUrls: ['./media-capture.component.css', '../consent-theme.css'],
   standalone: true,
-  imports: [NgIf, MatButtonModule],
+  imports: [NgIf, MatIconModule],
 })
 export class MediaCaptureComponent extends MediaCaptureBase {}

@@ -1,10 +1,20 @@
 .consent-notice { display: flex; flex-direction: column; gap: 12px; }
-.consent-audio { display: flex; flex-direction: column; gap: 4px; }
+.consent-audio { display: flex; flex-direction: column; gap: 6px; }
 .consent-audio audio { width: 100%; }
 .consent-label { font-weight: 500; }
-.consent-notice-box { max-height: 256px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; }
-.consent-notice-box dt { font-weight: 500; margin-top: 8px; }
-.consent-notice-box dd { margin: 0; }
+.consent-notice-box {
+  max-height: 256px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #212121;
+}
+.consent-notice-box:focus-visible { outline: 2px solid #81d4fa; outline-offset: 1px; }
+.consent-notice-box dl { margin: 12px 0 0; padding-top: 8px; border-top: 1px solid #eeeeee; }
+.consent-notice-box dt { font-weight: 600; margin-top: 10px; }
+.consent-notice-box dd { margin: 2px 0 0; color: #424242; }
 .consent-end-marker { height: 1px; }
-.consent-hint { margin: 0; font-size: 12px; color: #616161; }
 .consent-notice-speak { width: fit-content; }

@@ -184,12 +184,119 @@ export function mediaCaptureSuite(MediaCaptureComponent: Type<MediaCaptureBase>,
       fixture.detectChanges();
       expect(component.error).toBe('voiceTooShort');
       expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('Too short');
+      // The rejected clip stays playable but is not offered as proof.
+      expect(component.previewUrl).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('audio')).not.toBeNull();
       component.startRecording();
       flush();
       tick(70000);
       component.stopRecording();
       expect(component.error).toBe('voiceTooLong');
       expect(emitted.length).toBe(0);
+    }));
+
+    it('uses the caller limits for the Read aloud agreement (feature 003)', fakeAsync(() => {
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
+        Promise.resolve({ getTracks: () => [{ stop: track$ }] } as unknown as MediaStream)
+      );
+      create('voice');
+      component.minSeconds = 2;
+      component.text = { ...component.text, voiceTooShortMin: 'At least {min} s' };
+      component.recordLabel = 'Record agreement';
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.consent-media-record').textContent).toContain('Record agreement');
+      component.startRecording();
+      flush();
+      tick(1000);
+      component.stopRecording();
+      fixture.detectChanges();
+      expect(component.error).toBe('voiceTooShort');
+      expect(component.errorText).toBe('At least 2 s');
+      component.startRecording();
+      flush();
+      tick(3000);
+      component.stopRecording();
+      expect(emitted[0]!.durationSec).toBe(3);
+      expect(component.errorText).toBe('');
+      component.maxSeconds = 5;
+      component.startRecording();
+      flush();
+      tick(6000);
+      component.stopRecording();
+      expect(component.error).toBe('voiceTooLong');
+      expect(component.errorText).toBe('');
+      component.text = { ...component.text, voiceTooLongMax: 'At most {max} s' };
+      expect(component.errorText).toBe('At most 5 s');
+      component.maxSeconds = 60;
+      expect(component.errorText).toBe('Too long');
+      component.uploadLabel = 'Upload a recording';
+      component.retake();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.consent-media-upload').textContent).toContain('Upload a recording');
+      component.text = {};
+      expect(component.errorText).toBe('');
+    }));
+
+    it('uploads an accepted recording to the server from next to Retake (feature 003)', fakeAsync(() => {
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
+        Promise.resolve({ getTracks: () => [{ stop: track$ }] } as unknown as MediaStream)
+      );
+      create('voice');
+      component.text = {
+        ...component.text,
+        uploadToServer: 'Upload to server',
+        uploadingRecording: 'Uploading',
+        recordingUploaded: 'Uploaded',
+        recordingUploadFailed: 'Upload failed',
+      };
+      component.serverUpload = true;
+      const requested = jasmine.createSpy('requested');
+      component.uploadRequested.subscribe(requested);
+      component.startRecording();
+      flush();
+      tick(40000);
+      component.stopRecording();
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('audio')!.getAttribute('controlslist')).toBe('nodownload');
+      expect(el.querySelector('.consent-media-retake')).not.toBeNull();
+      const send = el.querySelector('.consent-media-server-upload') as HTMLButtonElement;
+      expect(send.textContent).toContain('Upload to server');
+      send.click();
+      expect(requested).toHaveBeenCalledTimes(1);
+      component.uploadState = 'UPLOADING';
+      fixture.detectChanges();
+      expect(send.disabled).toBeTrue();
+      expect(send.textContent).toContain('Uploading');
+      component.uploadState = 'FAILED';
+      fixture.detectChanges();
+      expect(el.textContent).toContain('Upload failed');
+      expect(send.disabled).toBeFalse();
+      component.uploadState = 'DONE';
+      fixture.detectChanges();
+      expect(el.querySelector('.consent-media-server-upload')).toBeNull();
+      expect(el.querySelector('.consent-media-uploaded')!.textContent).toContain('Uploaded');
+    }));
+
+    it('offers no server upload for a rejected clip or by default', fakeAsync(() => {
+      spyOn(navigator.mediaDevices, 'getUserMedia').and.returnValue(
+        Promise.resolve({ getTracks: () => [{ stop: track$ }] } as unknown as MediaStream)
+      );
+      create('voice');
+      component.startRecording();
+      flush();
+      tick(40000);
+      component.stopRecording();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.consent-media-server-upload')).toBeNull();
+      component.serverUpload = true;
+      component.startRecording();
+      flush();
+      tick(5000);
+      component.stopRecording();
+      fixture.detectChanges();
+      expect(component.error).toBe('voiceTooShort');
+      expect(fixture.nativeElement.querySelector('.consent-media-server-upload')).toBeNull();
     }));
 
     it('falls back to upload when the microphone is denied', fakeAsync(() => {

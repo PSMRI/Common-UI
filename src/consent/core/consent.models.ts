@@ -45,7 +45,8 @@ export type PendingReason =
   | 'CONSENT_MISSING'
   | 'LEGACY'
   | 'RECONSENT_REQUIRED'
-  | 'GUARDIAN_TO_SELF';
+  | 'GUARDIAN_TO_SELF'
+  | 'EXPIRED';
 export type RefusalReason =
   | 'CONSENT_NOT_FOUND'
   | 'CONSENT_DENIED'
@@ -59,6 +60,8 @@ export type EvidenceType = 'VOICE_CLIP' | 'PATIENT_PHOTO' | 'SIGNED_FORM_PHOTO';
 export type AccessGrantStatus = 'PENDING' | 'ACTIVE' | 'REVOKED' | 'EXPIRED';
 export type AccessGrantType = 'CONSENTED' | 'BREAK_GLASS';
 export type ConsentContextType = 'REGISTRATION' | 'REVISIT';
+/** NEW: first consent; UPDATE: re-consent after a notice change; RENEWAL: after expiry. */
+export type ConsentEventType = 'NEW' | 'UPDATE' | 'RENEWAL';
 export type OtpPurpose = 'CONSENT' | 'GUARDIAN' | 'ACCESS_GRANT';
 export type RefusalAction = 'OPEN_CONSENT' | 'REQUEST_ACCESS' | null;
 
@@ -85,6 +88,15 @@ export interface NoticeLanguage {
   hasAudio: boolean;
 }
 
+/** Feature 003: who to contact for questions or complaints (FR-012, FR-013). */
+export interface GrievanceContact {
+  officerName: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  officeHours: string | null;
+}
+
 export interface Notice {
   noticeVersionId: number;
   languageCode: string;
@@ -98,6 +110,12 @@ export interface Notice {
   withdrawalInfo: string;
   grievanceInfo: string;
   purposes: Purpose[];
+  /** Feature 003: patient agreement declaration; absent means the default text. */
+  declaration?: string;
+  /** Feature 003: wording for a guardian / representative; absent means the patient wording. */
+  representativeDeclaration?: string;
+  declarationAudioUrl?: string | null;
+  grievance?: GrievanceContact | null;
 }
 
 export interface ProofDraft {
@@ -110,6 +128,10 @@ export interface ProofDraft {
   signedFormPhoto?: Blob | null;
   otpChallengeId?: string | null;
   otpVerified?: boolean;
+  /** Feature 003: the declaration was agreed (Self-read, Guardian / Representative). */
+  declarationAgreed?: boolean;
+  /** Feature 003: Read aloud declaration audio or voice played to the end. */
+  declarationPlayed?: boolean;
 }
 
 export interface GuardianFallbackEvidence {
@@ -169,9 +191,29 @@ export interface SaveConsentGuardian {
   evidenceIds: string[];
 }
 
+export type DeclarationWording = 'PATIENT' | 'REPRESENTATIVE';
+
+/** Feature 003: the declaration exactly as shown (FR-004). */
+export interface ConsentDeclaration {
+  text: string;
+  languageCode: string;
+  noticeVersionId: number;
+  wording: DeclarationWording;
+}
+
+/** Feature 003: state of the recorded agreement's upload to the server. */
+export type RecordingUploadState = 'IDLE' | 'UPLOADING' | 'DONE' | 'FAILED';
+
+export type NotificationStatus = 'SENT' | 'QUEUED' | 'FAILED' | 'NOT_REQUESTED';
+
+export interface ConsentNotification {
+  status: NotificationStatus;
+  maskedPhone: string | null;
+}
+
 export interface SaveConsentRequest {
   beneficiaryRegId: number | null;
-  eventType: 'NEW' | 'UPDATE' | 'RENEWAL';
+  eventType: ConsentEventType;
   consentingParty: ConsentingParty;
   noticeVersionId: number;
   languageCode: string;
@@ -198,12 +240,29 @@ export interface SaveConsentRequest {
   /** Feature 002: project configuration in force; both null when the platform default was used. */
   projectId?: number | null;
   configVersion?: number | null;
+  /** Feature 003: null on a decline. */
+  declaration?: ConsentDeclaration | null;
+  /** Feature 003: SMS the Consent ID and grievance contact (FR-014). */
+  notify?: { channel: 'SMS'; phone: string } | null;
 }
 
 export interface SaveConsentResponse {
   consentId: string;
   syncStatus: SyncStatus;
   purposes: PurposeResult[];
+  /** Feature 003: absent from older servers. */
+  notification?: ConsentNotification;
+}
+
+/** Feature 003: what the confirmation step shows after a granted save. */
+export interface ConsentConfirmation {
+  consentId: string;
+  capturedAt: string;
+  syncStatus: SyncStatus;
+  grievance: GrievanceContact | null;
+  grievanceText: string;
+  notification: ConsentNotification | null;
+  hasPhone: boolean;
 }
 
 export interface EvidenceResponse {
@@ -293,6 +352,8 @@ export interface ConsentDialogOptions {
   patientPhone?: string | null;
   /** Feature 002: configuration already loaded by the caller; the dialog loads it when absent. */
   config?: ResolvedConsentConfig;
+  /** Feature 003: why consent is taken (revisit pending actions); default NEW. */
+  eventType?: ConsentEventType;
 }
 
 export interface ConsentDialogResult {

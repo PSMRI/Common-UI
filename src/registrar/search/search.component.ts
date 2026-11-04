@@ -28,6 +28,7 @@ import {
   DoCheck,
   AfterViewChecked,
   OnDestroy,
+  inject,
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SearchDialogComponent } from '../search-dialog/search-dialog.component';
@@ -48,6 +49,7 @@ import { SessionStorageService } from '../services/session-storage.service';
 import { HealthIdDisplayModalComponent } from '../abha-components/health-id-display-modal/health-id-display-modal.component';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { RevisitConsentService } from '../../consent/public-api';
 
 export interface Consent {
   consentGranted: string;
@@ -93,6 +95,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
   // Add these for debounced search
   private searchSubject$ = new Subject<string>();
   private searchSubscription: any;
+  private readonly revisitConsent = inject(RevisitConsentService);
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
@@ -213,6 +216,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
       this.beneficiaryList = this.searchRestructES(response.data);
       this.filteredBeneficiaryList = this.beneficiaryList;
       this.dataSource.data = this.beneficiaryList;
+      this.markConsentPending();
       this.dataSource.paginator = this.paginator;
       this.changeDetectorRef.detectChanges();
     }
@@ -311,6 +315,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
               console.log('this.beneficiaryList2', this.beneficiaryList);
               this.filteredBeneficiaryList = this.beneficiaryList;
               this.dataSource.data = this.beneficiaryList;
+              this.markConsentPending();
               console.log('this.dataSource.data2', this.dataSource.data);
               this.dataSource.paginator = this.paginator;
             }
@@ -453,7 +458,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
           this.currentLanguageSet.alerts.info.confirmSubmitBeneficiary,
         )
         .subscribe((result) => {
-          if (result) this.sendToNurseWindow(result, benObject);
+          if (result) this.takeConsentAndSend(benObject);
         });
     } else if (!benObject.m_gender.genderName && !benObject.dob) {
       this.confirmationService.alert(
@@ -471,6 +476,45 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
         'info',
       );
     }
+  }
+
+  /** Marks the listed patients whose consent is pending (feature 003). */
+  markConsentPending() {
+    const rows: any[] = this.beneficiaryList || [];
+    const ids = rows.map((row) => Number(row.beneficiaryRegID));
+    this.revisitConsent.pendingIds(ids).subscribe((pending) => {
+      rows.forEach((row) => {
+        row.consentPending = pending.has(Number(row.beneficiaryRegID));
+      });
+      this.changeDetectorRef.detectChanges();
+    });
+  }
+
+  /** Takes the patient's pending consent first; the project decides if it may be skipped. */
+  takeConsentAndSend(benObject: any) {
+    const benRegId = Number(benObject.beneficiaryRegID);
+    this.revisitConsent
+      .ensureConsent({
+        beneficiaryRegId: benRegId,
+        phone: benObject.benPhoneMaps?.[0]?.phoneNo || null,
+        dob: benObject.dob || benObject.dOB || null,
+      })
+      .subscribe((consent) => {
+        const row = (this.beneficiaryList || []).find(
+          (item: any) => Number(item.beneficiaryRegID) === benRegId,
+        );
+        if (row) {
+          row.consentPending = consent.pending;
+        }
+        if (consent.proceed) {
+          this.sendToNurseWindow(true, benObject);
+        } else {
+          this.confirmationService.alert(
+            this.currentLanguageSet?.consent?.consentRequiredForVisit,
+            'warn',
+          );
+        }
+      });
   }
 
   editPatientInfo(beneficiary: any) {
@@ -554,6 +598,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
                 this.beneficiaryList = this.searchRestructES(response.data);
                 this.filteredBeneficiaryList = this.beneficiaryList;
                 this.dataSource.data = this.beneficiaryList;
+                this.markConsentPending();
                 this.dataSource.paginator = this.paginator;
                 this.dataSource.data.forEach(
                   (sectionCount: any, index: number) => {
@@ -592,6 +637,7 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
                 this.beneficiaryList = this.searchRestruct(beneficiaryList, {});
                 this.filteredBeneficiaryList = this.beneficiaryList;
                 this.dataSource.data = this.beneficiaryList;
+                this.markConsentPending();
                 console.log('this.dataSource.data4', this.dataSource.data);
                 this.dataSource.paginator = this.paginator;
                 this.dataSource.data.forEach(

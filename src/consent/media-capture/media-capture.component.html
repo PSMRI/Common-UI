@@ -1,28 +1,91 @@
 <div class="consent-media">
+  <input
+    #file
+    type="file"
+    class="consent-media-file"
+    tabindex="-1"
+    aria-hidden="true"
+    [attr.accept]="kind === 'photo' ? 'image/*' : 'audio/*'"
+    (change)="onFile(file)"
+  />
   <span class="consent-media-label">{{ label }}</span>
   <ng-container *ngIf="previewUrl">
     <img *ngIf="kind === 'photo'" class="consent-media-preview" [src]="previewUrl" [alt]="label" />
-    <audio *ngIf="kind === 'voice'" controls [src]="previewUrl"></audio>
-    <button mat-stroked-button type="button" class="consent-media-retake" (click)="retake()">
+    <audio
+      *ngIf="kind === 'voice'"
+      class="consent-media-audio"
+      controls
+      controlslist="nodownload"
+      [src]="previewUrl"
+    ></audio>
+    <button type="button" class="consent-btn consent-btn-secondary consent-media-retake" (click)="retake()">
+      <mat-icon>replay</mat-icon>
       {{ text?.retake }}
     </button>
+    <!-- Feature 003: send the accepted recording to the server now (it is otherwise sent on Accept). -->
+    <ng-container *ngIf="serverUpload && !error">
+      <button
+        *ngIf="uploadState !== 'DONE'"
+        type="button"
+        class="consent-btn consent-btn-primary consent-media-server-upload"
+        [disabled]="uploadState === 'UPLOADING'"
+        (click)="uploadRequested.emit()"
+      >
+        <mat-icon>cloud_upload</mat-icon>
+        {{ uploadState === 'UPLOADING' ? text?.uploadingRecording : text?.uploadToServer }}
+      </button>
+      <span *ngIf="uploadState === 'DONE'" class="consent-media-uploaded" role="status">
+        <mat-icon>cloud_done</mat-icon>
+        {{ text?.recordingUploaded }}
+      </span>
+      <span *ngIf="uploadState === 'FAILED'" class="consent-inline-error" role="alert">
+        {{ text?.recordingUploadFailed }}
+      </span>
+    </ng-container>
   </ng-container>
   <div *ngIf="!previewUrl" class="consent-media-actions">
-    <button *ngIf="kind === 'photo'" mat-flat-button color="primary" type="button" class="consent-media-capture" (click)="takePhoto()">
+    <button
+      *ngIf="kind === 'photo'"
+      type="button"
+      class="consent-btn consent-btn-primary consent-media-capture"
+      (click)="takePhoto()"
+    >
+      <mat-icon>photo_camera</mat-icon>
       {{ text?.takePhoto }}
     </button>
     <ng-container *ngIf="kind === 'voice' && !micDenied">
-      <button *ngIf="recording" mat-flat-button color="warn" type="button" class="consent-media-stop" (click)="stopRecording()">
-        {{ text?.stopRecording }}
-      </button>
-      <button *ngIf="!recording" mat-flat-button color="primary" type="button" class="consent-media-record" (click)="startRecording()">
-        {{ text?.recordVoice }}
+      <ng-container *ngIf="recording">
+        <button type="button" class="consent-btn consent-btn-danger consent-media-stop" (click)="stopRecording()">
+          <mat-icon>stop</mat-icon>
+          {{ text?.stopRecording }}
+        </button>
+        <span class="consent-media-timer" aria-live="polite">
+          <span class="consent-media-dot" aria-hidden="true"></span>
+          {{ elapsedLabel }}
+        </span>
+      </ng-container>
+      <button
+        *ngIf="!recording"
+        type="button"
+        class="consent-btn consent-btn-primary consent-media-record"
+        (click)="startRecording()"
+      >
+        <mat-icon>mic</mat-icon>
+        {{ recordLabel || text?.recordVoice }}
       </button>
     </ng-container>
-    <label class="consent-media-upload">
-      {{ text?.upload }}
-      <input #file type="file" [attr.accept]="kind === 'photo' ? 'image/*' : 'audio/*'" (change)="onFile(file)" />
-    </label>
+    <button
+      *ngIf="!recording"
+      type="button"
+      class="consent-btn consent-btn-secondary consent-media-upload"
+      (click)="file.click()"
+    >
+      <mat-icon>upload</mat-icon>
+      {{ uploadLabel || text?.upload }}
+    </button>
   </div>
-  <p *ngIf="error" class="consent-error" role="alert">{{ text?.[error] }}</p>
+  <p *ngIf="error" class="consent-inline-error" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    {{ errorText }}
+  </p>
 </div>

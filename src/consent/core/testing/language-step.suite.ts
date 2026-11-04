@@ -64,8 +64,19 @@ describe(`LanguageStepComponent (${track})`, () => {
   it('loads languages and hides right-to-left ones', () => {
     api.getLanguages.and.returnValue(of(mockLanguages()));
     create();
-    expect(api.getLanguages).toHaveBeenCalledWith('REGISTRATION');
+    expect(api.getLanguages).toHaveBeenCalledWith('REGISTRATION', null);
     expect(buttons().map((b) => b.getAttribute('lang'))).toEqual(['en', 'hi', 'as']);
+  });
+
+  it("lists the project's languages for the dialog context (feature 003)", () => {
+    api.getLanguages.and.returnValue(of(mockLanguages()));
+    fixture = TestBed.createComponent(LanguageStepComponent);
+    component = fixture.componentInstance;
+    component.text = text;
+    component.context = 'REVISIT';
+    component.projectId = 12;
+    fixture.detectChanges();
+    expect(api.getLanguages).toHaveBeenCalledWith('REVISIT', 12);
   });
 
   it('emits the chosen language and marks the selected one', () => {

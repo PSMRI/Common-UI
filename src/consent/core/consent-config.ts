@@ -32,7 +32,7 @@ import {
   NoticeLanguage,
   Purpose,
 } from './consent.models';
-import { CONSENT_MODES } from './ui/proof-step.base';
+import { ACTIVE_CONSENT_MODES } from './ui/proof-step.base';
 
 /** Feature 001 proof rules, used when a mode has no setting. */
 export const DEFAULT_MODE_SETTINGS: Required<ModeSettings> = {
@@ -46,7 +46,7 @@ export const DEFAULT_MODE_SETTINGS: Required<ModeSettings> = {
 export const DEFAULT_CONTEXT_CONFIG: ContextConfig = {
   enabled: true,
   mandatory: true,
-  modes: CONSENT_MODES.map((m, i) => ({ mode: m.mode, rank: i + 1, settings: {} })),
+  modes: ACTIVE_CONSENT_MODES.map((m, i) => ({ mode: m.mode, rank: i + 1, settings: {} })),
   defaultMode: null,
   purposes: [],
   languages: [],
@@ -63,15 +63,22 @@ export function defaultResolvedConfig(context: ConsentContextType): ResolvedCons
   };
 }
 
-/** Allowed modes in display order; unknown modes are dropped, and none left means all six. */
+/** A mode saved by an older configuration as offered today (feature 003): voice clip is Read aloud. */
+export function activeMode(mode: ConsentMode | null): ConsentMode | null {
+  return mode === 'VOICE_CLIP' ? 'READ_ALOUD' : mode;
+}
+
+/** Allowed modes in display order; unknown and retired modes are dropped, none left means all active. */
 export function allowedModes(config: ContextConfig): { mode: ConsentMode; key: string }[] {
-  const known = (config.modes || [])
-    .filter((m) => CONSENT_MODES.some((c) => c.mode === m.mode))
-    .sort((a, b) => a.rank - b.rank);
-  if (known.length === 0) {
-    return CONSENT_MODES;
-  }
-  return known.map((m) => CONSENT_MODES.find((c) => c.mode === m.mode) as { mode: ConsentMode; key: string });
+  const ordered = (config.modes || []).slice().sort((a, b) => a.rank - b.rank);
+  const result: { mode: ConsentMode; key: string }[] = [];
+  ordered.forEach((m) => {
+    const found = ACTIVE_CONSENT_MODES.find((c) => c.mode === activeMode(m.mode));
+    if (found && result.indexOf(found) === -1) {
+      result.push(found);
+    }
+  });
+  return result.length === 0 ? ACTIVE_CONSENT_MODES : result;
 }
 
 /** The chosen mode's settings over the feature 001 defaults. */
