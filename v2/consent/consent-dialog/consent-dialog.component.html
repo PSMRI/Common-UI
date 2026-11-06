@@ -1,0 +1,210 @@
+<div class="flex max-h-[85vh] flex-col">
+  <header class="flex items-center justify-between gap-4 border-b border-border pb-3">
+    <div class="flex items-center gap-2">
+      <ng-icon name="lucideShieldCheck" size="20" class="text-primary"></ng-icon>
+      <p class="m-0 text-lg font-semibold leading-none text-foreground">{{ text?.title }}</p>
+    </div>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      type="button"
+      class="consent-close size-8 shrink-0 text-muted-foreground hover:text-foreground"
+      [attr.aria-label]="text?.close"
+      [attr.title]="text?.close"
+      (click)="close()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </header>
+
+  <div class="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto py-4 pr-1">
+    @if (configFailed) {
+      <div
+        class="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+        role="alert"
+      >
+        <ng-icon name="lucideCircleAlert" size="18" class="mt-0.5 shrink-0 text-destructive"></ng-icon>
+        <p class="m-0 flex-1 text-sm text-destructive">{{ text?.configLoadFailed }}</p>
+        <button z-button zType="outline" zSize="sm" type="button" (click)="resolveConfig()">
+          <ng-icon name="lucideRotateCw"></ng-icon>
+          {{ text?.retry }}
+        </button>
+      </div>
+    }
+
+    @if (otpNoPhone) {
+      <div
+        class="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+        role="alert"
+      >
+        <ng-icon name="lucideCircleAlert" size="18" class="mt-0.5 shrink-0 text-destructive"></ng-icon>
+        <p class="m-0 flex-1 text-sm text-destructive">{{ text?.configOtpNoPhone }}</p>
+      </div>
+    }
+
+    @if (step === 'LANGUAGE' && config) {
+      <app-consent-language-step
+        [text]="text"
+        [selected]="draft.languageCode"
+        [context]="options.context"
+        [projectId]="config.projectId"
+        (languageSelected)="loadNotice($event)"
+      ></app-consent-language-step>
+    } @else if (step === 'DECIDE' && draft.notice) {
+      <div class="flex items-center justify-between gap-3 rounded-lg bg-muted/50 px-3 py-2">
+        <span class="flex items-center gap-2 text-sm text-foreground">
+          <ng-icon name="lucideLanguages" size="16" class="text-muted-foreground"></ng-icon>
+          <span class="font-medium uppercase">{{ draft.notice.languageCode }}</span>
+        </span>
+        <button z-button zType="link" type="button" class="h-auto p-0" (click)="changeLanguage()">
+          {{ text?.chooseLanguage }}
+        </button>
+      </div>
+
+      <section class="flex flex-col gap-2">
+        <app-consent-notice-step
+          [text]="text"
+          [notice]="draft.notice"
+          (readComplete)="onReadComplete()"
+          (audioPlayedToEnd)="onAudioPlayed()"
+        ></app-consent-notice-step>
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <p class="m-0 text-sm font-semibold text-foreground">{{ text?.purposes }}</p>
+        <app-consent-purposes-step
+          [text]="text"
+          [purposes]="draft.notice.purposes"
+          [decisions]="draft.decisions"
+          (decisionsChange)="onDecisions($event)"
+        ></app-consent-purposes-step>
+      </section>
+
+      <section class="flex flex-col gap-2 border-t border-border pt-4">
+        <app-consent-proof-step
+          [text]="text"
+          [notice]="draft.notice"
+          [mode]="draft.mode"
+          [modes]="modes"
+          [patientPhone]="options.patientPhone || null"
+          [audioPlayedToEnd]="draft.audioPlayedToEnd"
+          [declaration]="declaration"
+          [languageCode]="draft.notice.languageCode"
+          [declarationAudioUrl]="draft.notice.declarationAudioUrl || null"
+          [recordingUpload]="recordingUpload"
+          (uploadRecording)="uploadRecording()"
+          (declarationRefused)="decline()"
+          (modeChange)="onMode($event)"
+          (proofChange)="onProof($event)"
+        ></app-consent-proof-step>
+      </section>
+    } @else if (step === 'DONE' && confirmation; as c) {
+      <div class="consent-done flex flex-col gap-4" role="status">
+        <div class="flex items-center gap-2">
+          <ng-icon name="lucideCircleCheck" size="22" class="text-primary"></ng-icon>
+          <p class="m-0 text-base font-semibold text-foreground">{{ text?.confirmationTitle }}</p>
+        </div>
+        <dl class="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-lg bg-muted/50 p-3 text-sm">
+          <dt class="text-muted-foreground">{{ text?.consentIdLabel }}</dt>
+          <dd class="m-0 font-mono font-semibold text-foreground">{{ c.consentId }}</dd>
+          <dt class="text-muted-foreground">{{ text?.capturedAtLabel }}</dt>
+          <dd class="m-0 text-foreground">{{ c.capturedAt | date: 'd MMM y, HH:mm' }}</dd>
+        </dl>
+        @if (c.syncStatus === 'NOT_SYNCED') {
+          <p class="consent-done-offline m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
+            <ng-icon name="lucideCloudOff" size="16" class="shrink-0"></ng-icon>
+            {{ text?.notSyncedNote }}
+          </p>
+        }
+        <div class="consent-done-grievance flex flex-col gap-2">
+          <p class="m-0 text-sm font-semibold text-foreground">{{ text?.grievanceTitle }}</p>
+          @if (c.grievance; as g) {
+            <dl class="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+              @if (g.officerName) {
+                <dt class="text-muted-foreground">{{ text?.grievanceOfficer }}</dt>
+                <dd class="m-0 text-foreground">{{ g.officerName }}</dd>
+              }
+              @if (g.phone) {
+                <dt class="text-muted-foreground">{{ text?.grievancePhone }}</dt>
+                <dd class="m-0 text-foreground">{{ g.phone }}</dd>
+              }
+              @if (g.email) {
+                <dt class="text-muted-foreground">{{ text?.grievanceEmail }}</dt>
+                <dd class="m-0 text-foreground">{{ g.email }}</dd>
+              }
+              @if (g.address) {
+                <dt class="text-muted-foreground">{{ text?.grievanceAddress }}</dt>
+                <dd class="m-0 text-foreground">{{ g.address }}</dd>
+              }
+              @if (g.officeHours) {
+                <dt class="text-muted-foreground">{{ text?.grievanceHours }}</dt>
+                <dd class="m-0 text-foreground">{{ g.officeHours }}</dd>
+              }
+            </dl>
+          } @else {
+            <p class="consent-done-grievance-text m-0 text-sm text-foreground">{{ c.grievanceText }}</p>
+          }
+        </div>
+        <p class="consent-done-sms m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
+          <ng-icon name="lucideMessageSquare" size="16" class="shrink-0"></ng-icon>
+          {{ smsMessage }}
+        </p>
+      </div>
+    }
+
+    @if (noNotice) {
+      <div
+        class="consent-no-notice flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-3"
+        role="status"
+      >
+        <ng-icon name="lucideInfo" size="18" class="mt-0.5 shrink-0 text-muted-foreground"></ng-icon>
+        <p class="m-0 flex-1 text-sm text-muted-foreground">{{ text?.noNoticePublished }}</p>
+      </div>
+    }
+
+    @if (failed) {
+      <div
+        class="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+        role="alert"
+      >
+        <ng-icon name="lucideCircleAlert" size="18" class="mt-0.5 shrink-0 text-destructive"></ng-icon>
+        <p class="m-0 flex-1 text-sm text-destructive">{{ text?.serviceUnavailable }}</p>
+        <button z-button zType="outline" zSize="sm" type="button" (click)="retry()">
+          <ng-icon name="lucideRotateCw"></ng-icon>
+          {{ text?.retry }}
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (step === 'DECIDE') {
+    <footer class="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-3">
+      @if (pendingKey) {
+        <p class="consent-pending m-0 mr-auto flex items-center gap-1.5 text-sm text-muted-foreground" role="status">
+          <ng-icon name="lucideInfo" size="16" class="shrink-0"></ng-icon>
+          {{ text?.[pendingKey] }}
+        </p>
+      }
+      <button z-button zType="outline" type="button" class="min-w-24" [disabled]="saving" (click)="decline()">
+        {{ text?.decline }}
+      </button>
+      <button
+        z-button
+        type="button"
+        class="min-w-24"
+        [disabled]="!acceptEnabled"
+        [zLoading]="saving"
+        (click)="accept()"
+      >
+        {{ text?.accept }}
+      </button>
+    </footer>
+  } @else if (step === 'DONE') {
+    <footer class="flex items-center justify-end gap-3 border-t border-border pt-3">
+      <button z-button type="button" class="consent-done-btn min-w-24" (click)="done()">
+        {{ text?.done }}
+      </button>
+    </footer>
+  }
+</div>

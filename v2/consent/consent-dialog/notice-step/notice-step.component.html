@@ -1,0 +1,56 @@
+<div class="flex flex-col gap-3">
+  @if (notice.audioUrl && !audioFailed) {
+    <div class="flex flex-col gap-1">
+      <span class="text-sm font-medium text-foreground">{{ text?.playAudio }}</span>
+      <audio
+        #player
+        controls
+        class="w-full"
+        [src]="notice.audioUrl"
+        (timeupdate)="onTimeUpdate(player)"
+        (ended)="onEnded(player)"
+        (error)="onAudioError()"
+      ></audio>
+    </div>
+  }
+  @if (canSpeak && (!notice.audioUrl || audioFailed)) {
+    <button
+      z-button
+      zType="outline"
+      type="button"
+      class="consent-notice-speak w-fit"
+      [attr.aria-pressed]="speaking"
+      (click)="speaking ? stopNotice() : playNotice()"
+    >
+      <ng-icon [name]="speaking ? 'lucideSquare' : 'lucideVolume2'"></ng-icon>
+      {{ speaking ? text?.stopAudio : text?.playAudio }}
+    </button>
+  }
+  <div
+    #scrollBox
+    class="max-h-64 overflow-y-auto rounded-lg border border-input bg-background p-4 text-sm leading-relaxed text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+    tabindex="0"
+    [attr.lang]="notice.languageCode"
+    [attr.aria-label]="text?.title"
+    (scroll)="onScroll()"
+  >
+    <div [innerHTML]="notice.body"></div>
+    <dl class="mt-4 mb-0 flex flex-col gap-1 border-t border-border pt-3">
+      <dt class="font-medium">{{ text?.noticeDataItems }}</dt>
+      <dd class="m-0 text-muted-foreground">{{ notice.dataItems }}</dd>
+      <dt class="mt-2 font-medium">{{ text?.noticeRetention }}</dt>
+      <dd class="m-0 text-muted-foreground">{{ notice.retention }}</dd>
+      <dt class="mt-2 font-medium">{{ text?.noticeRecipients }}</dt>
+      <dd class="m-0 text-muted-foreground">{{ notice.recipients }}</dd>
+      <dt class="mt-2 font-medium">{{ text?.noticeWithdrawal }}</dt>
+      <dd class="m-0 text-muted-foreground">{{ notice.withdrawalInfo }}</dd>
+      <dt class="mt-2 font-medium">{{ text?.noticeGrievance }}</dt>
+      <dd class="m-0 text-muted-foreground">{{ notice.grievanceInfo }}</dd>
+    </dl>
+    <div #endMarker class="h-px" aria-hidden="true"></div>
+  </div>
+  <p class="m-0 flex items-center gap-1.5 text-xs text-muted-foreground">
+    <ng-icon name="lucideInfo" size="14" class="shrink-0"></ng-icon>
+    {{ text?.readToEnd }}
+  </p>
+</div>

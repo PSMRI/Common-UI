@@ -25,6 +25,7 @@ import {
   Component,
   computed,
   contentChildren,
+  forwardRef,
   inject,
   input,
   ViewEncapsulation,
@@ -59,7 +60,8 @@ export class ZardStepperComponent {
 
   // Steps register themselves via projection; this gives their document order,
   // which a step uses to resolve its own index (see ZardStepComponent.index()).
-  readonly steps = contentChildren(ZardStepComponent);
+  // forwardRef: ZardStepComponent is declared below; JIT (unit tests) reads this at class definition.
+  readonly steps = contentChildren(forwardRef(() => ZardStepComponent));
 
   // The raw zActiveIndex may be out of bounds (e.g. -1 or >= length). Clamp it
   // into a valid range so exactly one step is "active" — an out-of-range value

@@ -1,4 +1,4 @@
-import { Component, ViewContainerRef } from '@angular/core';
+import { Component, ViewContainerRef, inject } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -19,6 +19,13 @@ import { PersonalInformationComponent } from './personal-information/personal-in
 import { LocationInformationComponent } from './location-information/location-information.component';
 import { OtherInformationComponent } from './other-information/other-information.component';
 import { AbhaInformationComponent } from './abha-information/abha-information.component';
+import {
+  ConsentConfigService,
+  ConsentDialogResult,
+  ConsentDialogService,
+  isConsentFeatureEnabled,
+  ResolvedConsentConfig,
+} from 'Common-UI/v2/consent/public-api';
 
 @Component({
     selector: 'app-registration',
@@ -45,6 +52,9 @@ export class RegistrationComponent {
   abhaInfoData: any;
   serviceLine: any;
   consentGranted: any;
+  consentResult: ConsentDialogResult | null = null;
+  private readonly consentDialog = inject(ConsentDialogService);
+  private readonly consentConfig = inject(ConsentConfigService);
   disableGenerateOTP = false;
   today = new Date();
 
@@ -311,19 +321,44 @@ export class RegistrationComponent {
   }
 
   openConsent() {
-    if (this.patientRevisit === false) {
-      const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
-        zContent: ConsentFormComponent,
-        zWidth: '50%',
-        zHideFooter: true,
-        zClosable: false,
-        zViewContainerRef: this.viewContainerRef,
+    if (this.patientRevisit === false && isConsentFeatureEnabled()) {
+      // Feature 002: the project's configuration decides the dialog or the legacy pop-up (FR-023).
+      this.consentConfig.load('REGISTRATION').subscribe({
+        next: (config) =>
+          config.config.enabled ? this.openConsentDialog(config) : this.openLegacyConsent(),
+        error: () => this.openConsentDialog(),
       });
-      mdDialogRef.afterClosed().subscribe((consentProvided) => {
-        this.consentGranted = consentProvided;
-        this.registrarService.sendConsentStatus(consentProvided);
-      });
+      return;
     }
+    if (this.patientRevisit === false) {
+      this.openLegacyConsent();
+    }
+  }
+
+  private openConsentDialog(config?: ResolvedConsentConfig) {
+    const mandatory = config ? config.config.mandatory : true;
+    this.consentDialog
+      .open({ context: 'REGISTRATION', beneficiaryRegId: null, ...(config ? { config } : {}) })
+      .subscribe((result) => {
+        this.consentResult = result;
+        if (mandatory && (result.outcome === 'BLOCKED' || result.outcome === 'NO_DECISION')) {
+          this.router.navigate(['/registrar/search/']);
+        }
+      });
+  }
+
+  private openLegacyConsent() {
+    const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
+      zContent: ConsentFormComponent,
+      zWidth: '50%',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
+    mdDialogRef.afterClosed().subscribe((consentProvided) => {
+      this.consentGranted = consentProvided;
+      this.registrarService.sendConsentStatus(consentProvided);
+    });
   }
 
     /**
@@ -352,6 +387,18 @@ export class RegistrationComponent {
             this.redirectToSearch();
           }
         });
+    }
+
+    /** Real consent outcome for the registration payload; empty when the feature is off (FR-035). */
+    consentFields(): { beneficiaryConsent?: boolean; consentId?: string | null } {
+      if (!isConsentFeatureEnabled()) {
+        return {};
+      }
+      const outcome = this.consentResult?.outcome;
+      return {
+        beneficiaryConsent: outcome === 'GRANTED' || outcome === 'PARTIAL',
+        consentId: this.consentResult?.consentId || null,
+      };
     }
 
     redirectToSearch() {
@@ -567,6 +614,7 @@ export class RegistrationComponent {
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
       beneficiaryConsent: true,
+      ...this.consentFields(),
       dob: personalForm.controls['dOB']?.value,
       benImage: personalForm.controls['image']?.value || null,
       changeInBenImage:

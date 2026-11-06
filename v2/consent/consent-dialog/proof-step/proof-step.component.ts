@@ -1,0 +1,47 @@
+/*
+ * AMRIT – Accessible Medical Records via Integrated Technology
+ * Integrated EHR (Electronic Health Records) Solution
+ *
+ * Copyright (C) "Piramal Swasthya Management and Research Institute"
+ *
+ * This file is part of AMRIT.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/.
+ */
+
+import { Component } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideSquare, lucideVolume2 } from '@ng-icons/lucide';
+import { ZardButtonComponent } from 'Common-UI/v2/ui/button';
+import { ZardCheckboxComponent } from 'Common-UI/v2/ui/checkbox';
+import { ZardInputDirective } from 'Common-UI/v2/ui/input';
+import { ProofStepBase } from '../../../../src/consent/core/ui/proof-step.base';
+import { MediaCaptureComponent } from '../../media-capture/media-capture.component';
+import { OtpVerifyComponent } from '../../otp-verify/otp-verify.component';
+
+@Component({
+  selector: 'app-consent-proof-step',
+  templateUrl: './proof-step.component.html',
+  standalone: true,
+  imports: [
+    NgIcon,
+    ZardButtonComponent,
+    ZardCheckboxComponent,
+    ZardInputDirective,
+    MediaCaptureComponent,
+    OtpVerifyComponent,
+  ],
+  viewProviders: [provideIcons({ lucideSquare, lucideVolume2 })],
+})
+export class ProofStepComponent extends ProofStepBase {}
