@@ -26,7 +26,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { SessionStorageService } from '../../registrar/services/session-storage.service';
-import { defaultResolvedConfig } from './consent-config';
+import { notConfiguredConfig } from './consent-config';
 import {
   ConsentConfigUnavailable,
   ContextConfig,
@@ -83,43 +83,36 @@ export class ConsentConfigService {
   ) {}
 
   /**
-   * Emits the project's configuration, or the platform default when there is no project, no
-   * configuration, no URL or no endpoint (404). On any other failure it emits this login session's
-   * last copy, or errors with ConsentConfigUnavailable when there is none.
+   * Emits the project's configuration exactly as Common-API returns it. No project, no saved
+   * configuration (data null), no URL or no endpoint (404) means not configured. Any other failure
+   * errors with ConsentConfigUnavailable; nothing is taken from an earlier copy.
    */
   load(context: ConsentContextType): Observable<ResolvedConsentConfig> {
     const url = consentConfigUrl();
     const request = this.request(context);
     if (!url || !request) {
-      return of(defaultResolvedConfig(context));
+      return of(notConfiguredConfig(context));
     }
-    const key = this.cacheKey(request);
     return this.http.post<OutputResponse<ConsentConfigResponse | null>>(url, request).pipe(
       map((res) => {
         if (!res || res.statusCode !== 200) {
           throw res;
         }
-        const resolved: ResolvedConsentConfig = res.data
+        return res.data
           ? {
               projectId: res.data.projectId,
               version: res.data.version,
               context,
               config: res.data.config,
-              source: 'PROJECT',
+              source: 'PROJECT' as const,
             }
-          : defaultResolvedConfig(context);
-        this.sessionstorage.setItem(key, JSON.stringify(resolved));
-        return resolved;
+          : notConfiguredConfig(context);
       }),
-      catchError((err) => {
-        if (err instanceof HttpErrorResponse && err.status === 404) {
-          return of(defaultResolvedConfig(context));
-        }
-        const copy = parse(this.sessionstorage.getItem(key)) as ResolvedConsentConfig | null;
-        return copy && copy.config
-          ? of({ ...copy, source: 'SESSION_CACHE' as const })
-          : throwError(() => new ConsentConfigUnavailable());
-      })
+      catchError((err) =>
+        err instanceof HttpErrorResponse && err.status === 404
+          ? of(notConfiguredConfig(context))
+          : throwError(() => new ConsentConfigUnavailable())
+      )
     );
   }
 
@@ -143,7 +136,4 @@ export class ConsentConfigService {
     };
   }
 
-  private cacheKey(r: ConsentConfigRequest): string {
-    return ['consentConfig', r.serviceLineId, r.stateId, r.districtId, r.blockId, r.context].join(':');
-  }
 }

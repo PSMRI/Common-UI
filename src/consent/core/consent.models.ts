@@ -116,6 +116,11 @@ export interface Notice {
   representativeDeclaration?: string;
   declarationAudioUrl?: string | null;
   grievance?: GrievanceContact | null;
+  /**
+   * PROJECT: the project's own published message; CENTRAL: the platform message Consent-API
+   * returns when the project has none. Absent on servers that do not send it yet.
+   */
+  source?: 'PROJECT' | 'CENTRAL';
 }
 
 export interface ProofDraft {
@@ -294,13 +299,13 @@ export interface ConsentRecord {
   noticeVersionId: number;
   languageCode: string;
   mode: ConsentMode;
-  capturedBy: string;
+  capturedBy: number | null;
   capturedAt: string;
   facilityId: number | null;
   serviceLine: string | null;
   deviceId: string | null;
   syncStatus: SyncStatus;
-  purposes: { purposeCode: string; decision: string; status: PurposeStatus }[];
+  purposes: PurposeResult[];
 }
 
 export interface PurposeState {
@@ -316,30 +321,69 @@ export interface PurposeState {
 export interface PatientConsents {
   current: PurposeState[];
   history: ConsentRecord[];
+  /** Withdraw ALL only: granted purposes kept because the law requires them. */
+  notWithdrawn?: string[];
 }
 
 export interface PendingAction {
   reason: PendingReason;
   purposeCodes: string[];
-  dueSince: string;
+  /** null for CONSENT_MISSING. */
+  dueSince: string | null;
+}
+
+export type AccessRevokeReason = 'PATIENT_REQUEST' | 'WITHDRAWAL';
+
+export interface AccessGrantee {
+  userId: number;
+  name: string;
+  facilityId: number | null;
 }
 
 export interface AccessGrant {
   grantId: string;
-  grantee: string;
+  beneficiaryRegId: number;
+  grantee: AccessGrantee;
   purposes: string[];
   type: AccessGrantType;
   status: AccessGrantStatus;
-  validUntil: string;
+  /** 1 to 30. */
+  days: number;
+  reason: string | null;
+  /** Set when the grant is approved. */
+  validUntil: string | null;
+  approvedAt: string | null;
+  revokedAt: string | null;
+  revokeReason: AccessRevokeReason | null;
 }
 
-export interface ChangePreferenceRequest {
+/** A doctor asks for time-limited access; the patient approves it by OTP. */
+export interface RequestAccessRequest {
+  beneficiaryRegId: number;
+  purposeCodes: string[];
+  days: number;
+  reason: string;
+  facilityId: number | null;
+}
+
+/** Visit context the Consent-API records with a preference change or withdrawal. */
+export interface ChangeContext {
+  deviceId?: string;
+  facilityId?: number | null;
+  providerServiceMapId?: number | null;
+  serviceLine?: string | null;
+}
+
+export interface ChangePreferenceRequest extends ChangeContext {
   purposeCodes: string[];
   decision: 'GRANT' | 'DENY';
+  /** Exactly the purposes in purposeCodes. */
   versions: { [purposeCode: string]: number };
+  /** GRANT only: a verified CONSENT (or GUARDIAN) challenge with refId = benRegId. */
+  otpChallengeId?: string | null;
 }
 
-export interface WithdrawRequest {
+export interface WithdrawRequest extends ChangeContext {
   purposeCodes: string[] | 'ALL';
   versions: { [purposeCode: string]: number };
 }
@@ -373,6 +417,7 @@ export interface ConsentRefusal {
 
 export type ConsentApiErrorKind =
   | 'STALE'
+  | 'NOT_FOUND'
   | 'NOT_WITHDRAWABLE'
   | 'UNAVAILABLE'
   | 'FAILED';

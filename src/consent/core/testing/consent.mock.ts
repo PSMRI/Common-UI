@@ -71,6 +71,8 @@ export function mockNotice(lang = 'hi'): Notice {
     withdrawalInfo: 'Ask staff or call 104',
     grievanceInfo: 'Contact the DPO',
     purposes: mockPurposes(),
+    declaration: 'Published patient declaration',
+    representativeDeclaration: 'Published representative declaration',
   };
 }
 
@@ -98,9 +100,9 @@ export function mockConsents(): PatientConsents {
       { purposeCode: 'P-SHR', name: 'Share with facilities', isMandatory: false, isWithdrawable: true, status: 'GRANTED', validUntil: '2027-10-13', versionNo: 2 },
     ],
     history: [
-      { consentId: 'c-3', beneficiaryRegId: 42, eventType: 'UPDATE', consentingParty: 'SELF', noticeVersionId: 12, languageCode: 'hi', mode: 'SELF_READ', capturedBy: 'nurse1', capturedAt: '2026-10-12T10:00:00+05:30', facilityId: 33, serviceLine: 'MMU', deviceId: 'd-1', syncStatus: 'NOT_SYNCED', purposes: [{ purposeCode: 'P-REM', decision: 'DENY', status: 'DENIED' }] },
-      { consentId: 'c-2', beneficiaryRegId: 42, eventType: 'UPDATE', consentingParty: 'SELF', noticeVersionId: 12, languageCode: 'hi', mode: 'OTP', capturedBy: 'nurse1', capturedAt: '2026-09-01T10:00:00+05:30', facilityId: 33, serviceLine: 'MMU', deviceId: 'd-1', syncStatus: 'SYNCED', purposes: [{ purposeCode: 'P-SHR', decision: 'GRANT', status: 'GRANTED' }] },
-      { consentId: 'c-1', beneficiaryRegId: 42, eventType: 'NEW', consentingParty: 'SELF', noticeVersionId: 11, languageCode: 'en', mode: 'READ_ALOUD', capturedBy: 'reg1', capturedAt: '2026-01-05T10:00:00+05:30', facilityId: 33, serviceLine: 'MMU', deviceId: 'd-1', syncStatus: 'SYNCED', purposes: [{ purposeCode: 'P-REG', decision: 'GRANT', status: 'GRANTED' }] },
+      { consentId: 'c-3', beneficiaryRegId: 42, eventType: 'UPDATE', consentingParty: 'SELF', noticeVersionId: 12, languageCode: 'hi', mode: 'SELF_READ', capturedBy: 4521, capturedAt: '2026-10-12T10:00:00+05:30', facilityId: 33, serviceLine: 'MMU', deviceId: 'd-1', syncStatus: 'NOT_SYNCED', purposes: [{ purposeCode: 'P-REM', status: 'DENIED', versionNo: 1 }] },
+      { consentId: 'c-2', beneficiaryRegId: 42, eventType: 'UPDATE', consentingParty: 'SELF', noticeVersionId: 12, languageCode: 'hi', mode: 'OTP', capturedBy: 4521, capturedAt: '2026-09-01T10:00:00+05:30', facilityId: 33, serviceLine: 'MMU', deviceId: 'd-1', syncStatus: 'SYNCED', purposes: [{ purposeCode: 'P-SHR', status: 'GRANTED', versionNo: 1 }] },
+      { consentId: 'c-1', beneficiaryRegId: 42, eventType: 'NEW', consentingParty: 'SELF', noticeVersionId: 11, languageCode: 'en', mode: 'READ_ALOUD', capturedBy: 4522, capturedAt: '2026-01-05T10:00:00+05:30', facilityId: 33, serviceLine: 'MMU', deviceId: 'd-1', syncStatus: 'SYNCED', purposes: [{ purposeCode: 'P-REG', status: 'GRANTED', versionNo: 1 }] },
     ],
   };
 }
@@ -120,8 +122,8 @@ export function mockNoPending(): PendingAction[] {
 
 export function mockAccessGrants(): AccessGrant[] {
   return [
-    { grantId: 'g-1', grantee: 'Dr. Test, Hub Hospital', purposes: ['P-TELE'], type: 'CONSENTED', status: 'PENDING', validUntil: '2026-10-20' },
-    { grantId: 'g-2', grantee: 'Dr. Demo, District Hospital', purposes: ['P-SHR'], type: 'CONSENTED', status: 'ACTIVE', validUntil: '2026-10-30' },
+    { grantId: 'g-1', beneficiaryRegId: 42, grantee: { userId: 55, name: 'Dr. Test', facilityId: 5 }, purposes: ['P-TELE'], type: 'CONSENTED', status: 'PENDING', days: 7, reason: 'Referral follow-up', validUntil: null, approvedAt: null, revokedAt: null, revokeReason: null },
+    { grantId: 'g-2', beneficiaryRegId: 42, grantee: { userId: 56, name: 'Dr. Demo', facilityId: 6 }, purposes: ['P-SHR'], type: 'CONSENTED', status: 'ACTIVE', days: 14, reason: 'Second opinion', validUntil: '2026-10-30', approvedAt: '2026-10-16', revokedAt: null, revokeReason: null },
   ];
 }
 

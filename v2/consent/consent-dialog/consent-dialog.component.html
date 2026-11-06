@@ -153,6 +153,16 @@
       </div>
     }
 
+    @if (noNotice) {
+      <div
+        class="consent-no-notice flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-3"
+        role="status"
+      >
+        <ng-icon name="lucideInfo" size="18" class="mt-0.5 shrink-0 text-muted-foreground"></ng-icon>
+        <p class="m-0 flex-1 text-sm text-muted-foreground">{{ text?.noNoticePublished }}</p>
+      </div>
+    }
+
     @if (failed) {
       <div
         class="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"

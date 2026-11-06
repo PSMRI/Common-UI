@@ -89,7 +89,7 @@ export interface ProjectConsentConfig {
   revisit: ContextConfig | null;
 }
 
-export type ConsentConfigSource = 'PROJECT' | 'DEFAULT' | 'SESSION_CACHE';
+export type ConsentConfigSource = 'PROJECT' | 'NOT_CONFIGURED';
 
 /** Field-app view: one context, already resolved. projectId and version are null for the default. */
 export interface ResolvedConsentConfig {

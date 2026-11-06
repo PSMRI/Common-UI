@@ -41,6 +41,7 @@ import {
   OutputResponse,
   PatientConsents,
   PendingAction,
+  RequestAccessRequest,
   SaveConsentRequest,
   SaveConsentResponse,
   WithdrawRequest,
@@ -52,19 +53,29 @@ export function toConsentApiError(err: unknown): ConsentApiError {
     return err as ConsentApiError;
   }
   if (err instanceof HttpErrorResponse) {
-    const reason = err.error?.data?.reason;
+    // Consent-API sends { error: { code } }; the AMRIT envelope sends { data: { reason } }.
+    const reason = err.error?.error?.code || err.error?.data?.reason;
     if (err.status === 409 && reason === 'STALE_VERSION') {
       return { kind: 'STALE', message: 'STALE_VERSION' };
     }
-    if (err.status === 422 && reason === 'NOT_WITHDRAWABLE') {
+    // Consent-API names it PURPOSE_NOT_WITHDRAWABLE; NOT_WITHDRAWABLE is the older name.
+    if (
+      err.status === 422 &&
+      (reason === 'PURPOSE_NOT_WITHDRAWABLE' || reason === 'NOT_WITHDRAWABLE')
+    ) {
       return { kind: 'NOT_WITHDRAWABLE', message: 'NOT_WITHDRAWABLE' };
+    }
+    // e.g. no notice published for that context and language.
+    if (err.status === 404) {
+      return { kind: 'NOT_FOUND', message: reason || 'NOT_FOUND' };
     }
     if (err.status === 0 || err.status >= 500) {
       return { kind: 'UNAVAILABLE', message: err.message };
     }
+    // The server's reason code (OTP_INVALID, RATE_LIMITED, ...) when it sends one.
     return {
       kind: 'FAILED',
-      message: err.error?.errorMessage || err.message,
+      message: reason || err.error?.errorMessage || err.error?.message || err.message,
     };
   }
   return { kind: 'FAILED', message: 'Request failed' };
@@ -173,10 +184,14 @@ export class ConsentApiService {
     );
   }
 
-  getPendingActions(benRegId: number): Observable<PendingAction[]> {
+  /** context: REVISIT for a returning patient; the server defaults to REGISTRATION. */
+  getPendingActions(
+    benRegId: number,
+    context?: ConsentContextType
+  ): Observable<PendingAction[]> {
     return this.unwrap(
       this.http.get<OutputResponse<PendingAction[]>>(
-        this.url(CONSENT_PATHS.pendingActions(benRegId))
+        this.url(CONSENT_PATHS.pendingActions(benRegId, context))
       )
     );
   }
@@ -241,6 +256,15 @@ export class ConsentApiService {
     );
   }
 
+  /** The logged-in doctor asks for access; the grant starts PENDING until the patient approves. */
+  requestAccess(req: RequestAccessRequest, idempotencyKey: string): Observable<AccessGrant> {
+    return this.unwrap(
+      this.http.post<OutputResponse<AccessGrant>>(this.url(CONSENT_PATHS.requestAccess), req, {
+        headers: this.keyHeader(idempotencyKey),
+      })
+    );
+  }
+
   approveAccess(
     grantId: string,
     otpChallengeId: string,
@@ -276,7 +300,8 @@ export class ConsentApiService {
   private unwrap<T>(source: Observable<OutputResponse<T>>): Observable<T> {
     return source.pipe(
       map((res) => {
-        if (!res || res.statusCode !== 200) {
+        // Creating calls (OTP, evidence, save, access request) answer 201.
+        if (!res || res.statusCode < 200 || res.statusCode > 299) {
           throw {
             kind: 'FAILED',
             message: (res && res.errorMessage) || 'Request failed',

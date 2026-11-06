@@ -42,24 +42,27 @@ export const DEFAULT_MODE_SETTINGS: Required<ModeSettings> = {
   photos: 'BOTH',
 };
 
-/** Platform default: exactly the feature 001 behaviour (FR-019). */
-export const DEFAULT_CONTEXT_CONFIG: ContextConfig = {
-  enabled: true,
-  mandatory: true,
-  modes: ACTIVE_CONSENT_MODES.map((m, i) => ({ mode: m.mode, rank: i + 1, settings: {} })),
+/**
+ * No project configuration (fetchConsentConfig returned null): nothing is invented, so consent is
+ * off for the project and registration keeps the old consent pop-up until an admin configures it.
+ */
+export const NOT_CONFIGURED_CONTEXT: ContextConfig = {
+  enabled: false,
+  mandatory: false,
+  modes: [],
   defaultMode: null,
   purposes: [],
   languages: [],
-  guardian: { enabled: true, ageThreshold: 18 },
+  guardian: { enabled: false, ageThreshold: 18 },
 };
 
-export function defaultResolvedConfig(context: ConsentContextType): ResolvedConsentConfig {
+export function notConfiguredConfig(context: ConsentContextType): ResolvedConsentConfig {
   return {
     projectId: null,
     version: null,
     context,
-    config: DEFAULT_CONTEXT_CONFIG,
-    source: 'DEFAULT',
+    config: NOT_CONFIGURED_CONTEXT,
+    source: 'NOT_CONFIGURED',
   };
 }
 
@@ -68,7 +71,7 @@ export function activeMode(mode: ConsentMode | null): ConsentMode | null {
   return mode === 'VOICE_CLIP' ? 'READ_ALOUD' : mode;
 }
 
-/** Allowed modes in display order; unknown and retired modes are dropped, none left means all active. */
+/** Exactly the configured modes in display order; unknown and retired modes are dropped. */
 export function allowedModes(config: ContextConfig): { mode: ConsentMode; key: string }[] {
   const ordered = (config.modes || []).slice().sort((a, b) => a.rank - b.rank);
   const result: { mode: ConsentMode; key: string }[] = [];
@@ -78,7 +81,7 @@ export function allowedModes(config: ContextConfig): { mode: ConsentMode; key: s
       result.push(found);
     }
   });
-  return result.length === 0 ? ACTIVE_CONSENT_MODES : result;
+  return result;
 }
 
 /** The chosen mode's settings over the feature 001 defaults. */

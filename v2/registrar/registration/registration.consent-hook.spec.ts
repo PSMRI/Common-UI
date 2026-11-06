@@ -29,7 +29,7 @@ import { of, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ConsentDialogResult } from '../../../src/consent/core/consent.models';
 import { ConsentDialogService } from '../../consent/consent-dialog.service';
-import { defaultResolvedConfig } from '../../../src/consent/core/consent-config';
+import { notConfiguredConfig } from '../../../src/consent/core/consent-config';
 import { ConsentConfigUnavailable } from '../../../src/consent/core/consent-config.models';
 import { ConsentConfigService } from '../../../src/consent/core/consent-config.service';
 import { mockResolvedConfig } from '../../../src/consent/core/testing/consent-config.mock';
@@ -53,7 +53,7 @@ describe('RegistrationComponent consent hook (v2)', () => {
     original = env.consentManagement;
     consentDialog = jasmine.createSpyObj('ConsentDialogService', ['open']);
     consentConfig = jasmine.createSpyObj('ConsentConfigService', ['load']);
-    consentConfig.load.and.returnValue(of(defaultResolvedConfig('REGISTRATION')));
+    consentConfig.load.and.returnValue(of(mockResolvedConfig('all')));
     zardDialog = jasmine.createSpyObj('ZardDialogService', ['create']);
     zardDialog.create.and.returnValue({ afterClosed: () => of('1') });
     router = jasmine.createSpyObj('Router', ['navigate']);
@@ -134,7 +134,7 @@ describe('RegistrationComponent consent hook (v2)', () => {
       expect(consentDialog.open).toHaveBeenCalledWith({
         context: 'REGISTRATION',
         beneficiaryRegId: null,
-        config: defaultResolvedConfig('REGISTRATION'),
+        config: mockResolvedConfig('all'),
       });
       expect(zardDialog.create).not.toHaveBeenCalled();
       expect(router.navigate).not.toHaveBeenCalled();
@@ -180,6 +180,13 @@ describe('RegistrationComponent consent hook (v2)', () => {
       expect(consentDialog.open).not.toHaveBeenCalled();
       expect(zardDialog.create).toHaveBeenCalled();
       expect(registrarService.sendConsentStatus).toHaveBeenCalledWith('1');
+    });
+
+    it('opens the legacy pop-up when the project has no consent configuration', () => {
+      consentConfig.load.and.returnValue(of(notConfiguredConfig('REGISTRATION')));
+      component.openConsent();
+      expect(consentDialog.open).not.toHaveBeenCalled();
+      expect(zardDialog.create).toHaveBeenCalled();
     });
 
     it('opens the dialog without a configuration when it cannot be loaded', () => {

@@ -59,6 +59,9 @@ export interface SaveExtras {
   declarationText?: string;
   /** Patient phone for the Consent ID SMS. */
   notifyPhone?: string | null;
+  /** From fetchConsentConfig (projectId, version); null when the platform default was used. */
+  projectId?: number | null;
+  configVersion?: number | null;
 }
 
 export function createDraft(): ConsentDraft {
@@ -245,23 +248,20 @@ export function declarationWording(mode: ConsentMode | null): DeclarationWording
 }
 
 /**
- * The declaration to show (FR-001, FR-003): the project's wording, the patient wording when no
- * representative wording is configured, otherwise the default text.
+ * The declaration to show, only as the notice publishes it: the representative wording for a
+ * guardian / representative (the notice's patient wording when it has none). Empty when the notice
+ * publishes no declaration; Accept then stays blocked.
  */
-export function declarationText(
-  notice: Notice,
-  wording: DeclarationWording,
-  defaults: { patient: string; representative: string }
-): string {
+export function declarationText(notice: Notice, wording: DeclarationWording): string {
   if (wording === 'REPRESENTATIVE') {
-    return notice.representativeDeclaration || notice.declaration || defaults.representative;
+    return notice.representativeDeclaration || notice.declaration || '';
   }
-  return notice.declaration || defaults.patient;
+  return notice.declaration || '';
 }
 
-/** Grievance text for the confirmation when no structured contact exists (research R9). */
-export function grievanceText(notice: Notice, fallback: string): string {
-  return (notice.grievanceInfo || '').trim() || fallback;
+/** The notice's grievance text for the confirmation; empty when it has none. */
+export function grievanceText(notice: Notice): string {
+  return (notice.grievanceInfo || '').trim();
 }
 
 function anyGranted(draft: ConsentDraft): boolean {
@@ -302,7 +302,8 @@ export function toSaveRequest(
     languageCode: notice.languageCode,
     textHash: notice.textHash,
     channel: 'FACILITY',
-    mode: draft.mode,
+    // A full decline leaves out mode, proof and declaration (Consent-API save rules).
+    mode: granted ? draft.mode : null,
     capturedBy: ctx.capturedBy,
     providerServiceMapId: ctx.providerServiceMapId,
     facilityId: ctx.facilityId,
@@ -316,11 +317,15 @@ export function toSaveRequest(
     })),
     evidenceIds,
     proof: {
-      workerConfirmed: draft.mode === 'READ_ALOUD' ? proof.workerConfirmed === true : null,
-      witnessName: draft.mode === 'WITNESSED' ? proof.witnessName || null : null,
+      // Read aloud: the worker confirms reading the declaration by ticking the patient's Yes.
+      workerConfirmed:
+        granted && draft.mode === 'READ_ALOUD'
+          ? proof.workerConfirmed === true || proof.declarationAgreed === true
+          : null,
+      witnessName: granted && draft.mode === 'WITNESSED' ? proof.witnessName || null : null,
       witnessRelationship:
-        draft.mode === 'WITNESSED' ? proof.witnessRelationship || null : null,
-      otpChallengeId: draft.mode === 'OTP' ? proof.otpChallengeId || null : null,
+        granted && draft.mode === 'WITNESSED' ? proof.witnessRelationship || null : null,
+      otpChallengeId: granted && draft.mode === 'OTP' ? proof.otpChallengeId || null : null,
     },
     guardian: guardian
       ? {
@@ -334,6 +339,8 @@ export function toSaveRequest(
           evidenceIds: guardianEvidenceIds,
         }
       : null,
+    projectId: extras.projectId ?? null,
+    configVersion: extras.configVersion ?? null,
     declaration,
     notify:
       granted && extras.notifyPhone ? { channel: 'SMS', phone: extras.notifyPhone } : null,

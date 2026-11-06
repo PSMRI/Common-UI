@@ -24,13 +24,12 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { environment } from 'src/environments/environment';
 import { SessionStorageService } from '../../registrar/services/session-storage.service';
-import { DEFAULT_CONTEXT_CONFIG } from './consent-config';
+import { NOT_CONFIGURED_CONTEXT } from './consent-config';
 import { ConsentConfigUnavailable, ResolvedConsentConfig } from './consent-config.models';
 import { ConsentConfigService } from './consent-config.service';
 import { mockFullContext } from './testing/consent-config.mock';
 
 const URL = 'http://test/common-api/customization/consent/fetchConsentConfig';
-const KEY = 'consentConfig:2:17:211:1804:REGISTRATION';
 
 describe('ConsentConfigService', () => {
   const env = environment as { getConsentConfigUrl?: unknown };
@@ -90,7 +89,7 @@ describe('ConsentConfigService', () => {
     req.flush({ statusCode: 200, data: null });
   });
 
-  it('returns the project configuration and keeps a session copy', () => {
+  it('returns the project configuration exactly as sent, keeping no copy', () => {
     const out = collect();
     http.expectOne(URL).flush({
       statusCode: 200,
@@ -103,49 +102,53 @@ describe('ConsentConfigService', () => {
       config: mockFullContext(),
       source: 'PROJECT',
     });
-    expect(JSON.parse(store[KEY] as string).projectId).toBe(12);
+    expect(session.setItem).not.toHaveBeenCalled();
   });
 
-  it('returns the platform default when no project is configured', () => {
+  it('returns not configured (consent off, no modes) when no project is configured', () => {
     const out = collect();
     http.expectOne(URL).flush({ statusCode: 200, data: null });
-    expect(out.value?.source).toBe('DEFAULT');
-    expect(out.value?.config).toBe(DEFAULT_CONTEXT_CONFIG);
+    expect(out.value?.source).toBe('NOT_CONFIGURED');
+    expect(out.value?.config).toBe(NOT_CONFIGURED_CONTEXT);
+    expect(out.value?.config.enabled).toBeFalse();
+    expect(out.value?.config.modes).toEqual([]);
     expect(out.value?.projectId).toBeNull();
   });
 
-  it('returns the platform default without a call when the host has no URL', () => {
+  it('returns not configured without a call when the host has no URL', () => {
     delete env.getConsentConfigUrl;
     const out = collect();
     http.expectNone(URL);
-    expect(out.value?.source).toBe('DEFAULT');
+    expect(out.value?.source).toBe('NOT_CONFIGURED');
   });
 
-  it('returns the platform default without a call when the URL is not a string', () => {
+  it('returns not configured without a call when the URL is not a string', () => {
     env.getConsentConfigUrl = 42;
-    expect(collect().value?.source).toBe('DEFAULT');
+    expect(collect().value?.source).toBe('NOT_CONFIGURED');
   });
 
-  it('returns the platform default when the endpoint is not deployed (404)', () => {
-    store[KEY] = JSON.stringify({ projectId: 12, version: 4, context: 'REGISTRATION', config: mockFullContext() });
+  it('returns not configured when the endpoint is not deployed (404)', () => {
     const out = collect();
     http.expectOne(URL).flush('Not Found', { status: 404, statusText: 'Not Found' });
-    expect(out.value?.source).toBe('DEFAULT');
+    expect(out.value?.source).toBe('NOT_CONFIGURED');
   });
 
-  it('uses the session copy when the call fails', () => {
-    store[KEY] = JSON.stringify({ projectId: 12, version: 4, context: 'REGISTRATION', config: mockFullContext() });
+  it('errors when the call fails, even after an earlier success', () => {
+    collect();
+    http.expectOne(URL).flush({
+      statusCode: 200,
+      data: { projectId: 12, version: 4, context: 'REGISTRATION', config: mockFullContext() },
+    });
     const out = collect();
     http.expectOne(URL).flush('down', { status: 503, statusText: 'Unavailable' });
-    expect(out.value?.source).toBe('SESSION_CACHE');
-    expect(out.value?.version).toBe(4);
+    expect(out.value).toBeUndefined();
+    expect(out.error instanceof ConsentConfigUnavailable).toBeTrue();
   });
 
-  it('accepts a session copy stored as an object', () => {
-    store[KEY] = { projectId: 12, version: 4, context: 'REGISTRATION', config: mockFullContext() };
+  it('errors on a network failure', () => {
     const out = collect();
     http.expectOne(URL).error(new ProgressEvent('error'));
-    expect(out.value?.source).toBe('SESSION_CACHE');
+    expect(out.error instanceof ConsentConfigUnavailable).toBeTrue();
   });
 
   it('treats a non-200 statusCode as a failure', () => {
@@ -160,29 +163,18 @@ describe('ConsentConfigService', () => {
     expect(out.error instanceof ConsentConfigUnavailable).toBeTrue();
   });
 
-  it('errors with ConsentConfigUnavailable when the call fails and no copy exists', () => {
+  it('errors with ConsentConfigUnavailable when the call fails', () => {
     const out = collect();
     http.expectOne(URL).flush('down', { status: 500, statusText: 'Error' });
     expect(out.error instanceof ConsentConfigUnavailable).toBeTrue();
     expect((out.error as Error).name).toBe('ConsentConfigUnavailable');
   });
 
-  it('ignores an unreadable or incomplete session copy', () => {
-    store[KEY] = '{not json';
-    const first = collect();
-    http.expectOne(URL).flush('down', { status: 500, statusText: 'Error' });
-    expect(first.error instanceof ConsentConfigUnavailable).toBeTrue();
-    store[KEY] = JSON.stringify({ projectId: 12 });
-    const second = collect();
-    http.expectOne(URL).flush('down', { status: 500, statusText: 'Error' });
-    expect(second.error instanceof ConsentConfigUnavailable).toBeTrue();
-  });
-
-  it('returns the platform default without a call when the location is missing or unreadable', () => {
+  it('returns not configured without a call when the location is missing or unreadable', () => {
     delete store['locationData'];
-    expect(collect().value?.source).toBe('DEFAULT');
+    expect(collect().value?.source).toBe('NOT_CONFIGURED');
     store['locationData'] = '{broken';
-    expect(collect().value?.source).toBe('DEFAULT');
+    expect(collect().value?.source).toBe('NOT_CONFIGURED');
     http.expectNone(URL);
   });
 

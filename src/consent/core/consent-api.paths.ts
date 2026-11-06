@@ -43,8 +43,11 @@ export const CONSENT_PATHS = {
     `/consent/v1/otp/challenges/${encodeURIComponent(challengeId)}/verify`,
   principalConsents: (benRegId: number) =>
     `/consent/v1/principals/${benRegId}/consents`,
-  pendingActions: (benRegId: number) =>
-    `/consent/v1/principals/${benRegId}/pending-actions`,
+  /** context: REGISTRATION (the server default) or REVISIT. */
+  pendingActions: (benRegId: number, context?: string) =>
+    `/consent/v1/principals/${benRegId}/pending-actions${
+      context ? `?context=${encodeURIComponent(context)}` : ''
+    }`,
   pendingActionsBatch: '/consent/v1/principals/pending-actions/batch',
   preferences: (benRegId: number) =>
     `/consent/v1/principals/${benRegId}/preferences`,
@@ -52,6 +55,7 @@ export const CONSENT_PATHS = {
     `/consent/v1/principals/${benRegId}/withdrawals`,
   accessGrants: (benRegId: number) =>
     `/consent/v1/principals/${benRegId}/access-grants?status=ACTIVE,PENDING`,
+  requestAccess: '/consent/v1/access-grants',
   approveAccess: (grantId: string) =>
     `/consent/v1/access-grants/${encodeURIComponent(grantId)}/approve`,
   revokeAccess: (grantId: string) =>

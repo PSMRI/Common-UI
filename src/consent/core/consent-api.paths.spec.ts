@@ -67,6 +67,10 @@ describe('CONSENT_PATHS', () => {
     expect(CONSENT_PATHS.pendingActions(42)).toBe(
       '/consent/v1/principals/42/pending-actions'
     );
+    expect(CONSENT_PATHS.pendingActions(42, 'REVISIT')).toBe(
+      '/consent/v1/principals/42/pending-actions?context=REVISIT'
+    );
+    expect(CONSENT_PATHS.requestAccess).toBe('/consent/v1/access-grants');
     expect(CONSENT_PATHS.preferences(42)).toBe(
       '/consent/v1/principals/42/preferences'
     );

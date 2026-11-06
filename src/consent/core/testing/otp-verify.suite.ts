@@ -97,6 +97,17 @@ export function otpVerifySuite(OtpVerifyComponent: Type<OtpVerifyBase>, track: s
       expect(fixture.nativeElement.textContent).not.toContain('9876543212');
     });
 
+    it('sends the consent OTP through Consent-API with purpose CONSENT', () => {
+      component.purpose = 'CONSENT';
+      component.phone = '9876543212';
+      component.send();
+      fixture.detectChanges();
+      const [req, key] = api.sendOtp.calls.mostRecent().args;
+      expect(req).toEqual({ purpose: 'CONSENT', phone: '9876543212' });
+      expect(key).toBeTruthy();
+      expect(component.challengeId).toBe('otp-1');
+    });
+
     it('passes the reference id when given', () => {
       component.phone = '9876543212';
       component.refId = 'g-1';

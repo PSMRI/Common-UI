@@ -45,6 +45,8 @@ describe(`ProofStepComponent (${track})`, () => {
     fixture = TestBed.createComponent(ProofStepComponent);
     component = fixture.componentInstance;
     component.text = { mode: 'How?', modeSelfRead: 'Patient read it', modeOtp: 'OTP' };
+    // A project configured with every active mode.
+    component.modes = ACTIVE_CONSENT_MODES;
     fixture.detectChanges();
   });
 
@@ -101,8 +103,9 @@ describe(`ProofStepComponent (${track})`, () => {
       expect(fixture.nativeElement.querySelector('input[name="consent-witness-name"]')).not.toBeNull();
     });
 
-    it('offers the active modes by default', () => {
-      expect(component.modes).toEqual(ACTIVE_CONSENT_MODES);
+    it('offers no modes until the configuration gives them', () => {
+      const bare = TestBed.createComponent(ProofStepComponent);
+      expect(bare.componentInstance.modes).toEqual([]);
     });
   });
 

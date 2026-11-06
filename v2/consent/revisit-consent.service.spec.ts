@@ -23,7 +23,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { defaultResolvedConfig } from '../../src/consent/core/consent-config';
+import { notConfiguredConfig } from '../../src/consent/core/consent-config';
 import { ConsentApiService } from '../../src/consent/core/consent-api.service';
 import { ConsentConfigService } from '../../src/consent/core/consent-config.service';
 import { ConsentDialogResult, PendingAction } from '../../src/consent/core/consent.models';
@@ -128,7 +128,7 @@ describe('RevisitConsentService (feature 003)', () => {
       api.getPendingActions.and.returnValue(of([{ ...missing[0], reason: 'RECONSENT_REQUIRED' }]));
       dialog.open.and.returnValue(of(closedWith('GRANTED')));
       expect(ensure()).toEqual({ proceed: true, pending: false });
-      expect(api.getPendingActions).toHaveBeenCalledWith(101);
+      expect(api.getPendingActions).toHaveBeenCalledWith(101, 'REVISIT');
       expect(dialog.open).toHaveBeenCalledWith(
         jasmine.objectContaining({
           context: 'REVISIT',
@@ -160,7 +160,9 @@ describe('RevisitConsentService (feature 003)', () => {
     it('goes ahead when revisit consent is off, the feature is off or the service fails', () => {
       config.load.and.returnValue(of(mockResolvedConfig('off', 'REVISIT')));
       expect(ensure()).toEqual({ proceed: true, pending: false });
-      config.load.and.returnValue(of(defaultResolvedConfig('REVISIT')));
+      config.load.and.returnValue(of(notConfiguredConfig('REVISIT')));
+      expect(ensure()).toEqual({ proceed: true, pending: false });
+      config.load.and.returnValue(of(mockResolvedConfig('full', 'REVISIT')));
       api.getPendingActions.and.returnValue(throwError(() => ({ kind: 'UNAVAILABLE' })));
       expect(ensure()).toEqual({ proceed: true, pending: true });
       env.consentManagement = { enabled: false };

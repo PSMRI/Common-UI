@@ -36,5 +36,5 @@ export {
 } from './revisit-consent.service';
 // Feature 002: per-project consent configuration.
 export * from '../../src/consent/core/consent-config.models';
-export { DEFAULT_CONTEXT_CONFIG } from '../../src/consent/core/consent-config';
+export { NOT_CONFIGURED_CONTEXT } from '../../src/consent/core/consent-config';
 export { ConsentConfigService } from '../../src/consent/core/consent-config.service';

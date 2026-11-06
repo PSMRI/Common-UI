@@ -26,7 +26,7 @@ import { map, switchMap, tap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { activeMode, allowedModes, DEFAULT_CONTEXT_CONFIG } from '../consent-config';
+import { activeMode, allowedModes, NOT_CONFIGURED_CONTEXT } from '../consent-config';
 import { ContextConfig, ResolvedConsentConfig } from '../consent-config.models';
 import { ConsentConfigService } from '../consent-config.service';
 import { ConsentApiService } from '../consent-api.service';
@@ -58,7 +58,6 @@ import {
   RecordingUploadState,
 } from '../consent.models';
 import { maskPhone, sha256Hex, uuidV4 } from '../evidence.util';
-import { ACTIVE_CONSENT_MODES } from './proof-step.base';
 
 interface EvidenceItem {
   type: EvidenceType;
@@ -82,7 +81,9 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   config: ResolvedConsentConfig | null = null;
   configFailed = false;
   /** Allowed modes in order, set once per configuration so bindings stay stable. */
-  modes: { mode: ConsentMode; key: string }[] = ACTIVE_CONSENT_MODES;
+  modes: { mode: ConsentMode; key: string }[] = [];
+  /** No consent message is published for the chosen language (Consent-API 404). */
+  noNotice = false;
   private retryAction: (() => void) | null = null;
   // Keyed by the captured file, so a retry re-uploads only failed files and a retake uploads anew.
   private evidenceIds = new WeakMap<Blob, string>();
@@ -130,7 +131,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   }
 
   get contextConfig(): ContextConfig {
-    return this.config ? this.config.config : DEFAULT_CONTEXT_CONFIG;
+    return this.config ? this.config.config : NOT_CONFIGURED_CONTEXT;
   }
 
   /** OTP is the only allowed mode but there is no phone to send it to. */
@@ -176,7 +177,22 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   }
 
   get acceptEnabled(): boolean {
-    return !!this.config && !this.otpNoPhone && canAccept(this.draft, false, this.saving);
+    return (
+      !!this.config &&
+      !this.otpNoPhone &&
+      !this.declarationMissing &&
+      canAccept(this.draft, false, this.saving)
+    );
+  }
+
+  /** Something is granted but the notice publishes no declaration to agree to. */
+  get declarationMissing(): boolean {
+    const draft = this.draft;
+    return (
+      !!draft.notice &&
+      Object.keys(draft.decisions).some((code) => draft.decisions[code] === true) &&
+      !this.declaration
+    );
   }
 
   /** Text key for the first thing still blocking Accept, so staff know what is missing. */
@@ -184,6 +200,9 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     const draft = this.draft;
     if (!draft.notice || this.saving || this.acceptEnabled) {
       return null;
+    }
+    if (this.declarationMissing) {
+      return 'pendingNoDeclaration';
     }
     if (!draft.noticeReadComplete) {
       return 'pendingReadNotice';
@@ -215,18 +234,23 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     if (!this.draft.notice) {
       return '';
     }
-    return declarationText(this.draft.notice, declarationWording(this.draft.mode), {
-      patient: this.text?.defaultDeclaration || '',
-      representative: this.text?.defaultRepresentativeDeclaration || '',
-    });
+    return declarationText(this.draft.notice, declarationWording(this.draft.mode));
   }
 
   loadNotice(languageCode: string): void {
     this.loadingNotice = true;
     this.failed = false;
+    this.noNotice = false;
     const projectId = this.config ? this.config.projectId : null;
     this.consentApi.getNotice(this.options.context, languageCode, projectId).subscribe({
       next: (notice) => {
+        if (notice.source === 'CENTRAL') {
+          // The project has no consent message of its own: show "not configured", not the central text.
+          this.loadingNotice = false;
+          this.noNotice = true;
+          this.cdr.markForCheck();
+          return;
+        }
         this.draft = withNotice(this.draft, notice);
         if (!this.draft.mode) {
           this.draft = { ...this.draft, mode: this.defaultMode() };
@@ -235,8 +259,14 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
         this.loadingNotice = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err: ConsentApiError) => {
         this.loadingNotice = false;
+        if (err && err.kind === 'NOT_FOUND') {
+          // Nothing published for this project and language: say so, nothing to retry.
+          this.noNotice = true;
+          this.cdr.markForCheck();
+          return;
+        }
         this.fail(() => this.loadNotice(languageCode));
       },
     });
@@ -380,6 +410,8 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
             {
               declarationText: withEvidence ? this.declaration : undefined,
               notifyPhone: this.options.patientPhone || null,
+              projectId: this.config ? this.config.projectId : null,
+              configVersion: this.config ? this.config.version : null,
             }
           );
           return this.consentApi
@@ -408,7 +440,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
             capturedAt: request.capturedAt,
             syncStatus: response.syncStatus,
             grievance: notice.grievance || null,
-            grievanceText: grievanceText(notice, this.text?.defaultGrievance || ''),
+            grievanceText: grievanceText(notice),
             notification: response.notification || null,
             hasPhone: !!request.notify,
           };

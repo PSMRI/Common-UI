@@ -25,8 +25,8 @@ import {
   allowedLanguages,
   allowedModes,
   applyPurposes,
-  DEFAULT_CONTEXT_CONFIG,
-  defaultResolvedConfig,
+  NOT_CONFIGURED_CONTEXT,
+  notConfiguredConfig,
   modeSettings,
 } from './consent-config';
 import { ContextConfig } from './consent-config.models';
@@ -36,27 +36,21 @@ import { mockLanguages, mockPurposes } from './testing/consent.mock';
 import { ACTIVE_CONSENT_MODES, CONSENT_MODES, RETIRED_MODES } from './ui/proof-step.base';
 
 describe('consent-config', () => {
-  describe('platform default', () => {
-    it('allows the four active modes in order with nothing pre-ticked (feature 003)', () => {
-      expect(allowedModes(DEFAULT_CONTEXT_CONFIG).map((m) => m.mode)).toEqual([
-        'SELF_READ',
-        'READ_ALOUD',
-        'WITNESSED',
-        'SIGNATURE_PHOTO',
-        'OTP',
-      ]);
-      expect(DEFAULT_CONTEXT_CONFIG.defaultMode).toBeNull();
-      expect(DEFAULT_CONTEXT_CONFIG.enabled).toBeTrue();
-      expect(DEFAULT_CONTEXT_CONFIG.guardian).toEqual({ enabled: true, ageThreshold: 18 });
+  describe('not configured', () => {
+    it('turns consent off with no modes, invents nothing', () => {
+      expect(allowedModes(NOT_CONFIGURED_CONTEXT)).toEqual([]);
+      expect(NOT_CONFIGURED_CONTEXT.enabled).toBeFalse();
+      expect(NOT_CONFIGURED_CONTEXT.mandatory).toBeFalse();
+      expect(NOT_CONFIGURED_CONTEXT.defaultMode).toBeNull();
     });
 
-    it('resolves to the default with no project or version', () => {
-      expect(defaultResolvedConfig('REVISIT')).toEqual({
+    it('resolves with no project or version', () => {
+      expect(notConfiguredConfig('REVISIT')).toEqual({
         projectId: null,
         version: null,
         context: 'REVISIT',
-        config: DEFAULT_CONTEXT_CONFIG,
-        source: 'DEFAULT',
+        config: NOT_CONFIGURED_CONTEXT,
+        source: 'NOT_CONFIGURED',
       });
     });
   });
@@ -78,13 +72,13 @@ describe('consent-config', () => {
       expect(allowedModes(config).map((m) => m.mode)).toEqual(['WITNESSED']);
     });
 
-    it('falls back to the active modes when no known mode is left', () => {
+    it('offers no modes when no known mode is configured', () => {
       const unknown: ContextConfig = {
         ...mockSingleContext(),
         modes: [{ mode: 'FACE_SCAN' as ConsentMode, rank: 1, settings: {} }],
       };
-      expect(allowedModes(unknown)).toEqual(ACTIVE_CONSENT_MODES);
-      expect(allowedModes({ ...mockSingleContext(), modes: undefined as never })).toEqual(ACTIVE_CONSENT_MODES);
+      expect(allowedModes(unknown)).toEqual([]);
+      expect(allowedModes({ ...mockSingleContext(), modes: undefined as never })).toEqual([]);
     });
 
     it('offers voice clip as Read aloud once and keeps the signature mode (feature 003)', () => {
@@ -126,7 +120,7 @@ describe('consent-config', () => {
 
   describe('modeSettings', () => {
     it('uses the feature 001 rules when the mode has no settings', () => {
-      expect(modeSettings(DEFAULT_CONTEXT_CONFIG, 'VOICE_CLIP')).toEqual({
+      expect(modeSettings(NOT_CONFIGURED_CONTEXT, 'VOICE_CLIP')).toEqual({
         voiceMinSeconds: 30,
         otpTarget: 'PATIENT',
         witnessRelationshipRequired: true,
@@ -150,8 +144,8 @@ describe('consent-config', () => {
   describe('applyPurposes', () => {
     it('returns the central list unchanged when the project lists no purposes', () => {
       const purposes = mockPurposes();
-      expect(applyPurposes(purposes, DEFAULT_CONTEXT_CONFIG)).toBe(purposes);
-      expect(applyPurposes(purposes, { ...DEFAULT_CONTEXT_CONFIG, purposes: undefined as never })).toBe(purposes);
+      expect(applyPurposes(purposes, NOT_CONFIGURED_CONTEXT)).toBe(purposes);
+      expect(applyPurposes(purposes, { ...NOT_CONFIGURED_CONTEXT, purposes: undefined as never })).toBe(purposes);
     });
 
     it('hides hidden and unlisted optional purposes and orders the rest by rank', () => {
@@ -202,8 +196,8 @@ describe('consent-config', () => {
 
     it('returns every language when none is configured', () => {
       const languages = mockLanguages();
-      expect(allowedLanguages(languages, DEFAULT_CONTEXT_CONFIG)).toBe(languages);
-      expect(allowedLanguages(languages, { ...DEFAULT_CONTEXT_CONFIG, languages: undefined as never })).toBe(languages);
+      expect(allowedLanguages(languages, NOT_CONFIGURED_CONTEXT)).toBe(languages);
+      expect(allowedLanguages(languages, { ...NOT_CONFIGURED_CONTEXT, languages: undefined as never })).toBe(languages);
     });
 
     it('returns an empty list when no published language is configured', () => {

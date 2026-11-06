@@ -40,7 +40,7 @@ import {
 } from './consent.mock';
 import { InjectionToken, Type } from '@angular/core';
 import { ConsentDialogBase } from '../ui/consent-dialog.base';
-import { DEFAULT_CONTEXT_CONFIG, defaultResolvedConfig } from '../consent-config';
+import { NOT_CONFIGURED_CONTEXT } from '../consent-config';
 import { ConsentConfigUnavailable, ResolvedConsentConfig } from '../consent-config.models';
 import { ConsentConfigService } from '../consent-config.service';
 import { mockResolvedConfig } from './consent-config.mock';
@@ -75,12 +75,10 @@ describe(`ConsentDialogComponent (${track})`, () => {
     close: 'Close',
     staleReload: 'Changed elsewhere',
     serviceUnavailable: 'Unavailable',
+    noNoticePublished: 'No message published',
     retry: 'Retry',
     accept: 'Accept',
     decline: 'Decline',
-    defaultDeclaration: 'Default patient declaration',
-    defaultRepresentativeDeclaration: 'Default representative declaration',
-    defaultGrievance: 'Call 104',
     smsSent: 'Sent to {phone}',
     smsQueued: 'Queued to {phone}',
     smsFailed: 'SMS failed',
@@ -124,7 +122,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
     dialogRef = jasmine.createSpyObj('DialogRef', ['close']);
     confirmation = jasmine.createSpyObj<ConfirmationService>('ConfirmationService', ['confirm', 'alert']);
     configService = jasmine.createSpyObj<ConsentConfigService>('ConsentConfigService', ['load']);
-    configService.load.and.returnValue(of(defaultResolvedConfig('REGISTRATION')));
+    configService.load.and.returnValue(of(mockResolvedConfig('all')));
     const context = jasmine.createSpyObj<ConsentContextService>('ConsentContextService', ['context']);
     context.context.and.returnValue(ctx);
     TestBed.configureTestingModule({
@@ -157,7 +155,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
   it('loads the notice in the chosen language with every switch off', () => {
     component.loadNotice('hi');
     fixture.detectChanges();
-    expect(api.getNotice).toHaveBeenCalledWith('REGISTRATION', 'hi', null);
+    expect(api.getNotice).toHaveBeenCalledWith('REGISTRATION', 'hi', 5);
     expect(component.step).toBe('DECIDE');
     expect(Object.values(component.draft.decisions).every((v) => !v)).toBeTrue();
     expect(buttonByText('Accept').disabled).toBeTrue();
@@ -192,6 +190,35 @@ describe(`ConsentDialogComponent (${track})`, () => {
     api.getNotice.and.returnValue(of(mockNotice('hi')));
     buttonByText('Retry').click();
     expect(api.getNotice).toHaveBeenCalledTimes(2);
+    expect(component.step).toBe('DECIDE');
+  });
+
+  it('shows the no-message placeholder when nothing is published (404), with no retry', () => {
+    api.getNotice.and.returnValue(throwError(() => ({ kind: 'NOT_FOUND', message: 'NOT_FOUND' })));
+    component.loadNotice('hi');
+    fixture.detectChanges();
+    expect(component.noNotice).toBeTrue();
+    expect(component.failed).toBeFalse();
+    expect(component.step).toBe('LANGUAGE');
+    const box = fixture.nativeElement.querySelector('.consent-no-notice') as HTMLElement;
+    expect(box.textContent).toContain('No message published');
+    api.getNotice.and.returnValue(of(mockNotice('hi')));
+    component.loadNotice('hi');
+    fixture.detectChanges();
+    expect(component.noNotice).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.consent-no-notice')).toBeNull();
+  });
+
+  it('shows not configured instead of the central message when the project has none', () => {
+    api.getNotice.and.returnValue(of({ ...mockNotice('hi'), source: 'CENTRAL' as const }));
+    component.loadNotice('hi');
+    fixture.detectChanges();
+    expect(component.noNotice).toBeTrue();
+    expect(component.step).toBe('LANGUAGE');
+    expect(component.draft.notice).toBeNull();
+    expect(fixture.nativeElement.querySelector('.consent-no-notice')).not.toBeNull();
+    api.getNotice.and.returnValue(of({ ...mockNotice('hi'), source: 'PROJECT' as const }));
+    component.loadNotice('hi');
     expect(component.step).toBe('DECIDE');
   });
 
@@ -241,7 +268,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
     expect(req.capturedBy).toBe(4521);
     expect(key).toBe(component.draft.idempotencyKey);
     expect(req.declaration).toEqual({
-      text: 'Default patient declaration',
+      text: 'Published patient declaration',
       languageCode: 'hi',
       noticeVersionId: 12,
       wording: 'PATIENT',
@@ -518,7 +545,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
       delete component.options.patientPhone;
     });
 
-    it('shows the declaration for the mode: project wording, representative wording, defaults', () => {
+    it('shows the declaration for the mode exactly as the notice publishes it', () => {
       expect(component.declaration).toBe('');
       api.getNotice.and.returnValue(
         of({ ...mockNotice('hi'), declaration: 'Project patient', representativeDeclaration: 'Project rep' })
@@ -528,9 +555,23 @@ describe(`ConsentDialogComponent (${track})`, () => {
       expect(fixture.nativeElement.querySelector('.consent-declaration-text').textContent).toContain('Project patient');
       component.onMode('WITNESSED');
       expect(component.declaration).toBe('Project rep');
-      api.getNotice.and.returnValue(of(mockNotice('hi')));
+      api.getNotice.and.returnValue(
+        of({ ...mockNotice('hi'), declaration: undefined, representativeDeclaration: undefined })
+      );
       component.loadNotice('hi');
-      expect(component.declaration).toBe('Default representative declaration');
+      expect(component.declaration).toBe('');
+    });
+
+    it('blocks Accept and says so when the notice publishes no declaration', () => {
+      api.getNotice.and.returnValue(
+        of({ ...mockNotice('hi'), declaration: undefined, representativeDeclaration: undefined })
+      );
+      ready();
+      component.onMode('WITNESSED');
+      component.onProof({ witnessName: 'Asha', witnessRelationship: 'Mother', declarationAgreed: true });
+      expect(component.declarationMissing).toBeTrue();
+      expect(component.acceptEnabled).toBeFalse();
+      expect(component.pendingKey).toBe('pendingNoDeclaration');
     });
 
     it('saves Guardian / Representative consent as the guardian with the representative wording', () => {
@@ -541,7 +582,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
       const req = api.saveConsent.calls.mostRecent().args[0];
       expect(req.consentingParty).toBe('GUARDIAN');
       expect(req.declaration!.wording).toBe('REPRESENTATIVE');
-      expect(req.declaration!.text).toBe('Default representative declaration');
+      expect(req.declaration!.text).toBe('Published representative declaration');
     });
 
     it('shows the Consent ID, structured grievance contact and SMS sent', () => {
@@ -569,17 +610,17 @@ describe(`ConsentDialogComponent (${track})`, () => {
       expect(fixture.nativeElement.querySelectorAll('.consent-done-grievance dt').length).toBe(1);
     });
 
-    it('falls back to the notice grievance text, then the default', () => {
+    it('shows the notice grievance text when there is no structured contact', () => {
       accept();
       expect(fixture.nativeElement.querySelector('.consent-done-grievance-text').textContent).toContain('Contact the DPO');
       expect(component.smsMessage).toBe('No phone');
       expect(component.confirmation!.grievanceText).toBe('Contact the DPO');
     });
 
-    it('uses the default grievance text when the notice has none', () => {
+    it('shows no grievance text when the notice has none', () => {
       api.getNotice.and.returnValue(of({ ...mockNotice('hi'), grievanceInfo: '' }));
       accept();
-      expect(component.confirmation!.grievanceText).toBe('Call 104');
+      expect(component.confirmation!.grievanceText).toBe('');
     });
 
     it('notes an offline save and a queued SMS', () => {
@@ -625,7 +666,8 @@ describe(`ConsentDialogComponent (${track})`, () => {
       accept();
       component.currentLanguageSet = {};
       expect(component.smsMessage).toBe('');
-      expect(component.declaration).toBe('');
+      // The declaration comes from the notice, not from the language set.
+      expect(component.declaration).toBe('Published patient declaration');
     });
   });
 
@@ -656,7 +698,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
 
     it('loads the configuration once for the dialog context', () => {
       expect(configService.load).toHaveBeenCalledOnceWith('REGISTRATION');
-      expect(component.config?.source).toBe('DEFAULT');
+      expect(component.config?.source).toBe('PROJECT');
       expect(component.modes.length).toBe(5);
     });
 
@@ -728,7 +770,8 @@ describe(`ConsentDialogComponent (${track})`, () => {
       const dialog = failed.componentInstance;
       expect(dialog.configFailed).toBeTrue();
       expect(dialog.config).toBeNull();
-      expect(dialog.contextConfig).toBe(DEFAULT_CONTEXT_CONFIG);
+      expect(dialog.contextConfig).toBe(NOT_CONFIGURED_CONTEXT);
+      expect(dialog.modes).toEqual([]);
       expect(dialog.acceptEnabled).toBeFalse();
       expect(failed.nativeElement.textContent).toContain('Settings failed');
       expect(failed.nativeElement.querySelector('app-consent-language-step')).toBeNull();
