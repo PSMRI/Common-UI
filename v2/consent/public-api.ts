@@ -25,6 +25,7 @@ export * from '../../src/consent/core/consent.models';
 export { isConsentFeatureEnabled } from '../../src/consent/core/consent-feature';
 export { consentRefusalFrom } from '../../src/consent/core/consent-refusal';
 export { ConsentApiService } from '../../src/consent/core/consent-api.service';
+export { forRegisteredPatient } from '../../src/consent/core/consent-draft';
 export { ConsentDialogService } from './consent-dialog.service';
 export { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 // Feature 003: consent for patients who are already registered.
@@ -38,3 +39,10 @@ export {
 export * from '../../src/consent/core/consent-config.models';
 export { NOT_CONFIGURED_CONTEXT } from '../../src/consent/core/consent-config';
 export { ConsentConfigService } from '../../src/consent/core/consent-config.service';
+// AMM-2522: preference centre, opened from the "Consent" button in the patient header.
+export { ConsentButtonComponent } from './consent-button/consent-button.component';
+export { PreferenceCentreComponent } from './preference-centre/preference-centre.component';
+export {
+  PreferenceCentreOptions,
+  PreferenceCentreResult,
+} from '../../src/consent/core/ui/preference-centre.base';

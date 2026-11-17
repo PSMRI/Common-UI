@@ -24,7 +24,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { CameraService } from 'src/app/app-modules/core/services';
 import { of, Subject, throwError } from 'rxjs';
-import { Notice } from '../consent.models';
+import { ConsentDialogResult, Notice } from '../consent.models';
 import { createInOnPushHost } from './on-push-host';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -282,6 +282,29 @@ describe(`ConsentDialogComponent (${track})`, () => {
     expect(dialogRef.close).toHaveBeenCalledWith(
       jasmine.objectContaining({ outcome: 'GRANTED', consentId: 'c-1', consentingParty: 'SELF', syncStatus: 'SYNCED' })
     );
+  });
+
+  it('with saveAfterRegistration: uploads nothing new, saves nothing and returns the request', () => {
+    (component.options as { saveAfterRegistration?: boolean }).saveAfterRegistration = true;
+    ready();
+    component.accept();
+    expect(api.saveConsent).not.toHaveBeenCalled();
+    const result = dialogRef.close.calls.mostRecent().args[0] as ConsentDialogResult;
+    expect(result.outcome).toBe('GRANTED');
+    expect(result.consentId).toBeNull();
+    expect(result.pendingSave!.idempotencyKey).toBe(component.draft.idempotencyKey);
+    expect(result.pendingSave!.request.beneficiaryRegId).toBeNull();
+    expect(result.pendingSave!.request.mode).toBe('OTP');
+    expect(result.pendingSave!.request.proof.otpChallengeId).toBe('otp-1');
+  });
+
+  it('with saveAfterRegistration: still saves a declined (blocked) consent at once', () => {
+    (component.options as { saveAfterRegistration?: boolean }).saveAfterRegistration = true;
+    confirmation.confirm.and.returnValue(of(true));
+    ready();
+    component.decline();
+    expect(api.saveConsent).toHaveBeenCalledTimes(1);
+    expect(dialogRef.close).toHaveBeenCalledWith(jasmine.objectContaining({ outcome: 'BLOCKED' }));
   });
 
   it('reports a partial consent and the offline sync status', () => {

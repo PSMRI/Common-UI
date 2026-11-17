@@ -398,6 +398,12 @@ export interface ConsentDialogOptions {
   config?: ResolvedConsentConfig;
   /** Feature 003: why consent is taken (revisit pending actions); default NEW. */
   eventType?: ConsentEventType;
+  /**
+   * Registration: collect the consent (and upload its proof files) but save it only after the patient
+   * is registered, so the saved consent carries the beneficiaryRegId. A blocked consent is still saved
+   * at once, because no registration follows it.
+   */
+  saveAfterRegistration?: boolean;
 }
 
 export interface ConsentDialogResult {
@@ -406,6 +412,19 @@ export interface ConsentDialogResult {
   consentingParty: ConsentingParty | null;
   decisions: { purposeCode: string; granted: boolean }[];
   syncStatus: SyncStatus | null;
+  /**
+   * Set only with `saveAfterRegistration`: the consent to save once the patient is registered, with the
+   * new beneficiaryRegId. consentId and syncStatus stay null until then.
+   */
+  pendingSave?: PendingConsentSave | null;
+}
+
+/** A consent collected before registration and saved after it (registration only). */
+export interface PendingConsentSave {
+  request: SaveConsentRequest;
+  idempotencyKey: string;
+  /** The notice's grievance contact, shown with the Consent ID after the save. */
+  grievanceText: string;
 }
 
 export interface ConsentRefusal {

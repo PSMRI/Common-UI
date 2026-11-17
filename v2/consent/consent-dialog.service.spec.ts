@@ -26,6 +26,8 @@ import { of } from 'rxjs';
 import { ConsentDialogResult } from '../../src/consent/core/consent.models';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 import { ConsentDialogService } from './consent-dialog.service';
+import { PreferenceCentreResult } from '../../src/consent/core/ui/preference-centre.base';
+import { PreferenceCentreComponent } from './preference-centre/preference-centre.component';
 
 describe('ConsentDialogService (v2)', () => {
   let dialog: jasmine.SpyObj<ZardDialogService>;
@@ -68,5 +70,29 @@ describe('ConsentDialogService (v2)', () => {
     service.open({ context: 'REGISTRATION', beneficiaryRegId: null }).subscribe((r) => (out = r));
     expect(out!.outcome).toBe('NO_DECISION');
     expect(out!.consentId).toBeNull();
+  });
+
+  it('opens the preference centre with the patient and does not close on backdrop or Esc', () => {
+    dialog.create.and.returnValue({ afterClosed: () => of({ changed: true }) } as never);
+    const options = { beneficiaryRegId: 42, patientPhone: '9876543212' };
+    let out: PreferenceCentreResult | undefined;
+    service.openPreferenceCentre(options).subscribe((r) => (out = r));
+    expect(dialog.create).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        zContent: PreferenceCentreComponent,
+        zData: options,
+        zMaskClosable: false,
+        zClosable: false,
+        zHideFooter: true,
+      })
+    );
+    expect(out).toEqual({ changed: true });
+  });
+
+  it('reports no change when the preference centre closes empty', () => {
+    dialog.create.and.returnValue({ afterClosed: () => of(undefined) } as never);
+    let out: PreferenceCentreResult | undefined;
+    service.openPreferenceCentre({ beneficiaryRegId: 42 }).subscribe((r) => (out = r));
+    expect(out).toEqual({ changed: false });
   });
 });

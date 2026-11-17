@@ -5,6 +5,7 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors,
 import { RegistrarService } from '../services/registrar.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import * as moment from 'moment';
@@ -20,8 +21,10 @@ import { LocationInformationComponent } from './location-information/location-in
 import { OtherInformationComponent } from './other-information/other-information.component';
 import { AbhaInformationComponent } from './abha-information/abha-information.component';
 import {
+  ConsentApiService,
   ConsentConfigService,
   ConsentDialogResult,
+  forRegisteredPatient,
   ConsentDialogService,
   isConsentFeatureEnabled,
   ResolvedConsentConfig,
@@ -55,6 +58,7 @@ export class RegistrationComponent {
   consentResult: ConsentDialogResult | null = null;
   private readonly consentDialog = inject(ConsentDialogService);
   private readonly consentConfig = inject(ConsentConfigService);
+  private readonly consentApi = inject(ConsentApiService);
   disableGenerateOTP = false;
   today = new Date();
 
@@ -338,7 +342,13 @@ export class RegistrationComponent {
   private openConsentDialog(config?: ResolvedConsentConfig) {
     const mandatory = config ? config.config.mandatory : true;
     this.consentDialog
-      .open({ context: 'REGISTRATION', beneficiaryRegId: null, ...(config ? { config } : {}) })
+      .open({
+        context: 'REGISTRATION',
+        beneficiaryRegId: null,
+        // The consent is saved once registration gives the patient a beneficiaryRegId.
+        saveAfterRegistration: true,
+        ...(config ? { config } : {}),
+      })
       .subscribe((result) => {
         this.consentResult = result;
         if (mandatory && (result.outcome === 'BLOCKED' || result.outcome === 'NO_DECISION')) {
@@ -386,6 +396,68 @@ export class RegistrationComponent {
           } else {
             this.redirectToSearch();
           }
+        });
+    }
+
+    /**
+     * Saves the consent taken in the pop-up, now with the new patient's beneficiaryRegId. Registration
+     * returns only the Beneficiary ID, so the patient is looked up by it first. Sent once; on failure staff
+     * can retry with the same request key.
+     */
+    saveConsentAfterRegistration(beneficiaryID: string, phone: string | null) {
+      const pending = this.consentResult?.pendingSave;
+      if (!pending || !beneficiaryID) {
+        return;
+      }
+      this.consentResult = { ...this.consentResult!, pendingSave: null };
+      const search = {
+        beneficiaryRegID: null,
+        beneficiaryName: null,
+        beneficiaryID,
+        phoneNo: null,
+        HealthID: null,
+        HealthIDNumber: null,
+        familyId: null,
+        identity: null,
+      };
+      const text = this.currentLanguageSet?.consent || {};
+      this.registrarService
+        .identityQuickSearch(search)
+        .pipe(
+          map((res: any) => {
+            const found = res?.data?.length === 1 ? res.data[0] : null;
+            const regId = Number(found?.beneficiaryRegID);
+            if (!regId) {
+              throw new Error('Registered patient not found');
+            }
+            return regId;
+          }),
+          switchMap((regId) =>
+            this.consentApi.saveConsent(
+              forRegisteredPatient(pending.request, regId, phone),
+              pending.idempotencyKey
+            )
+          )
+        )
+        .subscribe({
+          next: (saved) => {
+            this.consentResult = { ...this.consentResult!, consentId: saved.consentId, syncStatus: saved.syncStatus };
+            const lines = [
+              `${text.consentIdLabel || 'Consent ID'}: ${saved.consentId}`,
+              pending.grievanceText,
+            ].filter((line) => !!line);
+            this.confirmationService.alert(lines.join('\n'), 'success');
+          },
+          error: () => {
+            this.confirmationService
+              .confirm('warn', text.consentSaveAfterRegistrationFailed || 'Consent could not be saved. Try again?')
+              .subscribe((retry: boolean) => {
+                if (retry) {
+                  this.consentResult = { ...this.consentResult!, pendingSave: pending };
+                  this.saveConsentAfterRegistration(beneficiaryID, phone);
+                }
+              });
+          },
         });
     }
 
@@ -546,6 +618,7 @@ export class RegistrationComponent {
         const benId = responseValue.replace(/^\D+/g, '');
           const txt = res.data.response;
           const numb = txt.replace(/\D/g, '');
+          this.saveConsentAfterRegistration(numb, phoneMaps?.[0]?.phoneNo || null);
           const reqObj = {
             beneficiaryRegID: null,
             beneficiaryID: numb,
