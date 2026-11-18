@@ -35,6 +35,10 @@ import { ConsentConfigService } from '../../../src/consent/core/consent-config.s
 import { ConsentApiService } from '../../../src/consent/core/consent-api.service';
 import { mockResolvedConfig } from '../../../src/consent/core/testing/consent-config.mock';
 import { RegistrationComponent } from './registration.component';
+import {
+  RegistrationSuccessComponent,
+  RegistrationSuccessData,
+} from './registration-success/registration-success.component';
 
 describe('RegistrationComponent consent hook (v2)', () => {
   const env = environment as { consentManagement?: unknown };
@@ -233,28 +237,45 @@ describe('RegistrationComponent consent hook (v2)', () => {
     });
   });
 
-  describe('save after registration', () => {
+  describe('after registration', () => {
     const request = {
       beneficiaryRegId: null,
+      capturedAt: '2026-11-18T10:00:00+05:30',
       decisions: [{ purposeCode: 'P-REG', decision: 'GRANT' }],
       notify: null,
     } as unknown as SaveConsentRequest;
+    const grievance = { officerName: 'Grievance Officer', phone: '1800', email: null, address: null, officeHours: null };
 
     function pending(): ConsentDialogResult {
       return {
         ...{ outcome: 'GRANTED', consentId: null, consentingParty: 'SELF', decisions: [], syncStatus: null },
-        pendingSave: { request, idempotencyKey: 'k-1', grievanceText: 'Call 1800' },
+        pendingSave: { request, idempotencyKey: 'k-1', grievanceText: 'Call 1800', grievance },
       } as ConsentDialogResult;
     }
 
+    function shown(): RegistrationSuccessData {
+      const options = zardDialog.create.calls.mostRecent().args[0] as { zContent: unknown; zData: RegistrationSuccessData };
+      expect(options.zContent).toBe(RegistrationSuccessComponent);
+      return options.zData;
+    }
+
+    let closeWith: unknown;
+
     beforeEach(() => {
+      closeWith = undefined;
+      zardDialog.create.and.callFake(() => ({ afterClosed: () => of(closeWith) }));
       registrarService.identityQuickSearch.and.returnValue(of({ data: [{ beneficiaryRegID: 9876 }] }));
-      consentApi.saveConsent.and.returnValue(of({ consentId: 'CN-1', syncStatus: 'SYNCED', purposes: [] }));
+      consentApi.saveConsent.and.returnValue(
+        of({ consentId: 'CN-1', syncStatus: 'SYNCED', purposes: [], notification: { status: 'SENT', maskedPhone: '98******12' } })
+      );
+      (component as unknown as { currentLanguageSet: unknown }).currentLanguageSet = {
+        consent: { smsSent: 'Sent by SMS to {phone}', smsNoPhone: 'No phone' },
+      };
     });
 
-    it('finds the new patient and saves the consent with their beneficiaryRegId and phone', () => {
+    it('saves the consent with the beneficiaryRegId and shows one message with both IDs', () => {
       component.consentResult = pending();
-      component.saveConsentAfterRegistration('748119959947', '9876543212');
+      component.finishRegistration('748119959947', '9876543212');
       expect(registrarService.identityQuickSearch).toHaveBeenCalledWith(
         jasmine.objectContaining({ beneficiaryID: '748119959947' })
       );
@@ -263,44 +284,70 @@ describe('RegistrationComponent consent hook (v2)', () => {
       expect(sent.notify).toEqual({ channel: 'SMS', phone: '9876543212' });
       expect(sent.decisions).toEqual(request.decisions);
       expect(key).toBe('k-1');
-      expect(component.consentResult!.consentId).toBe('CN-1');
-      expect(confirmation.alert).toHaveBeenCalledWith('Consent ID: CN-1\nCall 1800', 'success');
+      expect(zardDialog.create).toHaveBeenCalledTimes(1);
+      expect(confirmation.alert).not.toHaveBeenCalled();
+      const data = shown();
+      expect(data.beneficiaryID).toBe('748119959947');
+      expect(data.consentFailed).toBeFalse();
+      expect(data.consent).toEqual({
+        consentId: 'CN-1',
+        outcome: 'GRANTED',
+        capturedAt: '2026-11-18T10:00:00+05:30',
+        syncStatus: 'SYNCED',
+        grievance,
+        grievanceText: 'Call 1800',
+        smsLine: 'Sent by SMS to 98******12',
+      });
+    });
+
+    it('shows only the Beneficiary ID when no consent was taken', () => {
+      component.consentResult = null;
+      component.finishRegistration('748119959947', null);
+      expect(consentApi.saveConsent).not.toHaveBeenCalled();
+      expect(shown()).toEqual({ beneficiaryID: '748119959947', consent: null, consentFailed: false });
     });
 
     it('saves only once', () => {
       component.consentResult = pending();
-      component.saveConsentAfterRegistration('748119959947', null);
-      component.saveConsentAfterRegistration('748119959947', null);
+      component.finishRegistration('748119959947', null);
+      component.finishRegistration('748119959947', null);
       expect(consentApi.saveConsent).toHaveBeenCalledTimes(1);
     });
 
-    it('does nothing when the consent was already saved in the pop-up', () => {
-      component.consentResult = { outcome: 'GRANTED', consentId: 'c-1', consentingParty: 'SELF', decisions: [], syncStatus: 'SYNCED' };
-      component.saveConsentAfterRegistration('748119959947', null);
-      expect(registrarService.identityQuickSearch).not.toHaveBeenCalled();
-      expect(consentApi.saveConsent).not.toHaveBeenCalled();
-    });
-
-    it('offers a retry with the same key when the patient is not found or the save fails', () => {
-      confirmation.confirm.and.returnValue(of(true));
-      component.consentResult = pending();
+    it('says the consent failed, and retries with the same key when staff ask', () => {
       let calls = 0;
       registrarService.identityQuickSearch.and.callFake(() =>
         ++calls === 1 ? of({ data: [] }) : of({ data: [{ beneficiaryRegID: 9876 }] })
       );
-      component.saveConsentAfterRegistration('748119959947', null);
-      expect(confirmation.confirm).toHaveBeenCalledWith('warn', 'Retry?');
+      closeWith = 'retry';
+      component.consentResult = pending();
+      zardDialog.create.and.callFake(() => {
+        const result = closeWith;
+        closeWith = undefined; // the second message is closed with Done
+        return { afterClosed: () => of(result) };
+      });
+      component.finishRegistration('748119959947', null);
+      const first = zardDialog.create.calls.first().args[0] as { zData: RegistrationSuccessData };
+      expect(first.zData).toEqual({ beneficiaryID: '748119959947', consent: null, consentFailed: true });
       expect(consentApi.saveConsent).toHaveBeenCalledTimes(1);
       expect(consentApi.saveConsent.calls.mostRecent().args[1]).toBe('k-1');
+      expect(shown().consent!.consentId).toBe('CN-1');
     });
 
-    it('saves nothing after a failure that staff do not retry', () => {
+    it('saves nothing more when staff close the failure message', () => {
       consentApi.saveConsent.and.returnValue(throwError(() => ({ kind: 'UNAVAILABLE', message: 'x' })));
-      confirmation.confirm.and.returnValue(of(false));
       component.consentResult = pending();
-      component.saveConsentAfterRegistration('748119959947', null);
+      component.finishRegistration('748119959947', null);
+      expect(shown().consentFailed).toBeTrue();
       expect(consentApi.saveConsent).toHaveBeenCalledTimes(1);
       expect(component.consentResult!.consentId).toBeNull();
+    });
+
+    it('tells the patient to note the Consent ID when there is no phone', () => {
+      consentApi.saveConsent.and.returnValue(of({ consentId: 'CN-2', syncStatus: 'SYNCED', purposes: [] }));
+      component.consentResult = pending();
+      component.finishRegistration('748119959947', null);
+      expect(shown().consent!.smsLine).toBe('No phone');
     });
   });
 });

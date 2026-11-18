@@ -425,6 +425,7 @@ export interface PendingConsentSave {
   idempotencyKey: string;
   /** The notice's grievance contact, shown with the Consent ID after the save. */
   grievanceText: string;
+  grievance: GrievanceContact | null;
 }
 
 export interface ConsentRefusal {

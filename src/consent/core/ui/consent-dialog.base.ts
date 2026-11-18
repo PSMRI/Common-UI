@@ -338,9 +338,26 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
       )
       .subscribe(confirmed => {
         if (confirmed) {
-          this.save(declineAll(this.draft), false);
+          this.closeDeclined();
         }
       });
+  }
+
+  /** Confirmed decline: closes the pop-up with every purpose declined; nothing is saved. */
+  private closeDeclined(): void {
+    const notice = this.draft.notice;
+    if (!notice) {
+      this.closeDialog(noDecisionResult());
+      return;
+    }
+    const declined = declineAll(this.draft).decisions;
+    this.closeDialog({
+      outcome: outcomeOf(notice.purposes, declined),
+      consentId: null,
+      consentingParty: null,
+      decisions: decisionList(notice.purposes, declined),
+      syncStatus: null,
+    });
   }
 
   retry(): void {
@@ -483,6 +500,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
                 request,
                 idempotencyKey: draft.idempotencyKey,
                 grievanceText: grievanceText(notice),
+                grievance: notice.grievance || null,
               },
             });
             return;
