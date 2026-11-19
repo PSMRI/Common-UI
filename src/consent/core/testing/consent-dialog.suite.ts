@@ -24,7 +24,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { CameraService } from 'src/app/app-modules/core/services';
 import { of, Subject, throwError } from 'rxjs';
-import { Notice } from '../consent.models';
+import { ConsentDialogResult, Notice } from '../consent.models';
 import { createInOnPushHost } from './on-push-host';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -284,6 +284,20 @@ describe(`ConsentDialogComponent (${track})`, () => {
     );
   });
 
+  it('with saveAfterRegistration: uploads nothing new, saves nothing and returns the request', () => {
+    (component.options as { saveAfterRegistration?: boolean }).saveAfterRegistration = true;
+    ready();
+    component.accept();
+    expect(api.saveConsent).not.toHaveBeenCalled();
+    const result = dialogRef.close.calls.mostRecent().args[0] as ConsentDialogResult;
+    expect(result.outcome).toBe('GRANTED');
+    expect(result.consentId).toBeNull();
+    expect(result.pendingSave!.idempotencyKey).toBe(component.draft.idempotencyKey);
+    expect(result.pendingSave!.request.beneficiaryRegId).toBeNull();
+    expect(result.pendingSave!.request.mode).toBe('OTP');
+    expect(result.pendingSave!.request.proof.otpChallengeId).toBe('otp-1');
+  });
+
   it('reports a partial consent and the offline sync status', () => {
     api.saveConsent.and.returnValue(of(mockSaveResponseOffline()));
     ready();
@@ -334,14 +348,24 @@ describe(`ConsentDialogComponent (${track})`, () => {
     expect(component.draft.noticeReadComplete).toBeFalse();
   });
 
-  it('declines after confirmation: saves all DENY and closes BLOCKED', () => {
+  it('declines after confirmation: closes BLOCKED without calling any API', () => {
     confirmation.confirm.and.returnValue(of(true));
     ready();
     buttonByText('Decline').click();
     expect(confirmation.confirm).toHaveBeenCalledWith('warn', 'Cannot continue', 'Confirm decline', 'Close');
-    const req = api.saveConsent.calls.mostRecent().args[0];
-    expect(req.decisions.every((d) => d.decision === 'DENY')).toBeTrue();
-    expect(dialogRef.close).toHaveBeenCalledWith(jasmine.objectContaining({ outcome: 'BLOCKED' }));
+    expect(api.saveConsent).not.toHaveBeenCalled();
+    expect(api.uploadEvidence).not.toHaveBeenCalled();
+    const result = dialogRef.close.calls.mostRecent().args[0] as ConsentDialogResult;
+    expect(result.outcome).toBe('BLOCKED');
+    expect(result.consentId).toBeNull();
+    expect(result.decisions.every((d) => !d.granted)).toBeTrue();
+  });
+
+  it('closes on a confirmed decline before a notice is loaded', () => {
+    confirmation.confirm.and.returnValue(of(true));
+    component.decline();
+    expect(api.saveConsent).not.toHaveBeenCalled();
+    expect(dialogRef.close).toHaveBeenCalledWith(jasmine.objectContaining({ outcome: 'NO_DECISION' }));
   });
 
   it('returns to the decision view when the decline is cancelled', () => {
@@ -350,12 +374,6 @@ describe(`ConsentDialogComponent (${track})`, () => {
     component.decline();
     expect(api.saveConsent).not.toHaveBeenCalled();
     expect(dialogRef.close).not.toHaveBeenCalled();
-  });
-
-  it('saves nothing when declining before a notice is loaded', () => {
-    confirmation.confirm.and.returnValue(of(true));
-    component.decline();
-    expect(api.saveConsent).not.toHaveBeenCalled();
   });
 
   it('closes with NO_DECISION and no API call', () => {
@@ -440,7 +458,7 @@ describe(`ConsentDialogComponent (${track})`, () => {
       component.decline();
       await settle();
       expect(api.uploadEvidence).not.toHaveBeenCalled();
-      expect(api.saveConsent.calls.mostRecent().args[0].evidenceIds).toEqual([]);
+      expect(api.saveConsent).not.toHaveBeenCalled();
     });
 
     it('sends no evidence when a photo is missing', async () => {

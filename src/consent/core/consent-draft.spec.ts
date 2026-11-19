@@ -39,8 +39,9 @@ import {
   sortPurposes,
   toSaveRequest,
   withNotice,
+  forRegisteredPatient,
 } from './consent-draft';
-import { ConsentCaptureContext, ConsentDraft, GuardianDraft } from './consent.models';
+import { ConsentCaptureContext, ConsentDraft, GuardianDraft, SaveConsentRequest } from './consent.models';
 import { mockLanguages, mockNotice, mockNoticeNoAudio, mockPurposes } from './testing/consent.mock';
 
 describe('consent-draft', () => {
@@ -426,5 +427,37 @@ describe('consent-draft', () => {
     expect(Object.keys(declined.decisions).length).toBe(6);
     expect(declined.idempotencyKey).toBe(d.idempotencyKey);
     expect(d.decisions['P-REG']).toBeTrue();
+  });
+});
+
+describe('forRegisteredPatient', () => {
+  function request(decision: 'GRANT' | 'DENY', notify: SaveConsentRequest['notify'] = null): SaveConsentRequest {
+    return {
+      beneficiaryRegId: null,
+      decisions: [{ purposeCode: 'P-REG', decision }],
+      notify,
+    } as unknown as SaveConsentRequest;
+  }
+
+  it('adds the beneficiaryRegId and keeps everything else', () => {
+    const original = request('GRANT');
+    const out = forRegisteredPatient(original, 9876, null);
+    expect(out.beneficiaryRegId).toBe(9876);
+    expect(out.decisions).toBe(original.decisions);
+    expect(original.beneficiaryRegId).toBeNull();
+  });
+
+  it('adds the patient phone for the Consent ID SMS when something was granted', () => {
+    expect(forRegisteredPatient(request('GRANT'), 1, '9876543212').notify).toEqual({ channel: 'SMS', phone: '9876543212' });
+  });
+
+  it('sends no SMS for a decline or an invalid phone', () => {
+    expect(forRegisteredPatient(request('DENY'), 1, '9876543212').notify).toBeNull();
+    expect(forRegisteredPatient(request('GRANT'), 1, '12345').notify).toBeNull();
+  });
+
+  it('keeps a phone the pop-up already had', () => {
+    const notify = { channel: 'SMS' as const, phone: '9123456789' };
+    expect(forRegisteredPatient(request('GRANT', notify), 1, '9876543212').notify).toEqual(notify);
   });
 });

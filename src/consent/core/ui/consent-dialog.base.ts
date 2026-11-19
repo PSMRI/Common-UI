@@ -20,13 +20,24 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { Directive, DoCheck, OnDestroy, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import {
+  Directive,
+  DoCheck,
+  OnDestroy,
+  OnInit,
+  inject,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { forkJoin, from, Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { ConfirmationService } from 'src/app/app-modules/core/services/confirmation.service';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
-import { activeMode, allowedModes, NOT_CONFIGURED_CONTEXT } from '../consent-config';
+import {
+  activeMode,
+  allowedModes,
+  NOT_CONFIGURED_CONTEXT,
+} from '../consent-config';
 import { ContextConfig, ResolvedConsentConfig } from '../consent-config.models';
 import { ConsentConfigService } from '../consent-config.service';
 import { ConsentApiService } from '../consent-api.service';
@@ -55,6 +66,7 @@ import {
   ConsentMode,
   EvidenceType,
   ProofDraft,
+  Purpose,
   RecordingUploadState,
 } from '../consent.models';
 import { maskPhone, sha256Hex, uuidV4 } from '../evidence.util';
@@ -119,7 +131,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     }
     this.configFailed = false;
     this.consentConfig.load(this.options.context).subscribe({
-      next: (config) => {
+      next: config => {
         this.setConfig(config);
         this.cdr.markForCheck();
       },
@@ -151,7 +163,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   /** The configured default, or the only allowed mode (FR-014, FR-015). */
   private defaultMode(): ConsentMode | null {
     const configured = activeMode(this.contextConfig.defaultMode);
-    if (configured && this.modes.some((m) => m.mode === configured)) {
+    if (configured && this.modes.some(m => m.mode === configured)) {
       return configured;
     }
     return this.modes.length === 1 ? this.modes[0].mode : null;
@@ -190,7 +202,9 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     const draft = this.draft;
     return (
       !!draft.notice &&
-      Object.keys(draft.decisions).some((code) => draft.decisions[code] === true) &&
+      Object.keys(draft.decisions).some(
+        code => draft.decisions[code] === true
+      ) &&
       !this.declaration
     );
   }
@@ -213,7 +227,10 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     if (!draft.mode) {
       return 'pendingMode';
     }
-    const ctx = { notice: draft.notice, audioPlayedToEnd: draft.audioPlayedToEnd };
+    const ctx = {
+      notice: draft.notice,
+      audioPlayedToEnd: draft.audioPlayedToEnd,
+    };
     if (proofValid(draft.mode, draft.proof, ctx)) {
       return null;
     }
@@ -222,10 +239,13 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
       if (proof.declarationAgreed) {
         return 'pendingRecording';
       }
-      return draft.mode === 'READ_ALOUD' ? 'pendingPatientAnswer' : 'pendingDeclaration';
+      return draft.mode === 'READ_ALOUD'
+        ? 'pendingPatientAnswer'
+        : 'pendingDeclaration';
     }
     const agreementOnly =
-      draft.mode === 'WITNESSED' && proofValid('WITNESSED', { ...proof, declarationAgreed: true }, ctx);
+      draft.mode === 'WITNESSED' &&
+      proofValid('WITNESSED', { ...proof, declarationAgreed: true }, ctx);
     return agreementOnly ? 'pendingDeclaration' : 'pendingProof';
   }
 
@@ -234,7 +254,10 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     if (!this.draft.notice) {
       return '';
     }
-    return declarationText(this.draft.notice, declarationWording(this.draft.mode));
+    return declarationText(
+      this.draft.notice,
+      declarationWording(this.draft.mode)
+    );
   }
 
   loadNotice(languageCode: string): void {
@@ -242,34 +265,36 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     this.failed = false;
     this.noNotice = false;
     const projectId = this.config ? this.config.projectId : null;
-    this.consentApi.getNotice(this.options.context, languageCode, projectId).subscribe({
-      next: (notice) => {
-        if (notice.source === 'CENTRAL') {
-          // The project has no consent message of its own: show "not configured", not the central text.
+    this.consentApi
+      .getNotice(this.options.context, languageCode, projectId)
+      .subscribe({
+        next: notice => {
+          if (notice.source === 'CENTRAL') {
+            // The project has no consent message of its own: show "not configured", not the central text.
+            this.loadingNotice = false;
+            this.noNotice = true;
+            this.cdr.markForCheck();
+            return;
+          }
+          this.draft = withNotice(this.draft, notice);
+          if (!this.draft.mode) {
+            this.draft = { ...this.draft, mode: this.defaultMode() };
+          }
+          this.step = 'DECIDE';
           this.loadingNotice = false;
-          this.noNotice = true;
           this.cdr.markForCheck();
-          return;
-        }
-        this.draft = withNotice(this.draft, notice);
-        if (!this.draft.mode) {
-          this.draft = { ...this.draft, mode: this.defaultMode() };
-        }
-        this.step = 'DECIDE';
-        this.loadingNotice = false;
-        this.cdr.markForCheck();
-      },
-      error: (err: ConsentApiError) => {
-        this.loadingNotice = false;
-        if (err && err.kind === 'NOT_FOUND') {
-          // Nothing published for this project and language: say so, nothing to retry.
-          this.noNotice = true;
-          this.cdr.markForCheck();
-          return;
-        }
-        this.fail(() => this.loadNotice(languageCode));
-      },
-    });
+        },
+        error: (err: ConsentApiError) => {
+          this.loadingNotice = false;
+          if (err && err.kind === 'NOT_FOUND') {
+            // Nothing published for this project and language: say so, nothing to retry.
+            this.noNotice = true;
+            this.cdr.markForCheck();
+            return;
+          }
+          this.fail(() => this.loadNotice(languageCode));
+        },
+      });
   }
 
   changeLanguage(): void {
@@ -305,12 +330,34 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   decline(): void {
     this.confirmationService
       // The shared confirm dialog reads its title as a status: 'warn' gives the red Warning header.
-      .confirm('warn', this.text?.cannotContinue, this.text?.confirmDecline, this.text?.close)
-      .subscribe((confirmed) => {
+      .confirm(
+        'warn',
+        this.text?.cannotContinue,
+        this.text?.confirmDecline,
+        this.text?.close
+      )
+      .subscribe(confirmed => {
         if (confirmed) {
-          this.save(declineAll(this.draft), false);
+          this.closeDeclined();
         }
       });
+  }
+
+  /** Confirmed decline: closes the pop-up with every purpose declined; nothing is saved. */
+  private closeDeclined(): void {
+    const notice = this.draft.notice;
+    if (!notice) {
+      this.closeDialog(noDecisionResult());
+      return;
+    }
+    const declined = declineAll(this.draft).decisions;
+    this.closeDialog({
+      outcome: outcomeOf(notice.purposes, declined),
+      consentId: null,
+      consentingParty: null,
+      decisions: decisionList(notice.purposes, declined),
+      syncStatus: null,
+    });
   }
 
   retry(): void {
@@ -339,9 +386,15 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     const status = c.notification ? c.notification.status : 'NOT_REQUESTED';
     let key = 'smsNoPhone';
     if (c.hasPhone) {
-      key = { SENT: 'smsSent', QUEUED: 'smsQueued', FAILED: 'smsFailed', NOT_REQUESTED: 'smsFailed' }[status];
+      key = {
+        SENT: 'smsSent',
+        QUEUED: 'smsQueued',
+        FAILED: 'smsFailed',
+        NOT_REQUESTED: 'smsFailed',
+      }[status];
     }
-    const phone = c.notification?.maskedPhone || maskPhone(this.options.patientPhone);
+    const phone =
+      c.notification?.maskedPhone || maskPhone(this.options.patientPhone);
     return ((this.text?.[key] as string) || '').replace('{phone}', phone);
   }
 
@@ -363,12 +416,22 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   /** Sends the recorded agreement to the server now; Accept then reuses its evidence id. */
   uploadRecording(): void {
     const clip = this.draft.proof.voiceClip;
-    if (!clip || this.recordingUpload === 'UPLOADING' || this.recordingUpload === 'DONE') {
+    if (
+      !clip ||
+      this.recordingUpload === 'UPLOADING' ||
+      this.recordingUpload === 'DONE'
+    ) {
       return;
     }
     this.uploadingClip = clip;
     this.failedClip = null;
-    this.uploadAll([{ type: 'VOICE_CLIP', blob: clip, durationSec: this.draft.proof.voiceDurationSec ?? null }]).subscribe({
+    this.uploadAll([
+      {
+        type: 'VOICE_CLIP',
+        blob: clip,
+        durationSec: this.draft.proof.voiceDurationSec ?? null,
+      },
+    ]).subscribe({
       next: () => {
         this.uploadingClip = null;
         this.cdr.markForCheck();
@@ -399,7 +462,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
     this.cdr.markForCheck();
     this.uploadAll(evidence)
       .pipe(
-        switchMap((evidenceIds) => {
+        switchMap(evidenceIds => {
           const request = toSaveRequest(
             draft,
             this.consentContext.context(),
@@ -414,14 +477,34 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
               configVersion: this.config ? this.config.version : null,
             }
           );
+          if (this.deferSave(notice, draft)) {
+            return of({ request, response: null });
+          }
           return this.consentApi
             .saveConsent(request, draft.idempotencyKey)
-            .pipe(map((response) => ({ request, response })));
+            .pipe(map(response => ({ request, response })));
         })
       )
       .subscribe({
         next: ({ request, response }) => {
           this.saving = false;
+          if (!response) {
+            // Registration saves it once the patient has a beneficiaryRegId.
+            this.closeDialog({
+              outcome: outcomeOf(notice.purposes, draft.decisions),
+              consentId: null,
+              consentingParty: request.consentingParty,
+              decisions: decisionList(notice.purposes, draft.decisions),
+              syncStatus: null,
+              pendingSave: {
+                request,
+                idempotencyKey: draft.idempotencyKey,
+                grievanceText: grievanceText(notice),
+                grievance: notice.grievance || null,
+              },
+            });
+            return;
+          }
           const result: ConsentDialogResult = {
             outcome: outcomeOf(notice.purposes, draft.decisions),
             consentId: response.consentId,
@@ -430,7 +513,10 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
             syncStatus: response.syncStatus,
           };
           // Declines, blocked and nothing-granted saves close at once, as before feature 003.
-          if (result.outcome === 'BLOCKED' || !result.decisions.some((d) => d.granted)) {
+          if (
+            result.outcome === 'BLOCKED' ||
+            !result.decisions.some(d => d.granted)
+          ) {
             this.closeDialog(result);
             return;
           }
@@ -459,28 +545,54 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
       });
   }
 
+  /** Registration saves after registering, except a blocked consent: no registration follows it. */
+  private deferSave(
+    notice: { purposes: Purpose[] },
+    draft: ConsentDraft
+  ): boolean {
+    return (
+      this.options.saveAfterRegistration === true &&
+      outcomeOf(notice.purposes, draft.decisions) !== 'BLOCKED'
+    );
+  }
+
   /** Files to upload before the consent: the recorded agreement (Self-read, Read aloud) or the signed form. */
   private evidenceItems(draft: ConsentDraft): EvidenceItem[] {
     const proof = draft.proof;
-    const recorded = ['VOICE_CLIP', 'READ_ALOUD', 'SELF_READ'].indexOf(draft.mode as string) !== -1;
+    const recorded =
+      ['VOICE_CLIP', 'READ_ALOUD', 'SELF_READ'].indexOf(
+        draft.mode as string
+      ) !== -1;
     if (recorded && proof.voiceClip) {
-      return [{ type: 'VOICE_CLIP', blob: proof.voiceClip, durationSec: proof.voiceDurationSec ?? null }];
+      return [
+        {
+          type: 'VOICE_CLIP',
+          blob: proof.voiceClip,
+          durationSec: proof.voiceDurationSec ?? null,
+        },
+      ];
     }
     if (draft.mode === 'SIGNATURE_PHOTO' && proof.signedFormPhoto) {
-      return [{ type: 'SIGNED_FORM_PHOTO', blob: proof.signedFormPhoto, durationSec: null }];
+      return [
+        {
+          type: 'SIGNED_FORM_PHOTO',
+          blob: proof.signedFormPhoto,
+          durationSec: null,
+        },
+      ];
     }
     return [];
   }
 
   /** Uploads files not uploaded yet; resolves to all evidence ids in order. */
   private uploadAll(items: EvidenceItem[]): Observable<string[]> {
-    const pending = items.filter((item) => !this.evidenceIds.has(item.blob));
-    const uploads = pending.map((item) => {
+    const pending = items.filter(item => !this.evidenceIds.has(item.blob));
+    const uploads = pending.map(item => {
       if (!this.uploadKeys.has(item.blob)) {
         this.uploadKeys.set(item.blob, uuidV4());
       }
       return from(sha256Hex(item.blob)).pipe(
-        switchMap((hash) =>
+        switchMap(hash =>
           this.consentApi.uploadEvidence(
             item.blob,
             item.type,
@@ -489,11 +601,11 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
             this.uploadKeys.get(item.blob) as string
           )
         ),
-        tap((res) => this.evidenceIds.set(item.blob, res.evidenceId))
+        tap(res => this.evidenceIds.set(item.blob, res.evidenceId))
       );
     });
     return (uploads.length ? forkJoin(uploads) : of([])).pipe(
-      map(() => items.map((item) => this.evidenceIds.get(item.blob) as string))
+      map(() => items.map(item => this.evidenceIds.get(item.blob) as string))
     );
   }
 

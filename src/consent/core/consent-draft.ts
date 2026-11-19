@@ -81,7 +81,7 @@ export function createDraft(): ConsentDraft {
 /** A new notice (first load or language change) resets reading, switches and proof (FR-006, FR-010). */
 export function withNotice(draft: ConsentDraft, notice: Notice): ConsentDraft {
   const decisions: { [code: string]: boolean } = {};
-  notice.purposes.forEach((p) => (decisions[p.purposeCode] = false));
+  notice.purposes.forEach(p => (decisions[p.purposeCode] = false));
   return {
     ...draft,
     languageCode: notice.languageCode,
@@ -96,13 +96,13 @@ export function withNotice(draft: ConsentDraft, notice: Notice): ConsentDraft {
 
 export function sortPurposes(purposes: Purpose[]): Purpose[] {
   return purposes
-    .filter((p) => p.isMandatory)
-    .concat(purposes.filter((p) => !p.isMandatory));
+    .filter(p => p.isMandatory)
+    .concat(purposes.filter(p => !p.isMandatory));
 }
 
 export function filterRtl(languages: NoticeLanguage[]): NoticeLanguage[] {
   return languages.filter(
-    (l) => RTL_LANGUAGE_CODES.indexOf(l.languageCode) === -1
+    l => RTL_LANGUAGE_CODES.indexOf(l.languageCode) === -1
   );
 }
 
@@ -113,7 +113,8 @@ export function ageInYears(dob: string, today: Date): number {
   let age = today.getFullYear() - birth.getFullYear();
   const beforeBirthday =
     today.getMonth() < birth.getMonth() ||
-    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+    (today.getMonth() === birth.getMonth() &&
+      today.getDate() < birth.getDate());
   if (beforeBirthday) {
     age--;
   }
@@ -135,14 +136,23 @@ export function mandatoryAllGranted(
   purposes: Purpose[],
   decisions: { [code: string]: boolean }
 ): boolean {
-  return purposes.every((p) => !p.isMandatory || decisions[p.purposeCode] === true);
+  return purposes.every(
+    p => !p.isMandatory || decisions[p.purposeCode] === true
+  );
 }
 
 /** The patient's spoken agreement is recorded, 2–60 s (Self-read and Read aloud). */
-function agreementRecorded(proof: ProofDraft, maxSeconds = AGREEMENT_MAX_SECONDS): boolean {
+function agreementRecorded(
+  proof: ProofDraft,
+  maxSeconds = AGREEMENT_MAX_SECONDS
+): boolean {
   return (
     !!proof.voiceClip &&
-    isVoiceDurationValid(proof.voiceDurationSec, AGREEMENT_MIN_SECONDS, maxSeconds)
+    isVoiceDurationValid(
+      proof.voiceDurationSec,
+      AGREEMENT_MIN_SECONDS,
+      maxSeconds
+    )
   );
 }
 
@@ -161,7 +171,10 @@ export function proofValid(
       return proof.declarationAgreed === true && agreementRecorded(proof);
     case 'READ_ALOUD':
       // Staff read the declaration and asked; the patient answered Yes; the conversation is recorded.
-      return proof.declarationAgreed === true && agreementRecorded(proof, READ_ALOUD_MAX_SECONDS);
+      return (
+        proof.declarationAgreed === true &&
+        agreementRecorded(proof, READ_ALOUD_MAX_SECONDS)
+      );
     case 'VOICE_CLIP':
       return !!proof.voiceClip && isVoiceDurationValid(proof.voiceDurationSec);
     case 'WITNESSED':
@@ -195,7 +208,9 @@ export function guardianValid(guardian: GuardianDraft | null): boolean {
     case 'ID_SIGHTED':
       return !!fallback && fallback.idSighted === true;
     case 'UNVERIFIED':
-      return !!fallback && filled(fallback.witnessName) && !!fallback.signedFormPhoto;
+      return (
+        !!fallback && filled(fallback.witnessName) && !!fallback.signedFormPhoto
+      );
     default:
       return false;
   }
@@ -227,7 +242,7 @@ export function outcomeOf(
   if (!mandatoryAllGranted(purposes, decisions)) {
     return 'BLOCKED';
   }
-  return purposes.every((p) => decisions[p.purposeCode] === true)
+  return purposes.every(p => decisions[p.purposeCode] === true)
     ? 'GRANTED'
     : 'PARTIAL';
 }
@@ -236,14 +251,16 @@ export function decisionList(
   purposes: Purpose[],
   decisions: { [code: string]: boolean }
 ): { purposeCode: string; granted: boolean }[] {
-  return purposes.map((p) => ({
+  return purposes.map(p => ({
     purposeCode: p.purposeCode,
     granted: decisions[p.purposeCode] === true,
   }));
 }
 
 /** Guardian / Representative consent is given on the patient's behalf (feature 003). */
-export function declarationWording(mode: ConsentMode | null): DeclarationWording {
+export function declarationWording(
+  mode: ConsentMode | null
+): DeclarationWording {
   return mode === 'WITNESSED' ? 'REPRESENTATIVE' : 'PATIENT';
 }
 
@@ -252,7 +269,10 @@ export function declarationWording(mode: ConsentMode | null): DeclarationWording
  * guardian / representative (the notice's patient wording when it has none). Empty when the notice
  * publishes no declaration; Accept then stays blocked.
  */
-export function declarationText(notice: Notice, wording: DeclarationWording): string {
+export function declarationText(
+  notice: Notice,
+  wording: DeclarationWording
+): string {
   if (wording === 'REPRESENTATIVE') {
     return notice.representativeDeclaration || notice.declaration || '';
   }
@@ -265,7 +285,9 @@ export function grievanceText(notice: Notice): string {
 }
 
 function anyGranted(draft: ConsentDraft): boolean {
-  return Object.keys(draft.decisions).some((code) => draft.decisions[code] === true);
+  return Object.keys(draft.decisions).some(
+    code => draft.decisions[code] === true
+  );
 }
 
 /**
@@ -297,7 +319,8 @@ export function toSaveRequest(
   return {
     beneficiaryRegId,
     eventType,
-    consentingParty: guardian || draft.mode === 'WITNESSED' ? 'GUARDIAN' : 'SELF',
+    consentingParty:
+      guardian || draft.mode === 'WITNESSED' ? 'GUARDIAN' : 'SELF',
     noticeVersionId: notice.noticeVersionId,
     languageCode: notice.languageCode,
     textHash: notice.textHash,
@@ -311,7 +334,7 @@ export function toSaveRequest(
     serviceLine: ctx.serviceLine,
     deviceId: ctx.deviceId,
     capturedAt: ctx.capturedAt,
-    decisions: notice.purposes.map((p) => ({
+    decisions: notice.purposes.map(p => ({
       purposeCode: p.purposeCode,
       decision: draft.decisions[p.purposeCode] === true ? 'GRANT' : 'DENY',
     })),
@@ -322,10 +345,16 @@ export function toSaveRequest(
         granted && draft.mode === 'READ_ALOUD'
           ? proof.workerConfirmed === true || proof.declarationAgreed === true
           : null,
-      witnessName: granted && draft.mode === 'WITNESSED' ? proof.witnessName || null : null,
+      witnessName:
+        granted && draft.mode === 'WITNESSED'
+          ? proof.witnessName || null
+          : null,
       witnessRelationship:
-        granted && draft.mode === 'WITNESSED' ? proof.witnessRelationship || null : null,
-      otpChallengeId: granted && draft.mode === 'OTP' ? proof.otpChallengeId || null : null,
+        granted && draft.mode === 'WITNESSED'
+          ? proof.witnessRelationship || null
+          : null,
+      otpChallengeId:
+        granted && draft.mode === 'OTP' ? proof.otpChallengeId || null : null,
     },
     guardian: guardian
       ? {
@@ -343,7 +372,9 @@ export function toSaveRequest(
     configVersion: extras.configVersion ?? null,
     declaration,
     notify:
-      granted && extras.notifyPhone ? { channel: 'SMS', phone: extras.notifyPhone } : null,
+      granted && extras.notifyPhone
+        ? { channel: 'SMS', phone: extras.notifyPhone }
+        : null,
   };
 }
 
@@ -361,6 +392,26 @@ export function noDecisionResult(): ConsentDialogResult {
 /** Same notice and proof, every purpose declined. */
 export function declineAll(draft: ConsentDraft): ConsentDraft {
   const decisions: { [code: string]: boolean } = {};
-  Object.keys(draft.decisions).forEach((code) => (decisions[code] = false));
+  Object.keys(draft.decisions).forEach(code => (decisions[code] = false));
   return { ...draft, decisions };
+}
+
+const PATIENT_PHONE = /^[6-9]\d{9}$/;
+
+/**
+ * The consent collected before registration, now for the registered patient. Adds the phone for the
+ * Consent ID SMS when something was granted and the dialog had no phone yet. Nothing else changes.
+ */
+export function forRegisteredPatient(
+  request: SaveConsentRequest,
+  beneficiaryRegId: number,
+  phone: string | null | undefined
+): SaveConsentRequest {
+  const granted = request.decisions.some(d => d.decision === 'GRANT');
+  const notify =
+    request.notify ||
+    (granted && phone && PATIENT_PHONE.test(phone)
+      ? { channel: 'SMS' as const, phone }
+      : null);
+  return { ...request, beneficiaryRegId, notify };
 }

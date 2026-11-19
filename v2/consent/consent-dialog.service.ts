@@ -26,7 +26,12 @@ import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { noDecisionResult } from '../../src/consent/core/consent-draft';
 import { ConsentDialogOptions, ConsentDialogResult } from '../../src/consent/core/consent.models';
+import {
+  PreferenceCentreOptions,
+  PreferenceCentreResult,
+} from '../../src/consent/core/ui/preference-centre.base';
 import { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
+import { PreferenceCentreComponent } from './preference-centre/preference-centre.component';
 
 /** Opens consent dialogs; they never close on backdrop click or Esc (FR-001a). */
 @Injectable({ providedIn: 'root' })
@@ -45,6 +50,22 @@ export class ConsentDialogService {
     return ref.afterClosed().pipe(
       take(1),
       map((result) => (result as ConsentDialogResult | undefined) || noDecisionResult())
+    );
+  }
+
+  /** AMM-2522: the patient's consents, changes, withdrawals, doctor access and history. */
+  openPreferenceCentre(options: PreferenceCentreOptions): Observable<PreferenceCentreResult> {
+    const ref = this.dialog.create<PreferenceCentreComponent, PreferenceCentreOptions>({
+      zContent: PreferenceCentreComponent,
+      zData: options,
+      zMaskClosable: false,
+      zClosable: false,
+      zHideFooter: true,
+      zWidth: 'min(960px, 95vw)',
+    });
+    return ref.afterClosed().pipe(
+      take(1),
+      map((result) => (result as PreferenceCentreResult | undefined) || { changed: false })
     );
   }
 }

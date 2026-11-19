@@ -1,0 +1,248 @@
+<div class="flex max-h-[85vh] flex-col">
+  <header class="flex items-center justify-between gap-4 border-b border-border pb-3">
+    <div class="flex items-center gap-2">
+      <ng-icon name="lucideShieldCheck" size="20" class="text-primary"></ng-icon>
+      <p class="m-0 text-lg font-semibold leading-none text-foreground">{{ text?.prefTitle }}</p>
+    </div>
+    <button
+      z-button
+      zType="ghost"
+      zSize="icon"
+      type="button"
+      class="pref-close size-8 shrink-0 text-muted-foreground hover:text-foreground"
+      [attr.aria-label]="text?.close"
+      [attr.title]="text?.close"
+      (click)="close()"
+    >
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </header>
+
+  <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto py-4 pr-1">
+    @if (loadFailed) {
+      <div
+        class="pref-load-failed flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+        role="alert"
+      >
+        <ng-icon name="lucideCircleAlert" size="18" class="mt-0.5 shrink-0 text-destructive"></ng-icon>
+        <p class="m-0 flex-1 text-sm text-destructive">{{ text?.prefLoadFailed }}</p>
+        <button z-button zType="outline" zSize="sm" type="button" (click)="load()">
+          <ng-icon name="lucideRotateCw"></ng-icon>
+          {{ text?.retry }}
+        </button>
+      </div>
+    }
+
+    @if (error) {
+      <div
+        class="pref-error flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+        role="alert"
+      >
+        <ng-icon name="lucideCircleAlert" size="18" class="mt-0.5 shrink-0 text-destructive"></ng-icon>
+        <p class="m-0 flex-1 text-sm text-destructive">{{ text?.[error] }}</p>
+      </div>
+    }
+
+    @if (saved) {
+      <div class="pref-saved flex flex-col gap-1 rounded-lg border border-success/30 bg-success/5 p-3" role="status">
+        <p class="m-0 flex items-center gap-2 text-sm font-medium text-success">
+          <ng-icon name="lucideCircleCheck" size="16" class="shrink-0"></ng-icon>
+          {{ text?.prefSaved }}
+        </p>
+        @if (keptByLaw.length > 0) {
+          <p class="pref-kept m-0 text-sm text-muted-foreground">
+            {{ text?.prefKeptByLaw }} {{ keptByLaw.join(', ') }}
+          </p>
+        }
+      </div>
+    }
+
+    @if (action) {
+      <section
+        class="pref-action flex flex-col gap-3 rounded-lg border border-primary/40 bg-primary/5 p-4"
+        aria-live="polite"
+      >
+        @switch (action.kind) {
+          @case ('GRANT') {
+            <p class="m-0 text-sm font-semibold text-foreground">
+              {{ fill('prefTurnOnTitle', { purpose: action.purpose.name }) }}
+            </p>
+            <p class="m-0 text-sm text-muted-foreground">{{ text?.prefGrantHint }}</p>
+            <app-consent-otp-verify
+              purpose="CONSENT"
+              [refId]="'' + options.beneficiaryRegId"
+              [text]="text"
+              [phone]="options.patientPhone || null"
+              (verified)="onOtpVerified($event)"
+            ></app-consent-otp-verify>
+          }
+          @case ('DENY') {
+            <p class="m-0 text-sm font-semibold text-foreground">
+              {{ fill('prefTurnOffTitle', { purpose: action.purpose.name }) }}
+            </p>
+            <p class="m-0 text-sm text-muted-foreground">{{ text?.prefDenyHint }}</p>
+          }
+          @case ('WITHDRAW') {
+            <p class="m-0 text-sm font-semibold text-foreground">
+              {{ action.all ? text?.withdrawAll : text?.withdraw }}
+            </p>
+            <ul class="pref-withdraw-list m-0 flex list-disc flex-col gap-1 pl-5 text-sm text-foreground">
+              @for (p of action.purposes; track p.purposeCode) {
+                <li>{{ p.name }}</li>
+              }
+            </ul>
+            <p class="m-0 text-sm text-muted-foreground">{{ text?.withdrawImplications }}</p>
+            @if (action.kept.length > 0) {
+              <div class="pref-kept-preview flex flex-col gap-1 rounded-md bg-muted/60 p-2">
+                <p class="m-0 text-sm font-medium text-foreground">{{ text?.prefKeptByLaw }}</p>
+                <ul class="m-0 flex list-disc flex-col gap-1 pl-5 text-sm text-foreground">
+                  @for (p of action.kept; track p.purposeCode) {
+                    <li>{{ p.name }}</li>
+                  }
+                </ul>
+                <p class="m-0 text-xs text-muted-foreground">{{ text?.notWithdrawable }}</p>
+              </div>
+            }
+          }
+        }
+        <div class="flex flex-wrap justify-end gap-2">
+          <button z-button zType="outline" type="button" class="pref-cancel" [disabled]="busy" (click)="cancelAction()">
+            {{ text?.prefCancel }}
+          </button>
+          <button
+            z-button
+            type="button"
+            class="pref-confirm"
+            [zType]="action.kind === 'GRANT' ? 'default' : 'destructive'"
+            [disabled]="!confirmEnabled"
+            (click)="confirmAction()"
+          >
+            {{ text?.prefConfirm }}
+          </button>
+        </div>
+      </section>
+    }
+
+    @if (loading && !consents) {
+      <p class="pref-loading m-0 text-sm text-muted-foreground" role="status">{{ text?.prefLoading }}</p>
+    }
+
+    @if (consents) {
+      <z-tab-group>
+        <z-tab [label]="text?.prefCurrent || ''">
+          <div class="flex flex-col gap-3 pt-3">
+            @if (current.length === 0) {
+              <p class="pref-no-consents m-0 text-sm text-muted-foreground">{{ text?.prefNoConsents }}</p>
+            }
+            <ul class="m-0 flex list-none flex-col gap-2 p-0">
+              @for (p of current; track p.purposeCode) {
+                <li
+                  class="pref-purpose flex flex-col gap-2 rounded-lg border border-input bg-card p-3 sm:flex-row sm:items-start sm:justify-between"
+                  [attr.data-code]="p.purposeCode"
+                >
+                  <div class="flex min-w-0 flex-col gap-1">
+                    <span class="text-sm font-medium text-foreground">{{ p.name }}</span>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <z-badge class="pref-status" [zType]="statusType(p.status)">{{ text?.['status' + p.status] }}</z-badge>
+                      <z-badge [zType]="p.isMandatory ? 'secondary' : 'outline'">
+                        {{ p.isMandatory ? text?.mandatory : text?.optional }}
+                      </z-badge>
+                      @if (p.validUntil) {
+                        <span class="pref-valid-until text-xs text-muted-foreground">
+                          {{ text?.validUntil }} {{ p.validUntil | date: 'dd/MM/yyyy' }}
+                        </span>
+                      }
+                    </div>
+                    @if (requiredByLaw(p)) {
+                      <span class="pref-required-by-law text-xs text-muted-foreground">{{ text?.notWithdrawable }}</span>
+                    }
+                    @if (p.status === 'EXPIRED' || p.status === 'RECONSENT_REQUIRED') {
+                      <span class="text-xs text-muted-foreground">{{ text?.prefNeedsConsent }}</span>
+                    }
+                  </div>
+                  <div class="flex shrink-0 flex-wrap gap-2">
+                    @if (canSwitch(p)) {
+                      <button
+                        z-button
+                        zType="outline"
+                        zSize="sm"
+                        type="button"
+                        class="pref-switch"
+                        [disabled]="busy"
+                        (click)="switchPurpose(p)"
+                      >
+                        {{ isOn(p) ? text?.prefTurnOff : text?.prefTurnOn }}
+                      </button>
+                    }
+                    @if (canWithdraw(p)) {
+                      <button
+                        z-button
+                        zType="outline"
+                        zSize="sm"
+                        type="button"
+                        class="pref-withdraw text-destructive"
+                        [disabled]="busy"
+                        (click)="withdrawOne(p)"
+                      >
+                        {{ text?.withdraw }}
+                      </button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+            @if (withdrawable.length > 0) {
+              <div class="flex justify-end">
+                <button
+                  z-button
+                  zType="destructive"
+                  zSize="sm"
+                  type="button"
+                  class="pref-withdraw-all"
+                  [disabled]="busy"
+                  (click)="withdrawAll()"
+                >
+                  {{ text?.withdrawAll }}
+                </button>
+              </div>
+            }
+          </div>
+        </z-tab>
+
+        <z-tab [label]="text?.history || ''">
+          <div class="flex flex-col gap-3 pt-3">
+            @if (history.length === 0) {
+              <p class="pref-no-history m-0 text-sm text-muted-foreground">{{ text?.prefNoHistory }}</p>
+            }
+            <ul class="m-0 flex list-none flex-col gap-2 p-0">
+              @for (row of history; track row.key) {
+                <li class="pref-history-row flex flex-col gap-1 rounded-lg border border-input bg-card p-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-sm font-medium text-foreground">{{ row.purposeName }}</span>
+                    <span class="text-xs text-muted-foreground">{{ row.capturedAt | date: 'dd/MM/yyyy, h:mm a' }}</span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <z-badge [zType]="statusType(row.status)">{{ text?.['status' + row.status] }}</z-badge>
+                    @if (row.syncStatus === 'NOT_SYNCED') {
+                      <z-badge zType="warning" class="pref-not-synced">
+                        <ng-icon name="lucideCloudOff" size="12" class="mr-1"></ng-icon>
+                        {{ text?.notSynced }}
+                      </z-badge>
+                    }
+                  </div>
+                  <span class="text-xs text-muted-foreground">
+                    {{ text?.prefMode }}: {{ row.modeKey ? text?.[row.modeKey] : row.mode }} ·
+                    {{ text?.prefLanguage }}: {{ row.languageCode | uppercase }}
+                    @if (row.capturedBy !== null) {
+                      · {{ text?.prefCapturedBy }}: {{ row.capturedBy }}
+                    }
+                  </span>
+                </li>
+              }
+            </ul>
+          </div>
+        </z-tab>
+      </z-tab-group>
+    }
+  </div>
+</div>
