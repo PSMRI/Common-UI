@@ -1,0 +1,80 @@
+<div class="registration-success flex flex-col gap-4" role="status">
+  <div class="flex items-center gap-2">
+    <ng-icon name="lucideCircleCheck" size="22" class="text-success"></ng-icon>
+    <p class="m-0 text-base font-semibold text-foreground">{{ text?.registeredTitle }}</p>
+  </div>
+
+  <dl class="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-lg bg-muted/50 p-3 text-sm">
+    <dt class="text-muted-foreground">{{ labels?.beneficiaryID }}</dt>
+    <dd class="reg-ben-id m-0 font-mono font-semibold text-foreground">{{ data.beneficiaryID }}</dd>
+    @if (data.consent; as c) {
+      <dt class="text-muted-foreground">{{ text?.consentIdLabel }}</dt>
+      <dd class="reg-consent-id m-0 font-mono font-semibold text-foreground">{{ c.consentId }}</dd>
+      <dt class="text-muted-foreground">{{ text?.consentStatusLabel }}</dt>
+      <dd class="m-0 text-foreground">{{ text?.['consent' + c.outcome] || c.outcome }}</dd>
+      <dt class="text-muted-foreground">{{ text?.capturedAtLabel }}</dt>
+      <dd class="m-0 text-foreground">{{ c.capturedAt | date: 'd MMM y, HH:mm' }}</dd>
+    }
+  </dl>
+
+  @if (data.consent; as c) {
+    @if (c.syncStatus === 'NOT_SYNCED') {
+      <p class="m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
+        <ng-icon name="lucideCloudOff" size="16" class="shrink-0"></ng-icon>
+        {{ text?.notSyncedNote }}
+      </p>
+    }
+    <div class="reg-grievance flex flex-col gap-2">
+      <p class="m-0 text-sm font-semibold text-foreground">{{ text?.grievanceTitle }}</p>
+      @if (c.grievance; as g) {
+        <dl class="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+          @if (g.officerName) {
+            <dt class="text-muted-foreground">{{ text?.grievanceOfficer }}</dt>
+            <dd class="m-0 text-foreground">{{ g.officerName }}</dd>
+          }
+          @if (g.phone) {
+            <dt class="text-muted-foreground">{{ text?.grievancePhone }}</dt>
+            <dd class="m-0 text-foreground">{{ g.phone }}</dd>
+          }
+          @if (g.email) {
+            <dt class="text-muted-foreground">{{ text?.grievanceEmail }}</dt>
+            <dd class="m-0 text-foreground">{{ g.email }}</dd>
+          }
+          @if (g.address) {
+            <dt class="text-muted-foreground">{{ text?.grievanceAddress }}</dt>
+            <dd class="m-0 text-foreground">{{ g.address }}</dd>
+          }
+          @if (g.officeHours) {
+            <dt class="text-muted-foreground">{{ text?.grievanceHours }}</dt>
+            <dd class="m-0 text-foreground">{{ g.officeHours }}</dd>
+          }
+        </dl>
+      } @else if (c.grievanceText) {
+        <p class="m-0 text-sm text-foreground">{{ c.grievanceText }}</p>
+      }
+    </div>
+    @if (c.smsLine) {
+      <p class="reg-sms m-0 flex items-center gap-1.5 text-sm text-muted-foreground">
+        <ng-icon name="lucideMessageSquare" size="16" class="shrink-0"></ng-icon>
+        {{ c.smsLine }}
+      </p>
+    }
+  }
+
+  @if (data.consentFailed) {
+    <div class="reg-consent-failed flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3" role="alert">
+      <ng-icon name="lucideCircleAlert" size="18" class="mt-0.5 shrink-0 text-destructive"></ng-icon>
+      <p class="m-0 flex-1 text-sm text-destructive">{{ text?.consentSaveAfterRegistrationFailed }}</p>
+    </div>
+  }
+
+  <div class="flex justify-end gap-2">
+    @if (data.consentFailed) {
+      <button z-button zType="outline" type="button" class="reg-retry" (click)="retry()">
+        <ng-icon name="lucideRotateCw"></ng-icon>
+        {{ text?.retry }}
+      </button>
+    }
+    <button z-button type="button" class="reg-done" (click)="close()">{{ text?.done }}</button>
+  </div>
+</div>

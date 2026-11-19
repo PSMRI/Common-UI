@@ -1,15 +1,21 @@
-import { Component, ViewContainerRef } from '@angular/core';
+import { Component, ViewContainerRef, inject } from '@angular/core';
 import { RegistrationService } from '../services/registration.service';
 import { ConfirmationService } from 'src/app/app-modules/core/services';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RegistrarService } from '../services/registrar.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import * as moment from 'moment';
 import { ZardDialogService } from 'Common-UI/v2/ui/dialog';
 import { ConsentFormComponent } from './consent-form/consent-form.component';
+import {
+  RegistrationSuccessComponent,
+  RegistrationSuccessData,
+} from './registration-success/registration-success.component';
+import { maskPhone } from '../../../src/consent/core/evidence.util';
 import { SessionStorageService } from '../services/session-storage.service';
 import { NgIf } from '@angular/common';
 import { ZardStepperImports } from 'Common-UI/v2/ui/stepper';
@@ -19,6 +25,17 @@ import { PersonalInformationComponent } from './personal-information/personal-in
 import { LocationInformationComponent } from './location-information/location-information.component';
 import { OtherInformationComponent } from './other-information/other-information.component';
 import { AbhaInformationComponent } from './abha-information/abha-information.component';
+import {
+  ConsentApiService,
+  ConsentConfigService,
+  ConsentDialogResult,
+  forRegisteredPatient,
+  SaveConsentRequest,
+  SaveConsentResponse,
+  ConsentDialogService,
+  isConsentFeatureEnabled,
+  ResolvedConsentConfig,
+} from 'Common-UI/v2/consent/public-api';
 
 @Component({
     selector: 'app-registration',
@@ -45,6 +62,10 @@ export class RegistrationComponent {
   abhaInfoData: any;
   serviceLine: any;
   consentGranted: any;
+  consentResult: ConsentDialogResult | null = null;
+  private readonly consentDialog = inject(ConsentDialogService);
+  private readonly consentConfig = inject(ConsentConfigService);
+  private readonly consentApi = inject(ConsentApiService);
   disableGenerateOTP = false;
   today = new Date();
 
@@ -311,19 +332,50 @@ export class RegistrationComponent {
   }
 
   openConsent() {
-    if (this.patientRevisit === false) {
-      const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
-        zContent: ConsentFormComponent,
-        zWidth: '50%',
-        zHideFooter: true,
-        zClosable: false,
-        zViewContainerRef: this.viewContainerRef,
+    if (this.patientRevisit === false && isConsentFeatureEnabled()) {
+      // Feature 002: the project's configuration decides the dialog or the legacy pop-up (FR-023).
+      this.consentConfig.load('REGISTRATION').subscribe({
+        next: (config) =>
+          config.config.enabled ? this.openConsentDialog(config) : this.openLegacyConsent(),
+        error: () => this.openConsentDialog(),
       });
-      mdDialogRef.afterClosed().subscribe((consentProvided) => {
-        this.consentGranted = consentProvided;
-        this.registrarService.sendConsentStatus(consentProvided);
-      });
+      return;
     }
+    if (this.patientRevisit === false) {
+      this.openLegacyConsent();
+    }
+  }
+
+  private openConsentDialog(config?: ResolvedConsentConfig) {
+    const mandatory = config ? config.config.mandatory : true;
+    this.consentDialog
+      .open({
+        context: 'REGISTRATION',
+        beneficiaryRegId: null,
+        // The consent is saved once registration gives the patient a beneficiaryRegId.
+        saveAfterRegistration: true,
+        ...(config ? { config } : {}),
+      })
+      .subscribe((result) => {
+        this.consentResult = result;
+        if (mandatory && (result.outcome === 'BLOCKED' || result.outcome === 'NO_DECISION')) {
+          this.router.navigate(['/registrar/search/']);
+        }
+      });
+  }
+
+  private openLegacyConsent() {
+    const mdDialogRef = this.dialog.create<ConsentFormComponent, unknown>({
+      zContent: ConsentFormComponent,
+      zWidth: '50%',
+      zHideFooter: true,
+      zClosable: false,
+      zViewContainerRef: this.viewContainerRef,
+    });
+    mdDialogRef.afterClosed().subscribe((consentProvided) => {
+      this.consentGranted = consentProvided;
+      this.registrarService.sendConsentStatus(consentProvided);
+    });
   }
 
     /**
@@ -352,6 +404,113 @@ export class RegistrationComponent {
             this.redirectToSearch();
           }
         });
+    }
+
+    /**
+     * One message after registration: the Beneficiary ID, plus the consent details when one was taken.
+     * The consent from the pop-up is saved first, with the new patient's beneficiaryRegId: registration
+     * returns only the Beneficiary ID, so the patient is looked up by it. Sent once; on failure the
+     * message says so and staff can retry with the same request key.
+     */
+    finishRegistration(beneficiaryID: string, phone: string | null) {
+      const pending = this.consentResult?.pendingSave;
+      if (!pending) {
+        this.showRegistrationSuccess({ beneficiaryID, consent: null, consentFailed: false });
+        return;
+      }
+      this.consentResult = { ...this.consentResult!, pendingSave: null };
+      const search = {
+        beneficiaryRegID: null,
+        beneficiaryName: null,
+        beneficiaryID,
+        phoneNo: null,
+        HealthID: null,
+        HealthIDNumber: null,
+        familyId: null,
+        identity: null,
+      };
+      const request = (regId: number) => forRegisteredPatient(pending.request, regId, phone);
+      let sent: SaveConsentRequest | null = null;
+      this.registrarService
+        .identityQuickSearch(search)
+        .pipe(
+          map((res: any) => {
+            const found = res?.data?.length === 1 ? res.data[0] : null;
+            const regId = Number(found?.beneficiaryRegID);
+            if (!regId) {
+              throw new Error('Registered patient not found');
+            }
+            return regId;
+          }),
+          switchMap((regId) => {
+            sent = request(regId);
+            return this.consentApi.saveConsent(sent, pending.idempotencyKey);
+          })
+        )
+        .subscribe({
+          next: (saved: SaveConsentResponse) => {
+            this.consentResult = { ...this.consentResult!, consentId: saved.consentId, syncStatus: saved.syncStatus };
+            this.showRegistrationSuccess({
+              beneficiaryID,
+              consentFailed: false,
+              consent: {
+                consentId: saved.consentId,
+                outcome: this.consentResult!.outcome,
+                capturedAt: pending.request.capturedAt,
+                syncStatus: saved.syncStatus,
+                grievance: pending.grievance,
+                grievanceText: pending.grievanceText,
+                smsLine: this.smsLine(sent, saved, phone),
+              },
+            });
+          },
+          error: () => {
+            this.showRegistrationSuccess({ beneficiaryID, consent: null, consentFailed: true }, () => {
+              this.consentResult = { ...this.consentResult!, pendingSave: pending };
+              this.finishRegistration(beneficiaryID, phone);
+            });
+          },
+        });
+    }
+
+    private showRegistrationSuccess(data: RegistrationSuccessData, onRetry?: () => void) {
+      this.dialog
+        .create<RegistrationSuccessComponent, RegistrationSuccessData>({
+          zContent: RegistrationSuccessComponent,
+          zData: data,
+          zMaskClosable: false,
+          zClosable: false,
+          zHideFooter: true,
+          zWidth: 'min(520px, 95vw)',
+        })
+        .afterClosed()
+        .subscribe((result) => {
+          if (result === 'retry' && onRetry) {
+            onRetry();
+          }
+        });
+    }
+
+    /** The SMS line, as on the consent confirmation (FR-014). */
+    private smsLine(sent: SaveConsentRequest | null, saved: SaveConsentResponse, phone: string | null): string {
+      const text = this.currentLanguageSet?.consent || {};
+      const status = saved.notification ? saved.notification.status : 'NOT_REQUESTED';
+      const keys: { [s: string]: string } = { SENT: 'smsSent', QUEUED: 'smsQueued', FAILED: 'smsFailed', NOT_REQUESTED: 'smsFailed' };
+      const key = sent?.notify ? keys[status] : 'smsNoPhone';
+      const shown = saved.notification?.maskedPhone || maskPhone(phone);
+      return ((text[key] as string) || '').replace('{phone}', shown);
+    }
+
+    /** Real consent outcome for the registration payload; empty when the feature is off (FR-035). */
+    consentFields(): { beneficiaryConsent?: boolean; consentId?: string | null } {
+      if (!isConsentFeatureEnabled()) {
+        return {};
+      }
+      const outcome = this.consentResult?.outcome;
+      return {
+        beneficiaryConsent: outcome === 'GRANTED' || outcome === 'PARTIAL',
+        consentId: this.consentResult?.consentId || null,
+      };
     }
 
     redirectToSearch() {
@@ -494,11 +653,15 @@ export class RegistrationComponent {
     console.log('finalRqObj', finalRqObj);
     this.registrarService.submitBeneficiary(finalRqObj).subscribe((res: any) => {
       if (res.statusCode === 200) {
-        this.confirmationService.alert(res.data.response, 'success');
         const responseValue = res.data.response;
         const benId = responseValue.replace(/^\D+/g, '');
           const txt = res.data.response;
           const numb = txt.replace(/\D/g, '');
+          if (numb) {
+            this.finishRegistration(numb, phoneMaps?.[0]?.phoneNo || null);
+          } else {
+            this.confirmationService.alert(res.data.response, 'success');
+          }
           const reqObj = {
             beneficiaryRegID: null,
             beneficiaryID: numb,
@@ -567,6 +730,7 @@ export class RegistrationComponent {
     // const iEMRids = this.iEMRids(othersForm.govID, othersForm.otherGovID);
     const finalForm = {
       beneficiaryConsent: true,
+      ...this.consentFields(),
       dob: personalForm.controls['dOB']?.value,
       benImage: personalForm.controls['image']?.value || null,
       changeInBenImage:

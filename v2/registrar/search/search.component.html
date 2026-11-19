@@ -126,6 +126,15 @@
               <td z-table-cell>{{ beneficiary?.beneficiaryID }}</td>
               <td z-table-cell class="max-w-[200px] break-words">
                 {{ beneficiary?.benName | titlecase }}
+                @if (beneficiary?.consentPending) {
+                  <z-badge
+                    zType="outline"
+                    class="consent-pending-chip ml-1.5 whitespace-nowrap border-destructive/40 bg-destructive/5 text-destructive"
+                    [attr.title]="currentLanguageSet?.consent?.consentPendingHint"
+                  >
+                    {{ currentLanguageSet?.consent?.consentPending }}
+                  </z-badge>
+                }
               </td>
               <td z-table-cell>{{ beneficiary.genderName | titlecase }}</td>
               <td z-table-cell>{{ beneficiary.age }}</td>
