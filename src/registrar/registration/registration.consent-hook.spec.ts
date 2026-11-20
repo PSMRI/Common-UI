@@ -26,13 +26,18 @@ import { TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
 import { of, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ConsentDialogResult } from '../../consent/core/consent.models';
+import { ConsentDialogResult, SaveConsentRequest } from '../../consent/core/consent.models';
 import { ConsentDialogService } from '../../consent/consent-dialog.service';
-import { defaultResolvedConfig } from '../../consent/core/consent-config';
+import { notConfiguredConfig } from '../../consent/core/consent-config';
 import { ConsentConfigUnavailable } from '../../consent/core/consent-config.models';
 import { ConsentConfigService } from '../../consent/core/consent-config.service';
+import { ConsentApiService } from '../../consent/core/consent-api.service';
 import { mockResolvedConfig } from '../../consent/core/testing/consent-config.mock';
 import { RegistrationComponent } from './registration.component';
+import {
+  RegistrationSuccessComponent,
+  RegistrationSuccessData,
+} from './registration-success/registration-success.component';
 
 describe('RegistrationComponent consent hook (src)', () => {
   const env = environment as { consentManagement?: unknown };
@@ -42,7 +47,12 @@ describe('RegistrationComponent consent hook (src)', () => {
   let consentConfig: jasmine.SpyObj<{ load: (c: unknown) => unknown }>;
   let matDialog: jasmine.SpyObj<{ open: (c: unknown, o: unknown) => unknown }>;
   let router: jasmine.SpyObj<{ navigate: (c: unknown[]) => unknown }>;
-  let registrarService: jasmine.SpyObj<{ sendConsentStatus: (v: unknown) => void }>;
+  let registrarService: jasmine.SpyObj<{
+    sendConsentStatus: (v: unknown) => void;
+    identityQuickSearch: (v: unknown) => unknown;
+  }>;
+  let consentApi: jasmine.SpyObj<{ saveConsent: (r: unknown, k: string) => unknown }>;
+  let confirmation: jasmine.SpyObj<{ alert: (...a: unknown[]) => unknown; confirm: (...a: unknown[]) => unknown }>;
 
   function result(outcome: ConsentDialogResult['outcome'], consentId: string | null = 'c-1'): ConsentDialogResult {
     return { outcome, consentId, consentingParty: 'SELF', decisions: [], syncStatus: 'SYNCED' };
@@ -52,11 +62,13 @@ describe('RegistrationComponent consent hook (src)', () => {
     original = env.consentManagement;
     consentDialog = jasmine.createSpyObj('ConsentDialogService', ['open']);
     consentConfig = jasmine.createSpyObj('ConsentConfigService', ['load']);
-    consentConfig.load.and.returnValue(of(defaultResolvedConfig('REGISTRATION')));
+    consentConfig.load.and.returnValue(of(mockResolvedConfig('all')));
     matDialog = jasmine.createSpyObj('MatDialog', ['open']);
     matDialog.open.and.returnValue({ afterClosed: () => of('1') });
     router = jasmine.createSpyObj('Router', ['navigate']);
-    registrarService = jasmine.createSpyObj('RegistrarService', ['sendConsentStatus']);
+    registrarService = jasmine.createSpyObj('RegistrarService', ['sendConsentStatus', 'identityQuickSearch']);
+    consentApi = jasmine.createSpyObj('ConsentApiService', ['saveConsent']);
+    confirmation = jasmine.createSpyObj('ConfirmationService', ['alert', 'confirm']);
     const fb = new FormBuilder();
     component = Object.create(RegistrationComponent.prototype) as RegistrationComponent;
     Object.assign(component, {
@@ -65,6 +77,9 @@ describe('RegistrationComponent consent hook (src)', () => {
       dialog: matDialog,
       router,
       registrarService,
+      consentApi,
+      confirmationService: confirmation,
+      currentLanguageSet: { consent: { consentIdLabel: 'Consent ID', consentSaveAfterRegistrationFailed: 'Retry?' } },
       patientRevisit: false,
       consentResult: null,
       country: { id: 1, Name: 'India' },
@@ -90,6 +105,7 @@ describe('RegistrationComponent consent hook (src)', () => {
       providers: [
         { provide: ConsentDialogService, useValue: consentDialog },
         { provide: ConsentConfigService, useValue: consentConfig },
+        { provide: ConsentApiService, useValue: consentApi },
       ],
     });
     const built = TestBed.runInInjectionContext(() => {
@@ -132,7 +148,8 @@ describe('RegistrationComponent consent hook (src)', () => {
       expect(consentDialog.open).toHaveBeenCalledWith({
         context: 'REGISTRATION',
         beneficiaryRegId: null,
-        config: defaultResolvedConfig('REGISTRATION'),
+        saveAfterRegistration: true,
+        config: mockResolvedConfig('all'),
       });
       expect(matDialog.open).not.toHaveBeenCalled();
       expect(router.navigate).not.toHaveBeenCalled();
@@ -168,6 +185,7 @@ describe('RegistrationComponent consent hook (src)', () => {
       expect(consentDialog.open).toHaveBeenCalledWith({
         context: 'REGISTRATION',
         beneficiaryRegId: null,
+        saveAfterRegistration: true,
         config: mockResolvedConfig('full'),
       });
     });
@@ -180,11 +198,22 @@ describe('RegistrationComponent consent hook (src)', () => {
       expect(registrarService.sendConsentStatus).toHaveBeenCalledWith('1');
     });
 
+    it('opens the legacy pop-up when the project has no consent configuration', () => {
+      consentConfig.load.and.returnValue(of(notConfiguredConfig('REGISTRATION')));
+      component.openConsent();
+      expect(consentDialog.open).not.toHaveBeenCalled();
+      expect(matDialog.open).toHaveBeenCalled();
+    });
+
     it('opens the dialog without a configuration when it cannot be loaded', () => {
       consentConfig.load.and.returnValue(throwError(() => new ConsentConfigUnavailable()));
       consentDialog.open.and.returnValue(of(result('NO_DECISION', null)));
       component.openConsent();
-      expect(consentDialog.open).toHaveBeenCalledWith({ context: 'REGISTRATION', beneficiaryRegId: null });
+      expect(consentDialog.open).toHaveBeenCalledWith({
+        context: 'REGISTRATION',
+        beneficiaryRegId: null,
+        saveAfterRegistration: true,
+      });
       expect(router.navigate).toHaveBeenCalledWith(['/registrar/search/']);
     });
 
@@ -203,6 +232,120 @@ describe('RegistrationComponent consent hook (src)', () => {
       expect(consentDialog.open).not.toHaveBeenCalled();
       expect(matDialog.open).not.toHaveBeenCalled();
       expect(consentConfig.load).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('after registration', () => {
+    const request = {
+      beneficiaryRegId: null,
+      capturedAt: '2026-11-18T10:00:00+05:30',
+      decisions: [{ purposeCode: 'P-REG', decision: 'GRANT' }],
+      notify: null,
+    } as unknown as SaveConsentRequest;
+    const grievance = { officerName: 'Grievance Officer', phone: '1800', email: null, address: null, officeHours: null };
+
+    function pending(): ConsentDialogResult {
+      return {
+        ...{ outcome: 'GRANTED', consentId: null, consentingParty: 'SELF', decisions: [], syncStatus: null },
+        pendingSave: { request, idempotencyKey: 'k-1', grievanceText: 'Call 1800', grievance },
+      } as ConsentDialogResult;
+    }
+
+    function shown(): RegistrationSuccessData {
+      const [content, options] = matDialog.open.calls.mostRecent().args as [unknown, { data: RegistrationSuccessData }];
+      expect(content).toBe(RegistrationSuccessComponent);
+      return options.data;
+    }
+
+    let closeWith: unknown;
+
+    beforeEach(() => {
+      closeWith = undefined;
+      matDialog.open.and.callFake(() => ({ afterClosed: () => of(closeWith) }));
+      registrarService.identityQuickSearch.and.returnValue(of({ data: [{ beneficiaryRegID: 9876 }] }));
+      consentApi.saveConsent.and.returnValue(
+        of({ consentId: 'CN-1', syncStatus: 'SYNCED', purposes: [], notification: { status: 'SENT', maskedPhone: '98******12' } })
+      );
+      (component as unknown as { currentLanguageSet: unknown }).currentLanguageSet = {
+        consent: { smsSent: 'Sent by SMS to {phone}', smsNoPhone: 'No phone' },
+      };
+    });
+
+    it('saves the consent with the beneficiaryRegId and shows one message with both IDs', () => {
+      component.consentResult = pending();
+      component.finishRegistration('748119959947', '9876543212');
+      expect(registrarService.identityQuickSearch).toHaveBeenCalledWith(
+        jasmine.objectContaining({ beneficiaryID: '748119959947' })
+      );
+      const [sent, key] = consentApi.saveConsent.calls.mostRecent().args as [SaveConsentRequest, string];
+      expect(sent.beneficiaryRegId).toBe(9876);
+      expect(sent.notify).toEqual({ channel: 'SMS', phone: '9876543212' });
+      expect(sent.decisions).toEqual(request.decisions);
+      expect(key).toBe('k-1');
+      expect(matDialog.open).toHaveBeenCalledTimes(1);
+      expect(confirmation.alert).not.toHaveBeenCalled();
+      const data = shown();
+      expect(data.beneficiaryID).toBe('748119959947');
+      expect(data.consentFailed).toBeFalse();
+      expect(data.consent).toEqual({
+        consentId: 'CN-1',
+        outcome: 'GRANTED',
+        capturedAt: '2026-11-18T10:00:00+05:30',
+        syncStatus: 'SYNCED',
+        grievance,
+        grievanceText: 'Call 1800',
+        smsLine: 'Sent by SMS to 98******12',
+      });
+    });
+
+    it('shows only the Beneficiary ID when no consent was taken', () => {
+      component.consentResult = null;
+      component.finishRegistration('748119959947', null);
+      expect(consentApi.saveConsent).not.toHaveBeenCalled();
+      expect(shown()).toEqual({ beneficiaryID: '748119959947', consent: null, consentFailed: false });
+    });
+
+    it('saves only once', () => {
+      component.consentResult = pending();
+      component.finishRegistration('748119959947', null);
+      component.finishRegistration('748119959947', null);
+      expect(consentApi.saveConsent).toHaveBeenCalledTimes(1);
+    });
+
+    it('says the consent failed, and retries with the same key when staff ask', () => {
+      let calls = 0;
+      registrarService.identityQuickSearch.and.callFake(() =>
+        ++calls === 1 ? of({ data: [] }) : of({ data: [{ beneficiaryRegID: 9876 }] })
+      );
+      closeWith = 'retry';
+      component.consentResult = pending();
+      matDialog.open.and.callFake(() => {
+        const result = closeWith;
+        closeWith = undefined; // the second message is closed with Done
+        return { afterClosed: () => of(result) };
+      });
+      component.finishRegistration('748119959947', null);
+      const first = matDialog.open.calls.first().args[1] as { data: RegistrationSuccessData };
+      expect(first.data).toEqual({ beneficiaryID: '748119959947', consent: null, consentFailed: true });
+      expect(consentApi.saveConsent).toHaveBeenCalledTimes(1);
+      expect(consentApi.saveConsent.calls.mostRecent().args[1]).toBe('k-1');
+      expect(shown().consent!.consentId).toBe('CN-1');
+    });
+
+    it('saves nothing more when staff close the failure message', () => {
+      consentApi.saveConsent.and.returnValue(throwError(() => ({ kind: 'UNAVAILABLE', message: 'x' })));
+      component.consentResult = pending();
+      component.finishRegistration('748119959947', null);
+      expect(shown().consentFailed).toBeTrue();
+      expect(consentApi.saveConsent).toHaveBeenCalledTimes(1);
+      expect(component.consentResult!.consentId).toBeNull();
+    });
+
+    it('tells the patient to note the Consent ID when there is no phone', () => {
+      consentApi.saveConsent.and.returnValue(of({ consentId: 'CN-2', syncStatus: 'SYNCED', purposes: [] }));
+      component.consentResult = pending();
+      component.finishRegistration('748119959947', null);
+      expect(shown().consent!.smsLine).toBe('No phone');
     });
   });
 });

@@ -53,6 +53,7 @@ describe('CONSENT_PATHS', () => {
   it('has fixed write paths', () => {
     expect(CONSENT_PATHS.consents).toBe('/consent/v1/consents');
     expect(CONSENT_PATHS.evidence).toBe('/consent/v1/evidence');
+    expect(CONSENT_PATHS.evidenceFile('ev/1')).toBe('/consent/v1/evidence/ev%2F1');
     expect(CONSENT_PATHS.otpChallenges).toBe('/consent/v1/otp/challenges');
   });
 
@@ -66,6 +67,10 @@ describe('CONSENT_PATHS', () => {
     expect(CONSENT_PATHS.pendingActions(42)).toBe(
       '/consent/v1/principals/42/pending-actions'
     );
+    expect(CONSENT_PATHS.pendingActions(42, 'REVISIT')).toBe(
+      '/consent/v1/principals/42/pending-actions?context=REVISIT'
+    );
+    expect(CONSENT_PATHS.requestAccess).toBe('/consent/v1/access-grants');
     expect(CONSENT_PATHS.preferences(42)).toBe(
       '/consent/v1/principals/42/preferences'
     );

@@ -124,6 +124,11 @@
       </p>
     </div>
 
+    <p *ngIf="noNotice" class="consent-inline-hint consent-no-notice" role="status">
+      <mat-icon>info_outline</mat-icon>
+      {{ text?.noNoticePublished }}
+    </p>
+
     <div *ngIf="failed" class="consent-alert" role="alert">
       <mat-icon>error_outline</mat-icon>
       <span>{{ text?.serviceUnavailable }}</span>

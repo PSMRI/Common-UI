@@ -94,7 +94,7 @@ export class RevisitConsentService {
           return of(goAhead);
         }
         return this.consentApi
-          .getPendingActions(patient.beneficiaryRegId)
+          .getPendingActions(patient.beneficiaryRegId, 'REVISIT')
           .pipe(
             switchMap((actions) =>
               actions.length > 0 ? this.takeConsent(patient, config, actions) : of(goAhead)

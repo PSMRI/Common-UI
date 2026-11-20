@@ -62,8 +62,8 @@ export abstract class ProofStepBase implements OnDestroy {
   @Output() uploadRecording = new EventEmitter<void>();
   @Input() recordingUpload: RecordingUploadState = 'IDLE';
 
-  /** Feature 002: the project's allowed modes in order; all six by default. */
-  @Input() modes: { mode: ConsentMode; key: string }[] = ACTIVE_CONSENT_MODES;
+  /** Feature 002: exactly the project's configured modes, in order. */
+  @Input() modes: { mode: ConsentMode; key: string }[] = [];
   proof: ProofDraft = {};
 
   /** Feature 003: the declaration to show and agree to (patient or representative wording). */

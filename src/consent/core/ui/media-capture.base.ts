@@ -23,7 +23,7 @@
 import { Directive, EventEmitter, Input, OnDestroy, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { CameraService } from 'src/app/app-modules/core/services';
 import { RecordingUploadState } from '../consent.models';
-import { isVoiceDurationValid } from '../evidence.util';
+import { isEvidenceSizeValid, isVoiceDurationValid, maxEvidenceBytes } from '../evidence.util';
 
 export interface CapturedMedia {
   blob: Blob;
@@ -69,7 +69,7 @@ export abstract class MediaCaptureBase implements OnDestroy {
   /** Seconds since recording started, shown next to the stop button. */
   elapsedSec = 0;
   micDenied = false;
-  error: 'voiceTooShort' | 'voiceTooLong' | null = null;
+  error: 'voiceTooShort' | 'voiceTooLong' | 'fileTooLarge' | null = null;
 
   protected cameraService = inject(CameraService);
   // Zard's dialog container is OnPush: async updates must mark this view for checking.
@@ -157,6 +157,10 @@ export abstract class MediaCaptureBase implements OnDestroy {
     if (!this.error) {
       return '';
     }
+    if (this.error === 'fileTooLarge') {
+      const mb = String(maxEvidenceBytes(this.kind) / (1024 * 1024));
+      return (this.text?.fileTooLarge || '').replace('{max}', mb);
+    }
     let key: string = this.error;
     if (this.error === 'voiceTooShort' && this.minSeconds !== 30) {
       key = 'voiceTooShortMin';
@@ -197,6 +201,13 @@ export abstract class MediaCaptureBase implements OnDestroy {
 
   private accept(blob: Blob, durationSec: number | null): void {
     this.revoke();
+    if (!isEvidenceSizeValid(blob, this.kind)) {
+      // The Consent-API would refuse it; ask for a shorter clip or a smaller photo.
+      this.error = 'fileTooLarge';
+      this.captured.emit(null);
+      this.cdr.markForCheck();
+      return;
+    }
     this.error = null;
     this.previewUrl = URL.createObjectURL(blob);
     this.captured.emit({ blob, durationSec });
