@@ -36,5 +36,10 @@ export {
 export { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 // Feature 002: per-project consent configuration.
 export * from './core/consent-config.models';
-export { DEFAULT_CONTEXT_CONFIG } from './core/consent-config';
+export { NOT_CONFIGURED_CONTEXT } from './core/consent-config';
+export { forRegisteredPatient } from './core/consent-draft';
 export { ConsentConfigService } from './core/consent-config.service';
+// AMM-2522: preference centre, opened from the "Consent" button in the patient header.
+export { ConsentButtonComponent } from './consent-button/consent-button.component';
+export { PreferenceCentreComponent } from './preference-centre/preference-centre.component';
+export { PreferenceCentreOptions, PreferenceCentreResult } from './core/ui/preference-centre.base';

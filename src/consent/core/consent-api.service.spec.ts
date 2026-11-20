@@ -27,7 +27,7 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from 'src/environments/environment';
-import { ConsentApiService, toConsentApiError } from './consent-api.service';
+import { ConsentApiService, PENDING_BATCH_MAX, toConsentApiError } from './consent-api.service';
 import { ConsentApiError, SaveConsentRequest } from './consent.models';
 import {
   mockAccessGrants,
@@ -96,6 +96,45 @@ describe('ConsentApiService', () => {
     expect(req.request.body).toEqual({ beneficiaryRegIds: [101, 102] });
     req.flush(mockOk({ '101': mockPendingActions(), '102': [] }));
     expect(out).toEqual({ '101': mockPendingActions(), '102': [] });
+  });
+
+  it('splits more than PENDING_BATCH_MAX ids into several batch calls and merges them', () => {
+    const ids = Array.from({ length: PENDING_BATCH_MAX + 1 }, (_, i) => i + 1);
+    let out: unknown;
+    service.getPendingActionsBatch(ids).subscribe((v) => (out = v));
+    const reqs = http.match('http://api/consent/v1/principals/pending-actions/batch');
+    expect(reqs.length).toBe(2);
+    expect(reqs[0].request.body.beneficiaryRegIds.length).toBe(PENDING_BATCH_MAX);
+    expect(reqs[1].request.body).toEqual({ beneficiaryRegIds: [PENDING_BATCH_MAX + 1] });
+    reqs[0].flush(mockOk({ '1': mockPendingActions() }));
+    reqs[1].flush(mockOk({ [String(PENDING_BATCH_MAX + 1)]: [] }));
+    expect(out).toEqual({ '1': mockPendingActions(), [String(PENDING_BATCH_MAX + 1)]: [] });
+  });
+
+  it('makes no batch call for an empty id list', () => {
+    let out: unknown;
+    service.getPendingActionsBatch([]).subscribe((v) => (out = v));
+    http.expectNone('http://api/consent/v1/principals/pending-actions/batch');
+    expect(out).toEqual({});
+  });
+
+  it('gets a stored recording as a blob for playback (API 16)', () => {
+    let out: Blob | undefined;
+    service.getEvidenceFile('ev 1').subscribe((v) => (out = v));
+    const req = http.expectOne('http://api/consent/v1/evidence/ev%201');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.responseType).toBe('blob');
+    req.flush(new Blob(['x'], { type: 'audio/wav' }));
+    expect(out?.type).toBe('audio/wav');
+  });
+
+  it('maps a missing recording to NOT_FOUND', () => {
+    let err: ConsentApiError | undefined;
+    service.getEvidenceFile('nope').subscribe({ error: (e) => (err = e) });
+    http
+      .expectOne('http://api/consent/v1/evidence/nope')
+      .flush(new Blob(), { status: 404, statusText: 'Not Found' });
+    expect(err?.kind).toBe('NOT_FOUND');
   });
 
   it('saves a consent with an Idempotency-Key header', () => {
@@ -176,6 +215,30 @@ describe('ConsentApiService', () => {
     w.flush(mockOk(mockConsents()));
   });
 
+  it('asks for revisit pending actions and requests doctor access', () => {
+    service.getPendingActions(42, 'REVISIT').subscribe();
+    http
+      .expectOne('http://api/consent/v1/principals/42/pending-actions?context=REVISIT')
+      .flush(mockOk([]));
+    const ask = { beneficiaryRegId: 42, purposeCodes: ['P-TELE'], days: 7, reason: 'Referral', facilityId: 5 };
+    service.requestAccess(ask, 'k8').subscribe();
+    const g = http.expectOne('http://api/consent/v1/access-grants');
+    expect(g.request.method).toBe('POST');
+    expect(g.request.body).toEqual(ask);
+    expect(g.request.headers.get('Idempotency-Key')).toBe('k8');
+    g.flush(mockOk(mockAccessGrants()[0]));
+  });
+
+  it('accepts a 201 envelope from the creating calls', () => {
+    let out: unknown;
+    service.sendOtp({ purpose: 'CONSENT', phone: '9876543210' }, 'k9').subscribe((v) => (out = v));
+    const challenge = { challengeId: 'c-1', maskedPhone: '98******10', expiresAt: 'x' };
+    http
+      .expectOne('http://api/consent/v1/otp/challenges')
+      .flush({ statusCode: 201, status: 'Created', errorMessage: '', data: challenge }, { status: 201, statusText: 'Created' });
+    expect(out).toEqual(challenge);
+  });
+
   it('approves and revokes access grants', () => {
     service.approveAccess('g-1', 'otp-1', 'k6').subscribe();
     const a = http.expectOne('http://api/consent/v1/access-grants/g-1/approve');
@@ -229,6 +292,25 @@ describe('ConsentApiService', () => {
       expect(toConsentApiError(httpErr(422, { data: { reason: 'NOT_WITHDRAWABLE' } })).kind).toBe(
         'NOT_WITHDRAWABLE'
       );
+      expect(
+        toConsentApiError(httpErr(422, { data: { reason: 'PURPOSE_NOT_WITHDRAWABLE' } })).kind
+      ).toBe('NOT_WITHDRAWABLE');
+    });
+
+    it('reads the Consent-API error format { error: { code } }', () => {
+      const consentErr = (status: number, code: string) =>
+        httpErr(status, { success: false, statusCode: status, message: 'x', data: null, error: { code, purposeCode: null } });
+      expect(toConsentApiError(consentErr(409, 'STALE_VERSION')).kind).toBe('STALE');
+      expect(toConsentApiError(consentErr(422, 'PURPOSE_NOT_WITHDRAWABLE')).kind).toBe('NOT_WITHDRAWABLE');
+      expect(toConsentApiError(consentErr(422, 'OTP_INVALID'))).toEqual({ kind: 'FAILED', message: 'OTP_INVALID' });
+      expect(toConsentApiError(consentErr(404, 'NOT_FOUND')).kind).toBe('NOT_FOUND');
+    });
+
+    it('keeps the server reason code in the message', () => {
+      expect(toConsentApiError(httpErr(429, { data: { reason: 'RATE_LIMITED' } }))).toEqual({
+        kind: 'FAILED',
+        message: 'RATE_LIMITED',
+      });
     });
 
     it('maps network and server errors to UNAVAILABLE', () => {

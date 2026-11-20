@@ -138,6 +138,26 @@ export function mediaCaptureSuite(MediaCaptureComponent: Type<MediaCaptureBase>,
       expect(emitted.length).toBe(1);
     });
 
+    it('refuses a photo over 2 MB and says so (Consent-API limit)', () => {
+      create('photo');
+      component.text = { ...component.text, fileTooLarge: 'Too big, max {max} MB' };
+      const big = new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'p.png', { type: 'image/png' });
+      component.onFile(fileInput(big));
+      fixture.detectChanges();
+      expect(emitted).toEqual([null]);
+      expect(component.error).toBe('fileTooLarge');
+      expect(component.previewUrl).toBeNull();
+      expect(component.errorText).toBe('Too big, max 2 MB');
+    });
+
+    it('refuses a recording over 5 MB', () => {
+      create('voice');
+      component.text = { ...component.text, fileTooLarge: 'max {max} MB' };
+      (component as any).checkVoice(new Blob([new Uint8Array(5 * 1024 * 1024 + 1)], { type: 'audio/webm' }), 45);
+      expect(emitted).toEqual([null]);
+      expect(component.errorText).toBe('max 5 MB');
+    });
+
     it('retake clears the capture and revokes the preview', () => {
       camera.capture.and.returnValue(of(PNG));
       create('photo');

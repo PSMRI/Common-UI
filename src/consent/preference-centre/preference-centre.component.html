@@ -1,0 +1,157 @@
+<section class="consent-dialog">
+  <div class="consent-header">
+    <span class="consent-title">{{ text?.prefTitle }}</span>
+    <button
+      type="button"
+      class="consent-close pref-close"
+      [attr.aria-label]="text?.close"
+      [attr.title]="text?.close"
+      (click)="close()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="consent-body">
+    <div *ngIf="loadFailed" class="consent-alert pref-load-failed" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ text?.prefLoadFailed }}</span>
+      <button type="button" class="consent-btn consent-btn-secondary" (click)="load()">{{ text?.retry }}</button>
+    </div>
+
+    <div *ngIf="error" class="consent-alert pref-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ text?.[error] }}</span>
+    </div>
+
+    <div *ngIf="saved" class="pref-saved" role="status">
+      <p>{{ text?.prefSaved }}</p>
+      <p *ngIf="keptByLaw.length > 0" class="pref-kept">{{ text?.prefKeptByLaw }} {{ keptByLaw.join(', ') }}</p>
+    </div>
+
+    <div *ngIf="action" class="pref-action" aria-live="polite" [ngSwitch]="action.kind">
+      <ng-container *ngSwitchCase="'GRANT'">
+        <p class="pref-action-title">{{ fill('prefTurnOnTitle', { purpose: $any(action).purpose.name }) }}</p>
+        <p class="pref-action-hint">{{ text?.prefGrantHint }}</p>
+        <app-consent-otp-verify
+          purpose="CONSENT"
+          [refId]="'' + options.beneficiaryRegId"
+          [text]="text"
+          [phone]="options.patientPhone || null"
+          (verified)="onOtpVerified($event)"
+        ></app-consent-otp-verify>
+      </ng-container>
+      <ng-container *ngSwitchCase="'DENY'">
+        <p class="pref-action-title">{{ fill('prefTurnOffTitle', { purpose: $any(action).purpose.name }) }}</p>
+        <p class="pref-action-hint">{{ text?.prefDenyHint }}</p>
+      </ng-container>
+      <ng-container *ngSwitchCase="'WITHDRAW'">
+        <p class="pref-action-title">{{ $any(action).all ? text?.withdrawAll : text?.withdraw }}</p>
+        <ul class="pref-withdraw-list">
+          <li *ngFor="let p of $any(action).purposes">{{ p.name }}</li>
+        </ul>
+        <p class="pref-action-hint">{{ text?.withdrawImplications }}</p>
+        <div *ngIf="$any(action).kept.length > 0" class="pref-kept-preview">
+          <span>{{ text?.prefKeptByLaw }}</span>
+          <ul>
+            <li *ngFor="let p of $any(action).kept">{{ p.name }}</li>
+          </ul>
+          <span class="pref-note">{{ text?.notWithdrawable }}</span>
+        </div>
+      </ng-container>
+      <div class="pref-action-buttons">
+        <button type="button" class="consent-btn consent-btn-secondary pref-cancel" [disabled]="busy" (click)="cancelAction()">
+          {{ text?.prefCancel }}
+        </button>
+        <button
+          type="button"
+          class="consent-btn pref-confirm"
+          [class.consent-btn-primary]="action.kind === 'GRANT'"
+          [class.consent-btn-danger]="action.kind !== 'GRANT'"
+          [disabled]="!confirmEnabled"
+          (click)="confirmAction()"
+        >
+          {{ text?.prefConfirm }}
+        </button>
+      </div>
+    </div>
+
+    <p *ngIf="loading && !consents" class="pref-empty pref-loading" role="status">{{ text?.prefLoading }}</p>
+
+    <ng-container *ngIf="consents">
+      <div class="pref-section">
+        <p class="consent-section-title">{{ text?.prefCurrent }}</p>
+        <p *ngIf="current.length === 0" class="pref-empty pref-no-consents">{{ text?.prefNoConsents }}</p>
+        <ul class="pref-list">
+          <li *ngFor="let p of current" class="pref-row pref-purpose" [attr.data-code]="p.purposeCode">
+            <div class="pref-row-main">
+              <span class="pref-name">{{ p.name }}</span>
+              <div class="pref-meta">
+                <span class="pref-badge pref-status" [ngClass]="'pref-badge-' + statusType(p.status)">
+                  {{ text?.['status' + p.status] }}
+                </span>
+                <span class="pref-badge">{{ p.isMandatory ? text?.mandatory : text?.optional }}</span>
+                <span *ngIf="p.validUntil" class="pref-valid-until">
+                  {{ text?.validUntil }} {{ p.validUntil | date: 'dd/MM/yyyy' }}
+                </span>
+              </div>
+              <span *ngIf="requiredByLaw(p)" class="pref-note pref-required-by-law">{{ text?.notWithdrawable }}</span>
+              <span *ngIf="p.status === 'EXPIRED' || p.status === 'RECONSENT_REQUIRED'" class="pref-note">
+                {{ text?.prefNeedsConsent }}
+              </span>
+            </div>
+            <div class="pref-row-actions">
+              <button
+                *ngIf="canSwitch(p)"
+                type="button"
+                class="consent-btn consent-btn-secondary pref-switch"
+                [disabled]="busy"
+                (click)="switchPurpose(p)"
+              >
+                {{ isOn(p) ? text?.prefTurnOff : text?.prefTurnOn }}
+              </button>
+              <button
+                *ngIf="canWithdraw(p)"
+                type="button"
+                class="consent-btn consent-btn-secondary pref-withdraw"
+                [disabled]="busy"
+                (click)="withdrawOne(p)"
+              >
+                {{ text?.withdraw }}
+              </button>
+            </div>
+          </li>
+        </ul>
+        <div *ngIf="withdrawable.length > 0" class="pref-footer">
+          <button type="button" class="consent-btn consent-btn-danger pref-withdraw-all" [disabled]="busy" (click)="withdrawAll()">
+            {{ text?.withdrawAll }}
+          </button>
+        </div>
+      </div>
+
+      <div class="pref-section">
+        <p class="consent-section-title">{{ text?.history }}</p>
+        <p *ngIf="history.length === 0" class="pref-empty pref-no-history">{{ text?.prefNoHistory }}</p>
+        <ul class="pref-list">
+          <li *ngFor="let row of history" class="pref-row pref-history-row">
+            <div class="pref-row-main">
+              <span class="pref-name">{{ row.purposeName }}</span>
+              <div class="pref-meta">
+                <span class="pref-badge" [ngClass]="'pref-badge-' + statusType(row.status)">{{ text?.['status' + row.status] }}</span>
+                <span *ngIf="row.syncStatus === 'NOT_SYNCED'" class="pref-badge pref-badge-warning pref-not-synced">
+                  <mat-icon>cloud_off</mat-icon>{{ text?.notSynced }}
+                </span>
+                <span>{{ row.capturedAt | date: 'dd/MM/yyyy, h:mm a' }}</span>
+              </div>
+              <span class="pref-note">
+                {{ text?.prefMode }}: {{ row.modeKey ? text?.[row.modeKey] : row.mode }} ·
+                {{ text?.prefLanguage }}: {{ row.languageCode | uppercase }}
+                <ng-container *ngIf="row.capturedBy !== null"> · {{ text?.prefCapturedBy }}: {{ row.capturedBy }}</ng-container>
+              </span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </ng-container>
+  </div>
+</section>

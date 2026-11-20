@@ -39,8 +39,9 @@ import {
   sortPurposes,
   toSaveRequest,
   withNotice,
+  forRegisteredPatient,
 } from './consent-draft';
-import { ConsentCaptureContext, ConsentDraft, GuardianDraft } from './consent.models';
+import { ConsentCaptureContext, ConsentDraft, GuardianDraft, SaveConsentRequest } from './consent.models';
 import { mockLanguages, mockNotice, mockNoticeNoAudio, mockPurposes } from './testing/consent.mock';
 
 describe('consent-draft', () => {
@@ -312,6 +313,27 @@ describe('consent-draft', () => {
       expect(toSaveRequest({ ...base, mode: 'VOICE_CLIP' }, ctx, 42, ['e-1'], []).evidenceIds).toEqual(['e-1']);
     });
 
+    it('confirms Read aloud from the patient\'s Yes and sends the project version', () => {
+      const base = grantAll(withNotice(createDraft(), mockNotice('hi')));
+      const req = toSaveRequest(
+        { ...base, mode: 'READ_ALOUD', proof: { declarationAgreed: true } },
+        ctx, 42, [], [], 'NEW', { projectId: 12, configVersion: 3 }
+      );
+      expect(req.proof.workerConfirmed).toBeTrue();
+      expect(req.projectId).toBe(12);
+      expect(req.configVersion).toBe(3);
+      const noProject = toSaveRequest({ ...base, mode: 'SELF_READ' }, ctx, 42, [], []);
+      expect(noProject.projectId).toBeNull();
+      expect(noProject.configVersion).toBeNull();
+    });
+
+    it('leaves out mode and proof when everything is denied', () => {
+      const d = { ...withNotice(createDraft(), mockNotice('hi')), mode: 'OTP' as const, proof: { otpChallengeId: 'otp-1' } };
+      const req = toSaveRequest(d, ctx, 42, [], []);
+      expect(req.mode).toBeNull();
+      expect(req.proof).toEqual({ workerConfirmed: null, witnessName: null, witnessRelationship: null, otpChallengeId: null });
+    });
+
     it('sends a decline with no mode and all DENY', () => {
       const req = toSaveRequest(withNotice(createDraft(), mockNotice('hi')), ctx, null, [], [], 'NEW', {
         declarationText: 'I agree',
@@ -363,7 +385,6 @@ describe('consent-draft', () => {
   });
 
   describe('declaration and grievance (feature 003)', () => {
-    const defaults = { patient: 'Default patient', representative: 'Default representative' };
 
     it('declarationWording is representative only for the Guardian / Representative mode', () => {
       expect(declarationWording('WITNESSED')).toBe('REPRESENTATIVE');
@@ -371,20 +392,21 @@ describe('consent-draft', () => {
       expect(declarationWording(null)).toBe('PATIENT');
     });
 
-    it('declarationText prefers the project wording and falls back', () => {
+    it('declarationText shows only what the notice publishes', () => {
       const plain = mockNotice('hi');
       const own = { ...plain, declaration: 'Patient text', representativeDeclaration: 'Rep text' };
-      expect(declarationText(own, 'PATIENT', defaults)).toBe('Patient text');
-      expect(declarationText(own, 'REPRESENTATIVE', defaults)).toBe('Rep text');
-      expect(declarationText({ ...own, representativeDeclaration: undefined }, 'REPRESENTATIVE', defaults)).toBe('Patient text');
-      expect(declarationText({ ...plain, declaration: undefined }, 'PATIENT', defaults)).toBe('Default patient');
-      expect(declarationText({ ...plain, declaration: undefined }, 'REPRESENTATIVE', defaults)).toBe('Default representative');
+      expect(declarationText(own, 'PATIENT')).toBe('Patient text');
+      expect(declarationText(own, 'REPRESENTATIVE')).toBe('Rep text');
+      expect(declarationText({ ...own, representativeDeclaration: undefined }, 'REPRESENTATIVE')).toBe('Patient text');
+      const none = { ...plain, declaration: undefined, representativeDeclaration: undefined };
+      expect(declarationText(none, 'PATIENT')).toBe('');
+      expect(declarationText(none, 'REPRESENTATIVE')).toBe('');
     });
 
-    it('grievanceText uses the notice text, else the fallback', () => {
-      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: 'Call 104' }, 'fb')).toBe('Call 104');
-      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: '  ' }, 'fb')).toBe('fb');
-      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: undefined as unknown as string }, 'fb')).toBe('fb');
+    it('grievanceText uses the notice text only', () => {
+      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: 'Call 104' })).toBe('Call 104');
+      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: '  ' })).toBe('');
+      expect(grievanceText({ ...mockNotice('hi'), grievanceInfo: undefined as unknown as string })).toBe('');
     });
   });
 
@@ -405,5 +427,37 @@ describe('consent-draft', () => {
     expect(Object.keys(declined.decisions).length).toBe(6);
     expect(declined.idempotencyKey).toBe(d.idempotencyKey);
     expect(d.decisions['P-REG']).toBeTrue();
+  });
+});
+
+describe('forRegisteredPatient', () => {
+  function request(decision: 'GRANT' | 'DENY', notify: SaveConsentRequest['notify'] = null): SaveConsentRequest {
+    return {
+      beneficiaryRegId: null,
+      decisions: [{ purposeCode: 'P-REG', decision }],
+      notify,
+    } as unknown as SaveConsentRequest;
+  }
+
+  it('adds the beneficiaryRegId and keeps everything else', () => {
+    const original = request('GRANT');
+    const out = forRegisteredPatient(original, 9876, null);
+    expect(out.beneficiaryRegId).toBe(9876);
+    expect(out.decisions).toBe(original.decisions);
+    expect(original.beneficiaryRegId).toBeNull();
+  });
+
+  it('adds the patient phone for the Consent ID SMS when something was granted', () => {
+    expect(forRegisteredPatient(request('GRANT'), 1, '9876543212').notify).toEqual({ channel: 'SMS', phone: '9876543212' });
+  });
+
+  it('sends no SMS for a decline or an invalid phone', () => {
+    expect(forRegisteredPatient(request('DENY'), 1, '9876543212').notify).toBeNull();
+    expect(forRegisteredPatient(request('GRANT'), 1, '12345').notify).toBeNull();
+  });
+
+  it('keeps a phone the pop-up already had', () => {
+    const notify = { channel: 'SMS' as const, phone: '9123456789' };
+    expect(forRegisteredPatient(request('GRANT', notify), 1, '9876543212').notify).toEqual(notify);
   });
 });

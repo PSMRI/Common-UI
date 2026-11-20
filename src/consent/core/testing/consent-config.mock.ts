@@ -59,10 +59,30 @@ export function mockSingleContext(): ContextConfig {
   };
 }
 
+/** A project configured with every active mode and no default, as the API would return it. */
+export function mockAllModesContext(): ContextConfig {
+  return {
+    enabled: true,
+    mandatory: true,
+    modes: ['SELF_READ', 'READ_ALOUD', 'WITNESSED', 'SIGNATURE_PHOTO', 'OTP'].map((mode, i) => ({
+      mode: mode as ContextConfig['modes'][number]['mode'],
+      rank: i + 1,
+      settings: {},
+    })),
+    defaultMode: null,
+    purposes: [],
+    languages: [],
+    guardian: { enabled: true, ageThreshold: 18 },
+  };
+}
+
 export function mockResolvedConfig(
-  variant: 'full' | 'single' | 'off',
+  variant: 'full' | 'single' | 'off' | 'all',
   context: ConsentContextType = 'REGISTRATION'
 ): ResolvedConsentConfig {
+  if (variant === 'all') {
+    return { projectId: 5, version: 1, context, config: mockAllModesContext(), source: 'PROJECT' };
+  }
   if (variant === 'single') {
     return { projectId: 7, version: 1, context, config: mockSingleContext(), source: 'PROJECT' };
   }

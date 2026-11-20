@@ -75,6 +75,19 @@ export function isVoiceDurationValid(
   return typeof seconds === 'number' && seconds >= min && seconds <= max;
 }
 
+/** Largest evidence files the Consent-API accepts: 5 MB audio, 2 MB photo. */
+export const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
+export const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+
+export function maxEvidenceBytes(kind: 'photo' | 'voice'): number {
+  return kind === 'photo' ? MAX_PHOTO_BYTES : MAX_AUDIO_BYTES;
+}
+
+/** The file fits the Consent-API size limit for its kind. */
+export function isEvidenceSizeValid(blob: Blob, kind: 'photo' | 'voice'): boolean {
+  return blob.size <= maxEvidenceBytes(kind);
+}
+
 /** '9876543212' -> '98******12' (FR-016). */
 export function maskPhone(phone: string | null | undefined): string {
   if (!phone || phone.length < 4) {

@@ -1,0 +1,74 @@
+<section class="consent-dialog registration-success">
+  <div class="consent-body">
+    <div class="consent-done" role="status">
+      <div class="consent-done-head">
+        <mat-icon class="consent-done-icon">check_circle</mat-icon>
+        <span class="consent-done-title">{{ text?.registeredTitle }}</span>
+      </div>
+      <dl class="consent-done-ids">
+        <dt>{{ labels?.beneficiaryID }}</dt>
+        <dd class="consent-done-id reg-ben-id">{{ data.beneficiaryID }}</dd>
+        <ng-container *ngIf="data.consent as c">
+          <dt>{{ text?.consentIdLabel }}</dt>
+          <dd class="consent-done-id reg-consent-id">{{ c.consentId }}</dd>
+          <dt>{{ text?.consentStatusLabel }}</dt>
+          <dd>{{ text?.['consent' + c.outcome] || c.outcome }}</dd>
+          <dt>{{ text?.capturedAtLabel }}</dt>
+          <dd>{{ c.capturedAt | date: 'd MMM y, HH:mm' }}</dd>
+        </ng-container>
+      </dl>
+
+      <ng-container *ngIf="data.consent as c">
+        <p *ngIf="c.syncStatus === 'NOT_SYNCED'" class="consent-inline-hint">
+          <mat-icon>cloud_off</mat-icon>
+          {{ text?.notSyncedNote }}
+        </p>
+        <div class="consent-done-grievance reg-grievance">
+          <p class="consent-section-title">{{ text?.grievanceTitle }}</p>
+          <dl *ngIf="c.grievance as g; else grievanceFallback">
+            <ng-container *ngIf="g.officerName">
+              <dt>{{ text?.grievanceOfficer }}</dt>
+              <dd>{{ g.officerName }}</dd>
+            </ng-container>
+            <ng-container *ngIf="g.phone">
+              <dt>{{ text?.grievancePhone }}</dt>
+              <dd>{{ g.phone }}</dd>
+            </ng-container>
+            <ng-container *ngIf="g.email">
+              <dt>{{ text?.grievanceEmail }}</dt>
+              <dd>{{ g.email }}</dd>
+            </ng-container>
+            <ng-container *ngIf="g.address">
+              <dt>{{ text?.grievanceAddress }}</dt>
+              <dd>{{ g.address }}</dd>
+            </ng-container>
+            <ng-container *ngIf="g.officeHours">
+              <dt>{{ text?.grievanceHours }}</dt>
+              <dd>{{ g.officeHours }}</dd>
+            </ng-container>
+          </dl>
+          <ng-template #grievanceFallback>
+            <p class="consent-done-grievance-text">{{ c.grievanceText }}</p>
+          </ng-template>
+        </div>
+        <p *ngIf="c.smsLine" class="consent-inline-hint reg-sms">
+          <mat-icon>sms</mat-icon>
+          {{ c.smsLine }}
+        </p>
+      </ng-container>
+
+      <div *ngIf="data.consentFailed" class="consent-alert reg-consent-failed" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ text?.consentSaveAfterRegistrationFailed }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="consent-actions">
+    <button *ngIf="data.consentFailed" type="button" class="consent-btn consent-btn-secondary reg-retry" (click)="retry()">
+      {{ text?.retry }}
+    </button>
+    <button type="button" class="consent-btn consent-btn-primary reg-done" (click)="close()">
+      {{ text?.done }}
+    </button>
+  </div>
+</section>
