@@ -399,6 +399,20 @@ export function declineAll(draft: ConsentDraft): ConsentDraft {
 const PATIENT_PHONE = /^[6-9]\d{9}$/;
 
 /**
+ * The patient's 10-digit mobile number, or null. Registration may store it as +91…, 91…, 0… or with
+ * spaces and dashes; Consent-API takes only the 10 digits.
+ */
+export function patientMobile(phone: string | null | undefined): string | null {
+  let digits = String(phone ?? '').replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  } else if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  return PATIENT_PHONE.test(digits) ? digits : null;
+}
+
+/**
  * The consent collected before registration, now for the registered patient. Adds the phone for the
  * Consent ID SMS when something was granted and the dialog had no phone yet. Nothing else changes.
  */
@@ -408,10 +422,10 @@ export function forRegisteredPatient(
   phone: string | null | undefined
 ): SaveConsentRequest {
   const granted = request.decisions.some(d => d.decision === 'GRANT');
+  const mobile = patientMobile(phone);
+  // Consent-API sends the SMS with the Consent ID and the grievance contact; no phone, no SMS.
   const notify =
     request.notify ||
-    (granted && phone && PATIENT_PHONE.test(phone)
-      ? { channel: 'SMS' as const, phone }
-      : null);
+    (granted && mobile ? { channel: 'SMS' as const, phone: mobile } : null);
   return { ...request, beneficiaryRegId, notify };
 }

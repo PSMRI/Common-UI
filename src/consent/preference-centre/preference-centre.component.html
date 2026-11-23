@@ -26,8 +26,31 @@
 
     <div *ngIf="saved" class="pref-saved" role="status">
       <p>{{ text?.prefSaved }}</p>
-      <p *ngIf="keptByLaw.length > 0" class="pref-kept">{{ text?.prefKeptByLaw }} {{ keptByLaw.join(', ') }}</p>
     </div>
+
+    <section *ngIf="withdrawAllContact as w" class="pref-withdraw-all-contact" role="alert">
+      <p class="pref-action-title"><mat-icon>info_outline</mat-icon>{{ text?.withdrawAllTitle }}</p>
+      <p class="pref-contact-message">{{ text?.withdrawAllContactOfficer }}</p>
+      <p *ngIf="w.loading" class="pref-action-hint" role="status">{{ text?.prefLoading }}</p>
+      <ng-container *ngIf="!w.loading">
+        <dl *ngIf="w.grievance as g; else grievanceTextBlock" class="pref-grievance">
+          <dt>{{ text?.grievanceOfficer }}</dt>
+          <dd>{{ g.officerName }}</dd>
+          <ng-container *ngIf="g.phone"><dt>{{ text?.grievancePhone }}</dt><dd>{{ g.phone }}</dd></ng-container>
+          <ng-container *ngIf="g.email"><dt>{{ text?.grievanceEmail }}</dt><dd>{{ g.email }}</dd></ng-container>
+          <ng-container *ngIf="g.address"><dt>{{ text?.grievanceAddress }}</dt><dd>{{ g.address }}</dd></ng-container>
+          <ng-container *ngIf="g.officeHours"><dt>{{ text?.grievanceHours }}</dt><dd>{{ g.officeHours }}</dd></ng-container>
+        </dl>
+        <ng-template #grievanceTextBlock>
+          <p *ngIf="w.grievanceText" class="pref-grievance">{{ w.grievanceText }}</p>
+        </ng-template>
+      </ng-container>
+      <div class="pref-action-buttons">
+        <button type="button" class="consent-btn consent-btn-secondary pref-withdraw-all-close" (click)="closeWithdrawAllContact()">
+          {{ text?.close }}
+        </button>
+      </div>
+    </section>
 
     <div *ngIf="action" class="pref-action" aria-live="polite" [ngSwitch]="action.kind">
       <ng-container *ngSwitchCase="'GRANT'">
@@ -46,18 +69,11 @@
         <p class="pref-action-hint">{{ text?.prefDenyHint }}</p>
       </ng-container>
       <ng-container *ngSwitchCase="'WITHDRAW'">
-        <p class="pref-action-title">{{ $any(action).all ? text?.withdrawAll : text?.withdraw }}</p>
+        <p class="pref-action-title">{{ text?.withdraw }}</p>
         <ul class="pref-withdraw-list">
-          <li *ngFor="let p of $any(action).purposes">{{ p.name }}</li>
+          <li>{{ $any(action).purpose.name }}</li>
         </ul>
         <p class="pref-action-hint">{{ text?.withdrawImplications }}</p>
-        <div *ngIf="$any(action).kept.length > 0" class="pref-kept-preview">
-          <span>{{ text?.prefKeptByLaw }}</span>
-          <ul>
-            <li *ngFor="let p of $any(action).kept">{{ p.name }}</li>
-          </ul>
-          <span class="pref-note">{{ text?.notWithdrawable }}</span>
-        </div>
       </ng-container>
       <div class="pref-action-buttons">
         <button type="button" class="consent-btn consent-btn-secondary pref-cancel" [disabled]="busy" (click)="cancelAction()">
