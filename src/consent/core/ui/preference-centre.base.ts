@@ -28,14 +28,17 @@ import {
   inject,
 } from '@angular/core';
 import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { ConsentApiService } from '../consent-api.service';
+import { ConsentConfigService } from '../consent-config.service';
 import { ConsentContextService } from '../consent-context.service';
 import {
   ChangeContext,
   ConsentApiError,
   ConsentMode,
+  GrievanceContact,
   PatientConsents,
   PurposeState,
   PurposeStatus,
@@ -59,12 +62,14 @@ export interface PreferenceCentreResult {
 /** The change waiting for staff to confirm it with the patient. */
 export type PreferenceAction =
   | { kind: 'GRANT' | 'DENY'; purpose: PurposeState }
-  | {
-      kind: 'WITHDRAW';
-      all: boolean;
-      purposes: PurposeState[];
-      kept: PurposeState[];
-    };
+  | { kind: 'WITHDRAW'; purpose: PurposeState };
+
+/** Withdraw all is done through the grievance officer: the contact shown instead of a withdrawal. */
+export interface WithdrawAllContact {
+  loading: boolean;
+  grievance: GrievanceContact | null;
+  grievanceText: string;
+}
 
 /** One purpose's outcome in one consent event, for the history list. */
 export interface HistoryRow {
@@ -110,8 +115,8 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
   otpChallengeId: string | null = null;
   busy = false;
   error: PreferenceError | null = null;
-  /** After Withdraw all: purposes kept because the law requires them. */
-  keptByLaw: string[] = [];
+  /** Shown after Withdraw all: the patient contacts the grievance officer; null when hidden. */
+  withdrawAllContact: WithdrawAllContact | null = null;
   /** Set after a successful change, until the next action starts. */
   saved = false;
   /** Something was saved while the preference centre was open. */
@@ -124,6 +129,7 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
 
   protected consentApi = inject(ConsentApiService);
   protected consentContext = inject(ConsentContextService);
+  protected consentConfig = inject(ConsentConfigService);
   httpServiceService = inject(HttpServiceService);
   // Zard's dialog container is OnPush: async updates must mark this view for checking.
   protected cdr = inject(ChangeDetectorRef);
@@ -247,21 +253,52 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
 
   withdrawOne(purpose: PurposeState): void {
     if (this.canWithdraw(purpose)) {
-      this.startAction({
-        kind: 'WITHDRAW',
-        all: false,
-        purposes: [purpose],
-        kept: [],
-      });
+      this.startAction({ kind: 'WITHDRAW', purpose });
     }
   }
 
+  /**
+   * Withdrawing all consent is not done here: the patient contacts the grievance officer. Shows the
+   * officer from the project's published notice, in the language of the patient's latest consent.
+   */
   withdrawAll(): void {
-    const purposes = this.withdrawable;
-    if (purposes.length > 0) {
-      const kept = this.current.filter(p => this.requiredByLaw(p));
-      this.startAction({ kind: 'WITHDRAW', all: true, purposes, kept });
+    if (this.withdrawable.length === 0) {
+      return;
     }
+    this.startAction(null);
+    const languageCode = this.history.length > 0 ? this.history[0].languageCode : '';
+    if (!languageCode) {
+      this.withdrawAllContact = { loading: false, grievance: null, grievanceText: '' };
+      return;
+    }
+    this.withdrawAllContact = { loading: true, grievance: null, grievanceText: '' };
+    this.consentConfig
+      .load('REGISTRATION')
+      .pipe(
+        switchMap(config =>
+          this.consentApi.getNotice('REGISTRATION', languageCode, config.projectId)
+        )
+      )
+      .subscribe({
+        next: notice => {
+          // CENTRAL: the project has no notice of its own, so no officer of its own either.
+          const own = notice.source !== 'CENTRAL';
+          this.withdrawAllContact = {
+            loading: false,
+            grievance: own ? notice.grievance || null : null,
+            grievanceText: own ? (notice.grievanceInfo || '').trim() : '',
+          };
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.withdrawAllContact = { loading: false, grievance: null, grievanceText: '' };
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  closeWithdrawAllContact(): void {
+    this.withdrawAllContact = null;
   }
 
   onOtpVerified(event: { challengeId: string }): void {
@@ -282,14 +319,8 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
     this.busy = true;
     this.error = null;
     this.request(action).subscribe({
-      next: (result: PatientConsents) => {
+      next: () => {
         this.busy = false;
-        this.keptByLaw =
-          action.kind === 'WITHDRAW' && action.all
-            ? ((result as PatientConsents).notWithdrawn || []).map(c =>
-                this.purposeName(c)
-              )
-            : [];
         this.action = null;
         this.otpChallengeId = null;
         this.saved = true;
@@ -308,13 +339,13 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
     this.closeDialog({ changed: this.changed });
   }
 
-  private startAction(action: PreferenceAction): void {
+  private startAction(action: PreferenceAction | null): void {
     this.action = action;
     this.actionKey = uuidV4();
     this.otpChallengeId = null;
     this.error = null;
     this.saved = false;
-    this.keptByLaw = [];
+    this.withdrawAllContact = null;
   }
 
   private request(action: PreferenceAction): Observable<PatientConsents> {
@@ -323,10 +354,8 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
       return this.consentApi.withdraw(
         id,
         {
-          purposeCodes: action.all
-            ? 'ALL'
-            : action.purposes.map(p => p.purposeCode),
-          versions: this.versionsOf(action.purposes),
+          purposeCodes: [action.purpose.purposeCode],
+          versions: this.versionsOf([action.purpose]),
           ...this.changeContext(),
         },
         this.actionKey
