@@ -49,6 +49,11 @@ import { mockResolvedConfig } from './consent-config.mock';
 export interface DialogTokens {
   data: InjectionToken<unknown>;
   ref: Type<unknown>;
+  /**
+   * The track's dialog service, when its decline warning is its own pop-up instead of the shared
+   * confirm. The stub hands the pop-up's texts to the confirm spy, so the same checks cover both.
+   */
+  dialog?: Type<unknown>;
 }
 
 /** Behaviour suite run by each track's consent dialog spec. */
@@ -136,6 +141,19 @@ describe(`ConsentDialogComponent (${track})`, () => {
         { provide: ConsentContextService, useValue: context },
         { provide: ConsentConfigService, useValue: configService },
         { provide: ConfirmationService, useValue: confirmation },
+        ...(tokens.dialog
+          ? [
+              {
+                provide: tokens.dialog,
+                useValue: {
+                  open: (_component: unknown, config: { data: any }) => ({
+                    afterClosed: () =>
+                      confirmation.confirm('warn', config.data.message, config.data.confirmLabel, config.data.cancelLabel),
+                  }),
+                },
+              },
+            ]
+          : []),
         { provide: CameraService, useValue: jasmine.createSpyObj('CameraService', ['capture']) },
         { provide: HttpServiceService, useValue: { currentLangugae$: of({ consent: text }) } },
       ],

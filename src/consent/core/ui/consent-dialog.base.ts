@@ -328,7 +328,16 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
   }
 
   decline(): void {
-    this.confirmationService
+    this.confirmDecline().subscribe(confirmed => {
+      if (confirmed) {
+        this.closeDeclined();
+      }
+    });
+  }
+
+  /** Asks staff to confirm the decline; true when confirmed. A track may show its own warning. */
+  protected confirmDecline(): Observable<boolean> {
+    return this.confirmationService
       // The shared confirm dialog reads its title as a status: 'warn' gives the red Warning header.
       .confirm(
         'warn',
@@ -336,11 +345,7 @@ export abstract class ConsentDialogBase implements OnInit, DoCheck, OnDestroy {
         this.text?.confirmDecline,
         this.text?.close
       )
-      .subscribe(confirmed => {
-        if (confirmed) {
-          this.closeDeclined();
-        }
-      });
+      .pipe(map(confirmed => !!confirmed));
   }
 
   /** Confirmed decline: closes the pop-up with every purpose declined; nothing is saved. */

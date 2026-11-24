@@ -23,10 +23,13 @@
 import { DatePipe, NgIf, UpperCasePipe } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
 import { ConsentDialogOptions, ConsentDialogResult } from '../core/consent.models';
 import { ConsentDialogBase } from '../core/ui/consent-dialog.base';
+import { DeclineConfirmComponent, DeclineConfirmData } from '../decline-confirm/decline-confirm.component';
 import { LanguageStepComponent } from './language-step/language-step.component';
 import { NoticeStepComponent } from './notice-step/notice-step.component';
 import { ProofStepComponent } from './proof-step/proof-step.component';
@@ -52,9 +55,30 @@ import { PurposesStepComponent } from './purposes-step/purposes-step.component';
 export class ConsentDialogComponent extends ConsentDialogBase {
   constructor(
     @Inject(MAT_DIALOG_DATA) public options: ConsentDialogOptions,
-    private dialogRef: MatDialogRef<ConsentDialogComponent, ConsentDialogResult>
+    private dialogRef: MatDialogRef<ConsentDialogComponent, ConsentDialogResult>,
+    private matDialog: MatDialog
   ) {
     super();
+  }
+
+  /** The decline warning in the consent style, with aligned Go back / Confirm decline buttons. */
+  protected override confirmDecline(): Observable<boolean> {
+    const text = this.text || {};
+    return this.matDialog
+      .open<DeclineConfirmComponent, DeclineConfirmData, boolean>(DeclineConfirmComponent, {
+        data: {
+          title: text.declineWarningTitle || text.decline || '',
+          message: text.cannotContinue || '',
+          confirmLabel: text.confirmDecline || '',
+          cancelLabel: text.declineGoBack || text.close || '',
+        },
+        width: 'min(440px, 92vw)',
+        maxWidth: '92vw',
+        autoFocus: '.decline-confirm-cancel',
+        panelClass: 'consent-decline-confirm-panel',
+      })
+      .afterClosed()
+      .pipe(map(confirmed => confirmed === true));
   }
 
   protected closeDialog(result: ConsentDialogResult): void {
