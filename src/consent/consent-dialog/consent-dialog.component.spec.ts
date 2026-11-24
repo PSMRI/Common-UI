@@ -20,8 +20,8 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { consentDialogSuite } from '../core/testing/consent-dialog.suite';
 import { ConsentDialogComponent } from './consent-dialog.component';
 
-consentDialogSuite(ConsentDialogComponent, 'src', { data: MAT_DIALOG_DATA, ref: MatDialogRef });
+consentDialogSuite(ConsentDialogComponent, 'src', { data: MAT_DIALOG_DATA, ref: MatDialogRef, dialog: MatDialog });
