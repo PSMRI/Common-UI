@@ -20,7 +20,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-import { DatePipe, NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, UpperCasePipe } from '@angular/common';
+import { DatePipe, NgClass, NgFor, NgIf, NgSwitch, NgSwitchCase, NgTemplateOutlet, UpperCasePipe } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,7 +37,7 @@ import { OtpVerifyComponent } from '../otp-verify/otp-verify.component';
   templateUrl: './preference-centre.component.html',
   styleUrls: ['../consent-dialog/consent-dialog.component.css', '../consent-theme.css', './preference-centre.component.css'],
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, NgSwitch, NgSwitchCase, DatePipe, UpperCasePipe, MatIconModule, OtpVerifyComponent],
+  imports: [NgIf, NgFor, NgClass, NgSwitch, NgSwitchCase, NgTemplateOutlet, DatePipe, UpperCasePipe, MatIconModule, OtpVerifyComponent],
 })
 export class PreferenceCentreComponent extends PreferenceCentreBase {
   constructor(
@@ -46,6 +46,9 @@ export class PreferenceCentreComponent extends PreferenceCentreBase {
   ) {
     super();
   }
+
+  /** Current consents and the history are shown on separate tabs; both stay in the page. */
+  activeTab: 'current' | 'history' = 'current';
 
   protected closeDialog(result: PreferenceCentreResult): void {
     this.dialogRef.close(result);

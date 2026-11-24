@@ -71,6 +71,10 @@ export function preferenceCentreSuite(
       withdrawAll: 'Withdraw all',
       withdrawAllTitle: 'Withdraw all consent',
       withdrawAllContactOfficer: 'Contact the grievance officer to withdraw all consent.',
+      withdrawContactOfficer: 'Contact the grievance officer to withdraw.',
+      prefSelectHint: 'Tick to turn on',
+      prefTurnOnSelected: 'Turn on selected ({count})',
+      prefTurnOnSelectedTitle: 'Turn on {count} purpose(s)',
       grievanceOfficer: 'Grievance officer',
       grievancePhone: 'Phone',
       close: 'Close',
@@ -277,22 +281,79 @@ export function preferenceCentreSuite(
       expect(api.changePreference).not.toHaveBeenCalled();
     });
 
-    it('withdraws one purpose after showing what will happen', () => {
+    it('does not withdraw one purpose: it shows the grievance officer to contact', () => {
       component.withdrawOne(purpose('P-SHR'));
       render();
-      expect(el('.pref-withdraw-list')!.textContent).toContain(
-        'Share with facilities'
-      );
-      component.confirmAction();
-      const [id, req] = api.withdraw.calls.mostRecent().args;
-      expect(id).toBe(42);
-      expect(req.purposeCodes).toEqual(['P-SHR']);
-      expect(req.versions).toEqual({ 'P-SHR': 2 });
+      expect(api.withdraw).not.toHaveBeenCalled();
+      expect(component.action).toBeNull();
+      expect(component.withdrawAllContact!.purposes).toEqual(['Share with facilities']);
+      const box = el('.pref-withdraw-all-contact')!;
+      expect(box.textContent).toContain('Share with facilities');
+      expect(box.textContent).toContain('Contact the grievance officer to withdraw.');
+      expect(box.textContent).toContain('Ms Rao');
+      (el('.pref-withdraw-all-close') as HTMLButtonElement).click();
+      render();
+      expect(el('.pref-withdraw-all-contact')).toBeNull();
     });
 
     it('does not offer withdraw for a purpose that is not granted', () => {
       component.withdrawOne(purpose('P-REM'));
       expect(component.action).toBeNull();
+      expect(component.withdrawAllContact).toBeNull();
+    });
+
+    describe('turning on several purposes', () => {
+      beforeEach(() => {
+        const consents = mockConsents();
+        consents.current.push({
+          purposeCode: 'P-RES', name: 'Research', isMandatory: false, isWithdrawable: true,
+          status: 'WITHDRAWN', validUntil: null, versionNo: 5,
+        });
+        api.getConsents.and.returnValue(of(consents));
+        component.load();
+        render();
+      });
+
+      it('lets only optional purposes that are not on be ticked', () => {
+        expect(component.selectable.map(p => p.purposeCode)).toEqual(['P-REM', 'P-RES']);
+        component.toggleSelected(purpose('P-SHR'));
+        component.toggleSelected(purpose('P-REG'));
+        expect(component.selectedCodes).toEqual([]);
+      });
+
+      it('turns on every ticked purpose with one OTP and one request', () => {
+        component.toggleSelected(purpose('P-RES'));
+        component.toggleSelected(purpose('P-REM'));
+        component.turnOnSelected();
+        render();
+        expect(component.action!.kind).toBe('GRANT');
+        expect(component.grantPurposes(component.action).map(p => p.purposeCode)).toEqual(['P-REM', 'P-RES']);
+        expect(component.confirmEnabled).toBeFalse();
+        component.onOtpVerified({ challengeId: 'otp-1' });
+        component.confirmAction();
+        expect(api.changePreference).toHaveBeenCalledTimes(1);
+        const req = api.changePreference.calls.mostRecent().args[1];
+        expect(req.decision).toBe('GRANT');
+        expect(req.purposeCodes).toEqual(['P-REM', 'P-RES']);
+        expect(req.versions).toEqual({ 'P-REM': 3, 'P-RES': 5 });
+        expect(req.otpChallengeId).toBe('otp-1');
+        expect(component.selectedCodes).toEqual([]);
+      });
+
+      it('does nothing when nothing is ticked', () => {
+        component.turnOnSelected();
+        expect(component.action).toBeNull();
+      });
+
+      it('untick removes a purpose, and cancel keeps the ticks', () => {
+        component.toggleSelected(purpose('P-REM'));
+        component.toggleSelected(purpose('P-RES'));
+        component.toggleSelected(purpose('P-REM'));
+        expect(component.selectedCodes).toEqual(['P-RES']);
+        component.turnOnSelected();
+        component.cancelAction();
+        expect(component.selectedCodes).toEqual(['P-RES']);
+      });
     });
 
     it('does not withdraw all: it shows the grievance officer to contact', () => {
@@ -342,19 +403,6 @@ export function preferenceCentreSuite(
       expect(component.action).toBeNull();
       expect(api.getConsents).toHaveBeenCalledTimes(2);
       expect(el('.pref-error')!.textContent).toContain('Changed elsewhere');
-    });
-
-    it('explains a purpose the law requires when the server refuses the withdrawal', () => {
-      api.withdraw.and.returnValue(
-        throwError(() => ({
-          kind: 'NOT_WITHDRAWABLE',
-          message: 'NOT_WITHDRAWABLE',
-        }))
-      );
-      component.withdrawOne(purpose('P-SHR'));
-      component.confirmAction();
-      expect(component.error).toBe('notWithdrawable');
-      expect(component.action).not.toBeNull();
     });
 
     it('asks for a new OTP when the server rejects it', () => {

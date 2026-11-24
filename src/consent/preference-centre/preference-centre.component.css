@@ -32,3 +32,27 @@
 .pref-section { display: flex; flex-direction: column; gap: 8px; }
 .pref-empty { margin: 0; color: #757575; }
 .pref-footer { display: flex; justify-content: flex-end; }
+
+/* Current consents and History tabs; both panels stay in the page, only one is shown. */
+.pref-centre { position: relative; }
+.pref-tabs { display: flex; gap: 4px; border-bottom: 1px solid #e0e0e0; }
+.pref-tab { border: 0; border-bottom: 3px solid transparent; background: transparent; padding: 8px 16px;
+  font-size: 14px; font-weight: 600; color: #616161; cursor: pointer; }
+.pref-tab:hover { color: #1565c0; }
+.pref-tab-active { color: #1565c0; border-bottom-color: #1565c0; }
+.pref-tab:focus-visible { outline: 2px solid #1565c0; outline-offset: -2px; }
+[hidden].pref-section { display: none !important; }
+
+/* Tick the optional purposes to turn on; one OTP turns them all on. */
+.pref-select-label { flex-direction: row; align-items: flex-start; gap: 10px; cursor: pointer; flex: 1 1 auto; }
+.pref-select { width: 18px; height: 18px; margin: 2px 0 0; accent-color: #1565c0; cursor: pointer; flex: none; }
+.pref-row-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pref-row-selected { border-color: #1565c0; background: #f5f9ff; }
+.pref-grant-list { margin: 0; padding-left: 20px; }
+.pref-footer { gap: 8px; flex-wrap: wrap; }
+
+/* Withdraw: a pop-up over the preference centre naming the grievance officer. */
+.pref-modal-backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(0, 0, 0, 0.4); }
+.pref-modal-backdrop .pref-withdraw-all-contact { width: min(480px, 100%); max-height: 100%; overflow: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); background: #fffdf5; }

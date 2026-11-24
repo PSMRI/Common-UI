@@ -59,16 +59,23 @@ export interface PreferenceCentreResult {
   changed: boolean;
 }
 
-/** The change waiting for staff to confirm it with the patient. */
+/**
+ * The change waiting for staff to confirm it with the patient. GRANT may turn on several purposes
+ * with one OTP: `purposes` lists them all, `purpose` is the first.
+ */
 export type PreferenceAction =
-  | { kind: 'GRANT' | 'DENY'; purpose: PurposeState }
-  | { kind: 'WITHDRAW'; purpose: PurposeState };
+  | { kind: 'GRANT'; purpose: PurposeState; purposes?: PurposeState[] }
+  | { kind: 'DENY'; purpose: PurposeState };
 
-/** Withdraw all is done through the grievance officer: the contact shown instead of a withdrawal. */
+/**
+ * Withdrawal is done through the grievance officer, never in the preference centre: the contact
+ * shown instead. `purposes` names the purpose(s) the patient asked to withdraw; empty means all.
+ */
 export interface WithdrawAllContact {
   loading: boolean;
   grievance: GrievanceContact | null;
   grievanceText: string;
+  purposes?: string[];
 }
 
 /** One purpose's outcome in one consent event, for the history list. */
@@ -99,8 +106,9 @@ const CODE_PATTERN = /^[A-Za-z0-9_.:-]+$/;
 const SWITCHABLE: PurposeStatus[] = ['GRANTED', 'DENIED', 'WITHDRAWN'];
 
 /**
- * Preference centre shared by both tracks (AMM-2522, FR-021a to FR-027): current consents, change one
- * purpose, withdraw one or all, and the consent history.
+ * Preference centre shared by both tracks (AMM-2522, FR-021a to FR-027): current consents, turn on
+ * the selected purposes with one OTP, the grievance officer to contact for any withdrawal, and the
+ * consent history.
  */
 @Directive()
 export abstract class PreferenceCentreBase implements OnInit, DoCheck {
@@ -115,7 +123,9 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
   otpChallengeId: string | null = null;
   busy = false;
   error: PreferenceError | null = null;
-  /** Shown after Withdraw all: the patient contacts the grievance officer; null when hidden. */
+  /** Optional purposes ticked to be turned on together with one OTP. */
+  selectedCodes: string[] = [];
+  /** Shown after Withdraw or Withdraw all: the patient contacts the grievance officer; null when hidden. */
   withdrawAllContact: WithdrawAllContact | null = null;
   /** Set after a successful change, until the next action starts. */
   saved = false;
@@ -174,6 +184,16 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
     return this.current.filter(p => p.status === 'GRANTED' && p.isWithdrawable);
   }
 
+  /** Optional purposes that are not on and can be ticked to turn on. */
+  get selectable(): PurposeState[] {
+    return this.current.filter(p => this.canSelect(p));
+  }
+
+  /** The ticked purposes, in list order. */
+  get selectedPurposes(): PurposeState[] {
+    return this.current.filter(p => this.selectedCodes.includes(p.purposeCode));
+  }
+
   /** Confirm is allowed once a purpose being turned on has a verified OTP. */
   get confirmEnabled(): boolean {
     if (!this.action || this.busy) {
@@ -190,6 +210,10 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
       next: consents => {
         this.loading = false;
         this.consents = consents;
+        // Keep only ticks on purposes that can still be turned on.
+        this.selectedCodes = this.selectedCodes.filter(code =>
+          (consents.current || []).some(p => p.purposeCode === code && this.canSelect(p))
+        );
         this.history = this.toHistory(consents);
         this.cdr.markForCheck();
       },
@@ -208,6 +232,40 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
 
   isOn(purpose: PurposeState): boolean {
     return purpose.status === 'GRANTED';
+  }
+
+  canSelect(purpose: PurposeState): boolean {
+    return this.canSwitch(purpose) && !this.isOn(purpose);
+  }
+
+  isSelected(purpose: PurposeState): boolean {
+    return this.selectedCodes.includes(purpose.purposeCode);
+  }
+
+  toggleSelected(purpose: PurposeState): void {
+    if (!this.canSelect(purpose) || this.busy) {
+      return;
+    }
+    const code = purpose.purposeCode;
+    this.selectedCodes = this.isSelected(purpose)
+      ? this.selectedCodes.filter(c => c !== code)
+      : [...this.selectedCodes, code];
+  }
+
+  /** One OTP turns on every ticked purpose. */
+  turnOnSelected(): void {
+    const purposes = this.selectedPurposes;
+    if (purposes.length > 0) {
+      this.startAction({ kind: 'GRANT', purpose: purposes[0], purposes });
+    }
+  }
+
+  /** The purposes a GRANT turns on. */
+  grantPurposes(action: PreferenceAction | null): PurposeState[] {
+    if (!action || action.kind !== 'GRANT') {
+      return [];
+    }
+    return action.purposes && action.purposes.length > 0 ? action.purposes : [action.purpose];
   }
 
   canWithdraw(purpose: PurposeState): boolean {
@@ -251,27 +309,32 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
     }
   }
 
+  /** Withdrawing a purpose is not done here: shows the grievance officer to contact. */
   withdrawOne(purpose: PurposeState): void {
     if (this.canWithdraw(purpose)) {
-      this.startAction({ kind: 'WITHDRAW', purpose });
+      this.showGrievanceContact([purpose.name]);
+    }
+  }
+
+  /** Withdrawing all consent is not done here: shows the grievance officer to contact. */
+  withdrawAll(): void {
+    if (this.withdrawable.length > 0) {
+      this.showGrievanceContact([]);
     }
   }
 
   /**
-   * Withdrawing all consent is not done here: the patient contacts the grievance officer. Shows the
-   * officer from the project's published notice, in the language of the patient's latest consent.
+   * The officer from the project's published notice, in the language of the patient's latest consent.
+   * `purposes` names what the patient asked to withdraw; empty means all.
    */
-  withdrawAll(): void {
-    if (this.withdrawable.length === 0) {
-      return;
-    }
+  private showGrievanceContact(purposes: string[]): void {
     this.startAction(null);
     const languageCode = this.history.length > 0 ? this.history[0].languageCode : '';
     if (!languageCode) {
-      this.withdrawAllContact = { loading: false, grievance: null, grievanceText: '' };
+      this.withdrawAllContact = { loading: false, grievance: null, grievanceText: '', purposes };
       return;
     }
-    this.withdrawAllContact = { loading: true, grievance: null, grievanceText: '' };
+    this.withdrawAllContact = { loading: true, grievance: null, grievanceText: '', purposes };
     this.consentConfig
       .load('REGISTRATION')
       .pipe(
@@ -287,11 +350,12 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
             loading: false,
             grievance: own ? notice.grievance || null : null,
             grievanceText: own ? (notice.grievanceInfo || '').trim() : '',
+            purposes,
           };
           this.cdr.markForCheck();
         },
         error: () => {
-          this.withdrawAllContact = { loading: false, grievance: null, grievanceText: '' };
+          this.withdrawAllContact = { loading: false, grievance: null, grievanceText: '', purposes };
           this.cdr.markForCheck();
         },
       });
@@ -321,6 +385,10 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
     this.request(action).subscribe({
       next: () => {
         this.busy = false;
+        if (action.kind === 'GRANT') {
+          const done = this.grantPurposes(action).map(p => p.purposeCode);
+          this.selectedCodes = this.selectedCodes.filter(c => !done.includes(c));
+        }
         this.action = null;
         this.otpChallengeId = null;
         this.saved = true;
@@ -350,24 +418,13 @@ export abstract class PreferenceCentreBase implements OnInit, DoCheck {
 
   private request(action: PreferenceAction): Observable<PatientConsents> {
     const id = this.options.beneficiaryRegId;
-    if (action.kind === 'WITHDRAW') {
-      return this.consentApi.withdraw(
-        id,
-        {
-          purposeCodes: [action.purpose.purposeCode],
-          versions: this.versionsOf([action.purpose]),
-          ...this.changeContext(),
-        },
-        this.actionKey
-      );
-    }
-    const purpose = action.purpose;
+    const purposes = action.kind === 'GRANT' ? this.grantPurposes(action) : [action.purpose];
     return this.consentApi.changePreference(
       id,
       {
-        purposeCodes: [purpose.purposeCode],
+        purposeCodes: purposes.map(p => p.purposeCode),
         decision: action.kind,
-        versions: this.versionsOf([purpose]),
+        versions: this.versionsOf(purposes),
         ...(action.kind === 'GRANT'
           ? { otpChallengeId: this.otpChallengeId }
           : {}),
