@@ -298,6 +298,16 @@ describe('RegistrationComponent consent hook (src)', () => {
       });
     });
 
+    it('uses the beneficiaryRegId from the registration response without looking the patient up', () => {
+      component.consentResult = pending();
+      component.finishRegistration('739136630684', null, 10699347);
+      expect(registrarService.identityQuickSearch).not.toHaveBeenCalled();
+      const [sent] = consentApi.saveConsent.calls.mostRecent().args as [SaveConsentRequest, string];
+      expect(sent.beneficiaryRegId).toBe(10699347);
+      expect(shown().beneficiaryID).toBe('739136630684');
+      expect(shown().consentFailed).toBeFalse();
+    });
+
     it('shows only the Beneficiary ID when no consent was taken', () => {
       component.consentResult = null;
       component.finishRegistration('748119959947', null);

@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { RegistrarService } from '../services/registrar.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { SetLanguageComponent } from 'src/app/app-modules/core/components/set-language.component';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
@@ -261,11 +261,11 @@ export class RegistrationComponent {
 
     /**
      * One message after registration: the Beneficiary ID, plus the consent details when one was taken.
-     * The consent from the pop-up is saved first, with the new patient's beneficiaryRegId: registration
-     * returns only the Beneficiary ID, so the patient is looked up by it. Sent once; on failure the
-     * message says so and staff can retry with the same request key.
+     * The consent from the pop-up is saved first, with the new patient's beneficiaryRegId. It is taken
+     * from the registration response when present; otherwise the patient is looked up by Beneficiary ID.
+     * Sent once; on failure the message says so and staff can retry with the same request key.
      */
-    finishRegistration(beneficiaryID: string, phone: string | null) {
+    finishRegistration(beneficiaryID: string, phone: string | null, beneficiaryRegID: number | null = null) {
       const pending = this.consentResult?.pendingSave;
       if (!pending) {
         this.showRegistrationSuccess({ beneficiaryID, consent: null, consentFailed: false });
@@ -283,17 +283,20 @@ export class RegistrationComponent {
         identity: null,
       };
       let sent: SaveConsentRequest | null = null;
-      this.registrarService
-        .identityQuickSearch(search)
+      const regId$ = beneficiaryRegID
+        ? of(beneficiaryRegID)
+        : this.registrarService.identityQuickSearch(search).pipe(
+            map((res: any) => {
+              const found = res?.data?.length === 1 ? res.data[0] : null;
+              const regId = Number(found?.beneficiaryRegID);
+              if (!regId) {
+                throw new Error('Registered patient not found');
+              }
+              return regId;
+            })
+          );
+      regId$
         .pipe(
-          map((res: any) => {
-            const found = res?.data?.length === 1 ? res.data[0] : null;
-            const regId = Number(found?.beneficiaryRegID);
-            if (!regId) {
-              throw new Error('Registered patient not found');
-            }
-            return regId;
-          }),
           switchMap((regId) => {
             sent = forRegisteredPatient(pending.request, regId, phone);
             return this.consentApi.saveConsent(sent, pending.idempotencyKey);
@@ -319,7 +322,7 @@ export class RegistrationComponent {
           error: () => {
             this.showRegistrationSuccess({ beneficiaryID, consent: null, consentFailed: true }, () => {
               this.consentResult = { ...this.consentResult!, pendingSave: pending };
-              this.finishRegistration(beneficiaryID, phone);
+              this.finishRegistration(beneficiaryID, phone, beneficiaryRegID);
             });
           },
         });
@@ -544,9 +547,12 @@ export class RegistrationComponent {
         const responseValue = res.data.response;
         const benId = responseValue.replace(/^\D+/g, '');
           const txt = res.data.response;
-          const numb = txt.replace(/\D/g, '');
+          // Newer APIs return the IDs as fields; the response text may hold both, so digits from it
+          // are only a fallback.
+          const numb = res.data.benGenId ? String(res.data.benGenId) : txt.replace(/\D/g, '');
+          const regId = Number(res.data.benRegId) || null;
           if (numb) {
-            this.finishRegistration(numb, phoneMaps?.[0]?.phoneNo || null);
+            this.finishRegistration(numb, phoneMaps?.[0]?.phoneNo || null, regId);
           } else {
             this.confirmationService.alert(res.data.response, 'success');
           }
