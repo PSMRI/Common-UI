@@ -184,7 +184,14 @@
             >
               {{ beneficiary?.benName | titlecase }}
               <span
-                *ngIf="beneficiary?.consentPending"
+                *ngIf="beneficiary?.consentWithdrawn"
+                class="consent-pending-chip consent-withdrawn-chip"
+                [title]="currentLanguageSet?.consent?.consentWithdrawnHint"
+              >
+                {{ currentLanguageSet?.consent?.consentWithdrawn }}
+              </span>
+              <span
+                *ngIf="beneficiary?.consentPending && !beneficiary?.consentWithdrawn"
                 class="consent-pending-chip"
                 [title]="currentLanguageSet?.consent?.consentPendingHint"
               >

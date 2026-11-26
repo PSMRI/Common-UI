@@ -13,6 +13,11 @@
   </div>
 
   <div class="consent-body">
+    <div *ngIf="options.withdrawal && step !== 'DONE'" class="consent-withdrawn-banner" role="alert">
+      <mat-icon>history</mat-icon>
+      <span>{{ withdrawnMessage }}</span>
+    </div>
+
     <div *ngIf="configFailed" class="consent-alert" role="alert">
       <mat-icon>error_outline</mat-icon>
       <span>{{ text?.configLoadFailed }}</span>

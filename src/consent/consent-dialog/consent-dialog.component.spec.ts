@@ -20,8 +20,34 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
+import { DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { consentDialogSuite } from '../core/testing/consent-dialog.suite';
 import { ConsentDialogComponent } from './consent-dialog.component';
 
 consentDialogSuite(ConsentDialogComponent, 'src', { data: MAT_DIALOG_DATA, ref: MatDialogRef, dialog: MatDialog });
+
+describe('ConsentDialogComponent withdrawal note (src)', () => {
+  function withOptions(withdrawal: { since: string | null } | null): ConsentDialogComponent {
+    const component = Object.create(ConsentDialogComponent.prototype) as ConsentDialogComponent;
+    Object.assign(component, {
+      options: { context: 'REVISIT', beneficiaryRegId: 101, withdrawal },
+      datePipe: new DatePipe('en-US'),
+      currentLanguageSet: {
+        consent: {
+          consentWithdrawnBanner: 'Withdrew consent on {date}.',
+          consentWithdrawnBannerNoDate: 'Withdrew consent earlier.',
+        },
+      },
+    });
+    return component;
+  }
+
+  it('says when the patient withdrew consent', () => {
+    expect(withOptions({ since: '2026-11-20' }).withdrawnMessage).toBe('Withdrew consent on 20/11/2026.');
+  });
+
+  it('still says so when the date is not known', () => {
+    expect(withOptions({ since: null }).withdrawnMessage).toBe('Withdrew consent earlier.');
+  });
+});

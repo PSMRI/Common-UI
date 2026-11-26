@@ -77,3 +77,8 @@
   background: #fafafa;
 }
 .consent-done-grievance-text { margin: 0; }
+
+/* Revisit after a withdrawal: the patient withdrew consent earlier. */
+.consent-withdrawn-banner { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; padding: 10px 12px;
+  border: 1px solid #ef9a9a; border-radius: 8px; background: #ffebee; color: #b71c1c; font-size: 14px; line-height: 1.4; }
+.consent-withdrawn-banner .mat-icon { flex: none; width: 20px; height: 20px; font-size: 20px; }

@@ -31,7 +31,10 @@ export {
   RevisitConsentService,
   RevisitConsentResult,
   RevisitPatient,
+  ConsentFlag,
   eventTypeFor,
+  flagFor,
+  withdrawalOf,
 } from './revisit-consent.service';
 export { ConsentDialogComponent } from './consent-dialog/consent-dialog.component';
 // Feature 002: per-project consent configuration.
