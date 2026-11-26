@@ -271,6 +271,17 @@ describe('RegistrationComponent consent hook (src)', () => {
       };
     });
 
+    it('finds the patient when quick search answers with a plain list (HWC/TM quickSearchNew)', () => {
+      registrarService.identityQuickSearch.and.returnValue(
+        of([{ beneficiaryID: '111', beneficiaryRegID: 1 }, { beneficiaryID: '748119959947', beneficiaryRegID: 5432 }])
+      );
+      component.consentResult = pending();
+      component.finishRegistration('748119959947', '9876543212');
+      const [sent] = consentApi.saveConsent.calls.mostRecent().args as [SaveConsentRequest, string];
+      expect(sent.beneficiaryRegId).toBe(5432);
+      expect(shown().consentFailed).toBeFalse();
+    });
+
     it('saves the consent with the beneficiaryRegId and shows one message with both IDs', () => {
       component.consentResult = pending();
       component.finishRegistration('748119959947', '9876543212');
