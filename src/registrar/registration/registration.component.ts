@@ -286,7 +286,10 @@ export class RegistrationComponent {
         ? of(beneficiaryRegID)
         : this.registrarService.identityQuickSearch(search).pipe(
             map((res: any) => {
-              const found = res?.data?.length === 1 ? res.data[0] : null;
+              // HWC's quickSearchNew answers with the list itself; other APIs wrap it in `data`.
+              const list: any[] = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+              const matches = list.filter((ben) => String(ben?.beneficiaryID) === String(beneficiaryID));
+              const found = matches.length === 1 ? matches[0] : list.length === 1 ? list[0] : null;
               const regId = Number(found?.beneficiaryRegID);
               if (!regId) {
                 throw new Error('Registered patient not found');
