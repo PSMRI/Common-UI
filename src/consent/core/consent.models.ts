@@ -46,7 +46,9 @@ export type PendingReason =
   | 'LEGACY'
   | 'RECONSENT_REQUIRED'
   | 'GUARDIAN_TO_SELF'
-  | 'EXPIRED';
+  | 'EXPIRED'
+  /** Consent was withdrawn (e.g. by the grievance officer in Admin); dueSince is the withdrawal date. */
+  | 'WITHDRAWN';
 export type RefusalReason =
   | 'CONSENT_NOT_FOUND'
   | 'CONSENT_DENIED'
@@ -398,6 +400,8 @@ export interface ConsentDialogOptions {
   config?: ResolvedConsentConfig;
   /** Feature 003: why consent is taken (revisit pending actions); default NEW. */
   eventType?: ConsentEventType;
+  /** Revisit: the patient withdrew consent earlier; the dialog says so. since may be null. */
+  withdrawal?: { since: string | null } | null;
   /**
    * Registration: collect the consent (and upload its proof files) but save it only after the patient
    * is registered, so the saved consent carries the beneficiaryRegId. A blocked consent is still saved

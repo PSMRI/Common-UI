@@ -29,7 +29,7 @@ import { SearchComponent } from './search.component';
 describe('SearchComponent consent hook (feature 003)', () => {
   let component: SearchComponent;
   let revisitConsent: jasmine.SpyObj<{
-    pendingIds: (ids: number[]) => unknown;
+    consentFlags: (ids: number[]) => unknown;
     ensureConsent: (p: unknown) => unknown;
   }>;
   let confirmationService: jasmine.SpyObj<{ alert: (m: unknown, s: unknown) => unknown }>;
@@ -41,7 +41,7 @@ describe('SearchComponent consent hook (feature 003)', () => {
   };
 
   beforeEach(() => {
-    revisitConsent = jasmine.createSpyObj('RevisitConsentService', ['pendingIds', 'ensureConsent']);
+    revisitConsent = jasmine.createSpyObj('RevisitConsentService', ['consentFlags', 'ensureConsent']);
     confirmationService = jasmine.createSpyObj('ConfirmationService', ['alert']);
     component = Object.create(SearchComponent.prototype) as SearchComponent;
     Object.assign(component, {
@@ -62,10 +62,40 @@ describe('SearchComponent consent hook (feature 003)', () => {
   }
 
   it('marks the listed patients whose consent is pending', () => {
-    revisitConsent.pendingIds.and.returnValue(of(new Set([101])));
+    revisitConsent.consentFlags.and.returnValue(of(new Map([[101, 'PENDING']])));
     component.markConsentPending();
-    expect(revisitConsent.pendingIds).toHaveBeenCalledWith([101, 102]);
+    expect(revisitConsent.consentFlags).toHaveBeenCalledWith([101, 102]);
     expect(rows().map((r) => r.consentPending)).toEqual([true, false]);
+    expect(rows().map((r) => r.consentWithdrawn)).toEqual([false, false]);
+  });
+
+  it('marks the listed patients whose consent was withdrawn', () => {
+    revisitConsent.consentFlags.and.returnValue(of(new Map([[102, 'WITHDRAWN']])));
+    component.markConsentPending();
+    expect(rows().map((r) => r.consentWithdrawn)).toEqual([false, true]);
+    expect(rows().map((r) => r.consentPending)).toEqual([false, true]);
+  });
+
+  it('clears the withdrawn mark once consent is given again', () => {
+    rows()[0].consentWithdrawn = true;
+    revisitConsent.ensureConsent.and.returnValue(of({ proceed: true, pending: false, withdrawn: false }));
+    component.takeConsentAndSend(ben);
+    expect(rows()[0].consentWithdrawn).toBeFalse();
+    expect(sendToNurse).toHaveBeenCalled();
+  });
+
+  it('leaves the withdrawn mark alone when the result does not say', () => {
+    rows()[0].consentWithdrawn = true;
+    revisitConsent.ensureConsent.and.returnValue(of({ proceed: true, pending: false }));
+    component.takeConsentAndSend(ben);
+    expect(rows()[0].consentWithdrawn).toBeTrue();
+  });
+
+  it('keeps the withdrawn mark when consent is refused again', () => {
+    revisitConsent.ensureConsent.and.returnValue(of({ proceed: true, pending: true, withdrawn: true }));
+    component.takeConsentAndSend(ben);
+    expect(rows()[0].consentWithdrawn).toBeTrue();
+    expect(sendToNurse).toHaveBeenCalled();
   });
 
   it('takes consent for the patient, then sends them to the nurse', () => {

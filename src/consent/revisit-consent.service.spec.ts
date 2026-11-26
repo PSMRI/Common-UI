@@ -30,10 +30,15 @@ import { ConsentDialogResult, PendingAction } from './core/consent.models';
 import { mockResolvedConfig } from './core/testing/consent-config.mock';
 import { ConsentDialogService } from './consent-dialog.service';
 import {
+  ConsentFlag,
   eventTypeFor,
+  flagFor,
   RevisitConsentResult,
   RevisitConsentService,
+  withdrawalOf,
 } from './revisit-consent.service';
+import { PatientConsents } from './core/consent.models';
+import { mockConsents } from './core/testing/consent.mock';
 
 describe('RevisitConsentService (feature 003)', () => {
   const env = environment as { consentManagement?: unknown };
@@ -63,7 +68,9 @@ describe('RevisitConsentService (feature 003)', () => {
     api = jasmine.createSpyObj<ConsentApiService>('ConsentApiService', [
       'getPendingActions',
       'getPendingActionsBatch',
+      'getConsents',
     ]);
+    api.getConsents.and.returnValue(of(mockConsents()));
     config = jasmine.createSpyObj<ConsentConfigService>('ConsentConfigService', ['load']);
     config.load.and.returnValue(of(mockResolvedConfig('full', 'REVISIT')));
     dialog = jasmine.createSpyObj<ConsentDialogService>('ConsentDialogService', ['open']);
@@ -86,6 +93,91 @@ describe('RevisitConsentService (feature 003)', () => {
     expect(eventTypeFor([{ ...missing[0], reason: 'LEGACY' }])).toBe('NEW');
     expect(eventTypeFor([{ ...missing[0], reason: 'RECONSENT_REQUIRED' }])).toBe('UPDATE');
     expect(eventTypeFor([{ ...missing[0], reason: 'EXPIRED' }])).toBe('RENEWAL');
+    expect(eventTypeFor([{ ...missing[0], reason: 'WITHDRAWN' }])).toBe('UPDATE');
+  });
+
+  it('flags a withdrawal ahead of any other pending reason', () => {
+    expect(flagFor(undefined)).toBeNull();
+    expect(flagFor([])).toBeNull();
+    expect(flagFor(missing)).toBe('PENDING');
+    expect(flagFor([...missing, { ...missing[0], reason: 'WITHDRAWN' }])).toBe('WITHDRAWN');
+  });
+
+  /** mockConsents with SMS reminders withdrawn on 2026-11-20 by the grievance officer. */
+  function withdrawnConsents(): PatientConsents {
+    const consents = mockConsents();
+    consents.current = consents.current.map((p) =>
+      p.purposeCode === 'P-REM' ? { ...p, status: 'WITHDRAWN' as const } : p
+    );
+    consents.history = [
+      { ...consents.history[0], consentId: 'c-4', capturedAt: '2026-11-20T11:00:00+05:30',
+        purposes: [{ purposeCode: 'P-REM', status: 'WITHDRAWN', versionNo: 3 }] },
+      ...consents.history,
+    ];
+    return consents;
+  }
+
+  describe('withdrawalOf', () => {
+    it('lists the withdrawn purposes and when they were withdrawn', () => {
+      expect(withdrawalOf(withdrawnConsents())).toEqual({
+        purposeCodes: ['P-REM'],
+        since: '2026-11-20T11:00:00+05:30',
+      });
+    });
+
+    it('is null when nothing is withdrawn', () => {
+      expect(withdrawalOf(mockConsents())).toBeNull();
+      expect(withdrawalOf(null)).toBeNull();
+    });
+
+    it('has no date when the history does not show the withdrawal', () => {
+      const consents = withdrawnConsents();
+      consents.history = [];
+      expect(withdrawalOf(consents)!.since).toBeNull();
+    });
+  });
+
+  describe('consentFlags', () => {
+    it('marks a patient withdrawn from their current consents, even with revisit consent off', () => {
+      config.load.and.returnValue(of(mockResolvedConfig('off', 'REVISIT')));
+      api.getConsents.and.callFake((id: number) => of(id === 102 ? withdrawnConsents() : mockConsents()));
+      let out: Map<number, ConsentFlag> | undefined;
+      service.consentFlags([101, 102]).subscribe((m) => (out = m));
+      expect(api.getPendingActionsBatch).not.toHaveBeenCalled();
+      expect(Array.from(out!.entries())).toEqual([[102, 'WITHDRAWN']]);
+    });
+
+    it('still marks pending patients when a consents read fails', () => {
+      api.getPendingActionsBatch.and.returnValue(of({ '101': missing }));
+      api.getConsents.and.returnValue(throwError(() => ({ kind: 'UNAVAILABLE' })));
+      let out: Map<number, ConsentFlag> | undefined;
+      service.consentFlags([101]).subscribe((m) => (out = m));
+      expect(Array.from(out!.entries())).toEqual([[101, 'PENDING']]);
+    });
+
+    it('marks withdrawn and pending patients from one batch call', () => {
+      api.getPendingActionsBatch.and.returnValue(
+        of({
+          '101': [{ reason: 'WITHDRAWN', purposeCodes: ['P-REG'], dueSince: '2026-11-20' }],
+          '102': missing,
+          '103': [],
+        })
+      );
+      let out: Map<number, ConsentFlag> | undefined;
+      service.consentFlags([101, 102, 103]).subscribe((m) => (out = m));
+      expect(api.getPendingActionsBatch).toHaveBeenCalledOnceWith([101, 102, 103]);
+      expect(Array.from(out!.entries())).toEqual([
+        [101, 'WITHDRAWN'],
+        [102, 'PENDING'],
+      ]);
+    });
+
+    it('marks no one when the service fails', () => {
+      api.getPendingActionsBatch.and.returnValue(throwError(() => ({ kind: 'UNAVAILABLE' })));
+      let out: Map<number, ConsentFlag> | undefined;
+      service.consentFlags([101]).subscribe((m) => (out = m));
+      expect(out!.size).toBe(0);
+    });
   });
 
   describe('pendingIds', () => {
@@ -139,6 +231,59 @@ describe('RevisitConsentService (feature 003)', () => {
         })
       );
       expect(dialog.open.calls.mostRecent().args[0].config!.projectId).toBe(12);
+    });
+
+    it('asks again when a purpose was withdrawn in Admin, saying when', () => {
+      api.getPendingActions.and.returnValue(of([]));
+      api.getConsents.and.returnValue(of(withdrawnConsents()));
+      dialog.open.and.returnValue(of(closedWith('GRANTED')));
+      expect(ensure()).toEqual({ proceed: true, pending: false, withdrawn: false });
+      expect(api.getConsents).toHaveBeenCalledWith(101);
+      expect(dialog.open).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          eventType: 'UPDATE',
+          withdrawal: { since: '2026-11-20T11:00:00+05:30' },
+        })
+      );
+    });
+
+    it('uses the server\'s WITHDRAWN action when it sends one', () => {
+      api.getPendingActions.and.returnValue(
+        of([{ reason: 'WITHDRAWN', purposeCodes: ['P-REM'], dueSince: '2026-11-21' }])
+      );
+      api.getConsents.and.returnValue(of(withdrawnConsents()));
+      dialog.open.and.returnValue(of(closedWith('GRANTED')));
+      ensure();
+      expect(dialog.open.calls.mostRecent().args[0].withdrawal).toEqual({ since: '2026-11-21' });
+    });
+
+    it('lets the visit go ahead, still withdrawn, when the patient does not decide', () => {
+      api.getPendingActions.and.returnValue(of([]));
+      api.getConsents.and.returnValue(of(withdrawnConsents()));
+      dialog.open.and.returnValue(of(closedWith('NO_DECISION')));
+      expect(ensure()).toEqual({ proceed: true, pending: true, withdrawn: true });
+    });
+
+    it('still stops the visit when required consent is also pending and not given', () => {
+      api.getPendingActions.and.returnValue(of(missing));
+      api.getConsents.and.returnValue(of(withdrawnConsents()));
+      dialog.open.and.returnValue(of(closedWith('NO_DECISION')));
+      expect(ensure()).toEqual({ proceed: false, pending: true, withdrawn: true });
+    });
+
+    it('asks only for the pending consent when a consents read fails', () => {
+      api.getPendingActions.and.returnValue(of(missing));
+      api.getConsents.and.returnValue(throwError(() => ({ kind: 'UNAVAILABLE' })));
+      dialog.open.and.returnValue(of(closedWith('GRANTED')));
+      expect(ensure()).toEqual({ proceed: true, pending: false });
+      expect(dialog.open.calls.mostRecent().args[0].withdrawal).toBeNull();
+    });
+
+    it('opens the dialog without a withdrawal note for other reasons', () => {
+      api.getPendingActions.and.returnValue(of(missing));
+      dialog.open.and.returnValue(of(closedWith('GRANTED')));
+      ensure();
+      expect(dialog.open.calls.mostRecent().args[0].withdrawal).toBeNull();
     });
 
     it('stops the visit when consent is mandatory and not given', () => {

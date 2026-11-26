@@ -53,12 +53,24 @@ import { PurposesStepComponent } from './purposes-step/purposes-step.component';
   ],
 })
 export class ConsentDialogComponent extends ConsentDialogBase {
+  private datePipe = new DatePipe('en-US');
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public options: ConsentDialogOptions,
     private dialogRef: MatDialogRef<ConsentDialogComponent, ConsentDialogResult>,
     private matDialog: MatDialog
   ) {
     super();
+  }
+
+  /** Revisit after a withdrawal: tells staff the patient withdrew consent, and when. */
+  get withdrawnMessage(): string {
+    const text = this.text || {};
+    const since = this.options.withdrawal?.since;
+    const date = since ? this.datePipe.transform(since, 'dd/MM/yyyy') : null;
+    return date
+      ? String(text.consentWithdrawnBanner || '').split('{date}').join(date)
+      : text.consentWithdrawnBannerNoDate || '';
   }
 
   /** The decline warning in the consent style, with aligned Go back / Confirm decline buttons. */

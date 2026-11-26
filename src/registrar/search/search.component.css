@@ -206,3 +206,10 @@
   white-space: nowrap;
   vertical-align: middle;
 }
+
+/* Consent withdrawn (e.g. through the grievance officer): consent is asked again on revisit. */
+.consent-withdrawn-chip {
+  border-color: #ef9a9a;
+  background-color: #ffebee;
+  color: #b71c1c;
+}

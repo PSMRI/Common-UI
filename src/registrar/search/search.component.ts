@@ -478,13 +478,15 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
     }
   }
 
-  /** Marks the listed patients whose consent is pending (feature 003). */
+  /** Marks the listed patients whose consent is withdrawn or pending (feature 003). */
   markConsentPending() {
     const rows: any[] = this.beneficiaryList || [];
     const ids = rows.map((row) => Number(row.beneficiaryRegID));
-    this.revisitConsent.pendingIds(ids).subscribe((pending) => {
+    this.revisitConsent.consentFlags(ids).subscribe((flags) => {
       rows.forEach((row) => {
-        row.consentPending = pending.has(Number(row.beneficiaryRegID));
+        const flag = flags.get(Number(row.beneficiaryRegID));
+        row.consentWithdrawn = flag === 'WITHDRAWN';
+        row.consentPending = !!flag;
       });
       this.changeDetectorRef.detectChanges();
     });
@@ -505,6 +507,9 @@ export class SearchComponent implements OnInit, DoCheck, AfterViewChecked, OnDes
         );
         if (row) {
           row.consentPending = consent.pending;
+          if (consent.withdrawn !== undefined) {
+            row.consentWithdrawn = consent.withdrawn;
+          }
         }
         if (consent.proceed) {
           this.sendToNurseWindow(true, benObject);
