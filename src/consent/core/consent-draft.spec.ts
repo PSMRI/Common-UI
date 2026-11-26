@@ -451,7 +451,15 @@ describe('forRegisteredPatient', () => {
     expect(forRegisteredPatient(request('GRANT'), 1, '9876543212').notify).toEqual({ channel: 'SMS', phone: '9876543212' });
   });
 
+  it('sends the SMS to a phone stored with +91, 0, spaces or dashes', () => {
+    ['+91 98765 43212', '919876543212', '09876543212', '98765-43212'].forEach(phone =>
+      expect(forRegisteredPatient(request('GRANT'), 1, phone).notify).toEqual({ channel: 'SMS', phone: '9876543212' })
+    );
+  });
+
   it('sends no SMS for a decline or an invalid phone', () => {
+    expect(forRegisteredPatient(request('GRANT'), 1, null).notify).toBeNull();
+    expect(forRegisteredPatient(request('GRANT'), 1, '').notify).toBeNull();
     expect(forRegisteredPatient(request('DENY'), 1, '9876543212').notify).toBeNull();
     expect(forRegisteredPatient(request('GRANT'), 1, '12345').notify).toBeNull();
   });

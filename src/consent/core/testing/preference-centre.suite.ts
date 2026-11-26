@@ -25,10 +25,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { HttpServiceService } from 'src/app/app-modules/core/services/http-service.service';
 import { ConsentApiService } from '../consent-api.service';
+import { ConsentConfigService } from '../consent-config.service';
 import { ConsentContextService } from '../consent-context.service';
-import { ConsentCaptureContext, PatientConsents } from '../consent.models';
+import { ConsentCaptureContext } from '../consent.models';
 import { PreferenceCentreBase } from '../ui/preference-centre.base';
-import { mockConsents, mockOtpChallenge } from './consent.mock';
+import { mockConsents, mockNotice, mockOtpChallenge } from './consent.mock';
 
 export interface PreferenceCentreTokens {
   data: InjectionToken<unknown>;
@@ -45,6 +46,7 @@ export function preferenceCentreSuite(
     let fixture: ComponentFixture<PreferenceCentreBase>;
     let component: PreferenceCentreBase;
     let api: jasmine.SpyObj<ConsentApiService>;
+    let consentConfig: jasmine.SpyObj<ConsentConfigService>;
     let dialogRef: jasmine.SpyObj<{ close: (r: unknown) => void }>;
     let ctx: ConsentCaptureContext;
     const text = {
@@ -66,6 +68,12 @@ export function preferenceCentreSuite(
       prefTurnOffTitle: 'Turn off "{purpose}"',
       withdraw: 'Withdraw',
       withdrawAll: 'Withdraw all',
+      withdrawContactTitle: 'Withdraw consent',
+      withdrawContactOfficer: 'Contact the grievance officer to withdraw consent.',
+      grievanceOfficer: 'Grievance officer',
+      grievancePhone: 'Phone',
+      close: 'Close',
+      prefLoading: 'Loading',
       prefConfirm: 'Confirm',
       prefCancel: 'Cancel',
       prefSaved: 'Saved',
@@ -108,7 +116,23 @@ export function preferenceCentreSuite(
         'withdraw',
         'sendOtp',
         'verifyOtp',
+        'getNotice',
       ]);
+      api.getNotice.and.returnValue(
+        of({
+          ...mockNotice('en'),
+          source: 'PROJECT' as const,
+          grievance: {
+            officerName: 'Ms Rao',
+            phone: '1800-000-111',
+            email: null,
+            address: null,
+            officeHours: null,
+          },
+        })
+      );
+      consentConfig = jasmine.createSpyObj<ConsentConfigService>('ConsentConfigService', ['load']);
+      consentConfig.load.and.returnValue(of({ projectId: 12 } as any));
       api.getConsents.and.returnValue(of(mockConsents()));
       api.changePreference.and.returnValue(of(mockConsents()));
       api.withdraw.and.returnValue(of(mockConsents()));
@@ -138,6 +162,7 @@ export function preferenceCentreSuite(
           { provide: tokens.ref, useValue: dialogRef },
           { provide: ConsentApiService, useValue: api },
           { provide: ConsentContextService, useValue: context },
+          { provide: ConsentConfigService, useValue: consentConfig },
           {
             provide: HttpServiceService,
             useValue: { currentLangugae$: of({ consent: text }) },
@@ -249,38 +274,56 @@ export function preferenceCentreSuite(
       expect(api.changePreference).not.toHaveBeenCalled();
     });
 
-    it('withdraws one purpose after showing what will happen', () => {
+    it('does not withdraw one purpose: it shows the grievance officer to contact', () => {
       component.withdrawOne(purpose('P-SHR'));
       render();
-      expect(el('.pref-withdraw-list')!.textContent).toContain(
-        'Share with facilities'
-      );
-      component.confirmAction();
-      const [id, req] = api.withdraw.calls.mostRecent().args;
-      expect(id).toBe(42);
-      expect(req.purposeCodes).toEqual(['P-SHR']);
-      expect(req.versions).toEqual({ 'P-SHR': 2 });
+      expect(api.withdraw).not.toHaveBeenCalled();
+      expect(component.action).toBeNull();
+      const box = el('.pref-withdraw-contact')!;
+      expect(box.textContent).toContain('Contact the grievance officer');
+      expect(box.textContent).toContain('Ms Rao');
     });
 
     it('does not offer withdraw for a purpose that is not granted', () => {
       component.withdrawOne(purpose('P-REM'));
       expect(component.action).toBeNull();
+      expect(component.withdrawContact).toBeNull();
     });
 
-    it('withdraws all, listing the purposes the law keeps', () => {
+    it('does not withdraw all either: it shows the grievance officer to contact', () => {
       component.withdrawAll();
       render();
-      expect(el('.pref-kept-preview')!.textContent).toContain('Registration');
-      api.withdraw.and.returnValue(
-        of({ ...mockConsents(), notWithdrawn: ['P-REG'] } as PatientConsents)
-      );
-      component.confirmAction();
-      const req = api.withdraw.calls.mostRecent().args[1];
-      expect(req.purposeCodes).toBe('ALL');
-      expect(req.versions).toEqual({ 'P-SHR': 2 });
+      expect(api.withdraw).not.toHaveBeenCalled();
+      expect(component.action).toBeNull();
+      expect(consentConfig.load).toHaveBeenCalledWith('REGISTRATION');
+      const [context, lang, projectId] = api.getNotice.calls.mostRecent().args;
+      expect([context, projectId]).toEqual(['REGISTRATION', 12]);
+      expect(lang).toBe(component.history[0].languageCode);
+      const box = el('.pref-withdraw-contact')!;
+      expect(box.textContent).toContain('Contact the grievance officer');
+      expect(box.textContent).toContain('Ms Rao');
+      expect(box.textContent).toContain('1800-000-111');
+      (el('.pref-withdraw-contact-close') as HTMLButtonElement).click();
       render();
-      expect(component.keptByLaw).toEqual(['Registration']);
-      expect(el('.pref-kept')!.textContent).toContain('Registration');
+      expect(el('.pref-withdraw-contact')).toBeNull();
+    });
+
+    it('shows no officer of its own when the project has no notice', () => {
+      api.getNotice.and.returnValue(of({ ...mockNotice('en'), source: 'CENTRAL' as const }));
+      component.withdrawAll();
+      render();
+      expect(component.withdrawContact!.grievance).toBeNull();
+      expect(component.withdrawContact!.grievanceText).toBe('');
+      expect(el('.pref-withdraw-contact')!.textContent).toContain('Contact the grievance officer');
+      expect(api.withdraw).not.toHaveBeenCalled();
+    });
+
+    it('still shows the message when the contact cannot be loaded', () => {
+      api.getNotice.and.returnValue(throwError(() => ({ kind: 'NETWORK' })));
+      component.withdrawAll();
+      render();
+      expect(component.withdrawContact!.loading).toBeFalse();
+      expect(el('.pref-withdraw-contact')).not.toBeNull();
     });
 
     it('reloads and explains when someone changed the consent meanwhile', () => {
@@ -294,19 +337,6 @@ export function preferenceCentreSuite(
       expect(component.action).toBeNull();
       expect(api.getConsents).toHaveBeenCalledTimes(2);
       expect(el('.pref-error')!.textContent).toContain('Changed elsewhere');
-    });
-
-    it('explains a purpose the law requires when the server refuses the withdrawal', () => {
-      api.withdraw.and.returnValue(
-        throwError(() => ({
-          kind: 'NOT_WITHDRAWABLE',
-          message: 'NOT_WITHDRAWABLE',
-        }))
-      );
-      component.withdrawOne(purpose('P-SHR'));
-      component.confirmAction();
-      expect(component.error).toBe('notWithdrawable');
-      expect(component.action).not.toBeNull();
     });
 
     it('asks for a new OTP when the server rejects it', () => {
